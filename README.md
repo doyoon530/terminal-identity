@@ -93,6 +93,7 @@ Want motion? Add `motion=pulse`, `motion=scan`, or `motion=boot` to the same API
 - **One URL, real result** — no screenshots, no manual SVG editing, no build step
 - **Actually stylish** — provider shells feel more like product UI than generic badges
 - **Live public data** — add `username` to show repos, stars, followers, and top languages
+- **Contribution mini-garden** — turn recent GitHub activity into a themed grid inside the card
 - **Animated SVG mode** — add `motion=pulse|scan|boot` and keep using the same image URL
 - **Good defaults** — most people only need `name`, `role`, `theme`, and maybe `username`
 - **Deep enough when you want it** — accent color, graph style, filtered stats, language icons, custom bio
@@ -104,6 +105,7 @@ Want motion? Add `motion=pulse`, `motion=scan`, or `motion=boot` to the same API
 - **4 provider shells** — Classic, Amber, Obsidian, Prism, each with a distinct layout
 - **8 themes** — Ember · Aurora · Cobalt · Velvet · Graphite · Matcha · Sakura · Solar
 - **Live GitHub stats** — repos, stars, forks, followers fetched from the public API
+- **Contribution themes** — `moss`, `petal`, `firefly`, and `constellation`
 - **Top languages** — bar chart or skill icons, filterable by name
 - **Inline bold** — use `**text**` in bio for bold SVG text
 - **Multi-line bio** — wraps dynamically to fit the card height, with line-break support
@@ -144,6 +146,16 @@ Need a moving version from the same endpoint:
 />
 ```
 
+Want a contribution block too:
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=520&showContribs=on&contribTheme=moss"
+  width="100%"
+  alt="Terminal identity card with contribution grid"
+/>
+```
+
 > Try it interactively at the **[live playground](https://terminal-identity-opal.vercel.app)** — build your card visually and copy the URL or markdown directly.
 
 ---
@@ -166,6 +178,8 @@ Need a moving version from the same endpoint:
 | `height` | `520` | Card height in px (420–820) |
 | `accent` | — | Override accent color with a hex value, e.g. `%23ff7a59` |
 | `motion` | `off` | Animated SVG overlay: `off`, `pulse`, `scan`, or `boot` |
+| `showContribs` | `off` | Contribution grid display: `off`, `on`, or `auto` |
+| `contribTheme` | `moss` | Contribution concept theme: `moss`, `petal`, `firefly`, or `constellation` |
 | `showLangs` | `auto` | Top languages display: `auto`, `on`, or `off` |
 | `langCount` | `4` | Number of top languages to show (1–6) |
 | `langStyle` | `bar` | Language display style: `bar` or `icons` |
@@ -328,6 +342,8 @@ GET https://terminal-identity-opal.vercel.app/api?[params]
 Returns an `image/svg+xml` response. Drop it directly in any Markdown `<img>` tag. GitHub caches images — append `&v=2` (or increment) to bust the cache when you update params.
 
 Animated cards use the same endpoint. Add `motion=pulse`, `motion=scan`, or `motion=boot` to return an animated SVG instead of a static one.
+
+Contribution cards use the same endpoint too. Add `showContribs=on` and a `contribTheme` like `moss` or `firefly` to render a compact GitHub activity garden inside the card.
 
 > **Accent color:** URL-encode `#` as `%23` when passing the `accent` param. Example: `accent=%23ff7a59` for `#ff7a59`.
 

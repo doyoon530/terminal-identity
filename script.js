@@ -50,6 +50,8 @@ function getState() {
     height: document.getElementById("height").value,
     accent: document.getElementById("accent").value.trim(),
     motion: document.getElementById("motion").value,
+    showContribs: document.getElementById("showContribs").value,
+    contribTheme: document.getElementById("contribTheme").value,
     barStyle: document.getElementById("barStyle").value,
     langStyle: document.getElementById("langStyle").value,
     iconSize: document.getElementById("iconSize").value,
@@ -79,6 +81,8 @@ function fillForm(state) {
   document.getElementById("height").value = state.height;
   document.getElementById("accent").value = state.accent || "";
   document.getElementById("motion").value = state.motion || "off";
+  document.getElementById("showContribs").value = state.showContribs || "off";
+  document.getElementById("contribTheme").value = state.contribTheme || "moss";
   document.getElementById("barStyle").value = state.barStyle || "bar";
   document.getElementById("langStyle").value = state.langStyle || "bar";
   document.getElementById("iconSize").value = state.iconSize || "md";
@@ -114,6 +118,8 @@ function loadStateFromUrl() {
     height: params.get("height"),
     accent: params.get("accent"),
     motion: params.get("motion"),
+    showContribs: params.get("showContribs"),
+    contribTheme: params.get("contribTheme"),
     barStyle: params.get("barStyle"),
     langStyle: params.get("langStyle"),
     iconSize: params.get("iconSize"),

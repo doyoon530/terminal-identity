@@ -208,10 +208,12 @@
     height: 520,
     accent: null,
     showLangs: "auto",
+    showContribs: "off",
     langCount: 4,
     hideAvatar: false,
     hideCommand: false,
     motion: "off",
+    contribTheme: "moss",
     stats: STAT_KEYS,
     excludeLangs: [],
     bio: "",
@@ -398,6 +400,30 @@
             .map((l) => ({ name: String(l.name).slice(0, 20), count: Math.max(0, Math.floor(l.count)) }))
         : null;
 
+    const contributions =
+      stats.contributions &&
+      Array.isArray(stats.contributions.weeks) &&
+      stats.contributions.weeks.length > 0
+        ? {
+            total: safeNumber(stats.contributions.total, 0, 0, 100000000),
+            activeDays: safeNumber(stats.contributions.activeDays, 0, 0, 366),
+            weeks: stats.contributions.weeks
+              .slice(-16)
+              .map((week) => ({
+                start: String(week.start || "").slice(0, 10),
+                days: Array.isArray(week.days)
+                  ? week.days.slice(0, 7).map((day) => {
+                      if (!day) return null;
+                      return {
+                        date: String(day.date || "").slice(0, 10),
+                        level: safeNumber(day.level, 0, 0, 4),
+                      };
+                    })
+                  : Array.from({ length: 7 }, () => null),
+              })),
+          }
+        : null;
+
     return {
       username: String(stats.username || "").slice(0, 39),
       repos: safeNumber(stats.repos, 0, 0, 100000),
@@ -405,6 +431,7 @@
       stars: safeNumber(stats.stars, 0, 0, 100000000),
       forks: safeNumber(stats.forks, 0, 0, 100000000),
       topLangs,
+      contributions,
     };
   }
 
@@ -710,6 +737,132 @@
     return `<image x="${x}" y="${y}" width="${iconW}" height="${iconH}" href="${escapeXml(uri)}" preserveAspectRatio="xMinYMid meet"></image>`;
   }
 
+  function shouldShowContributions(state) {
+    if (!state.githubStats?.contributions?.weeks?.length) return false;
+    if (state.showContribs === "off") return false;
+    return state.showContribs === "on" || !!state.username;
+  }
+
+  function getContributionThemeColors(theme, palette) {
+    const accent = palette.accentAlt || palette.accent;
+
+    if (theme === "petal") {
+      return {
+        base: "rgba(255,255,255,0.04)",
+        levels: ["rgba(255,255,255,0.04)", "rgba(255,185,166,0.34)", "rgba(255,163,135,0.52)", "rgba(255,144,114,0.76)", "#ff8f6b"],
+        accent,
+        glow: "rgba(255,163,135,0.18)",
+      };
+    }
+
+    if (theme === "firefly") {
+      return {
+        base: "rgba(255,255,255,0.03)",
+        levels: ["rgba(255,255,255,0.03)", "rgba(255,221,120,0.24)", "rgba(255,221,120,0.44)", "rgba(255,221,120,0.72)", "#ffe27a"],
+        accent: "#ffe27a",
+        glow: "rgba(255,226,122,0.22)",
+      };
+    }
+
+    if (theme === "constellation") {
+      return {
+        base: "rgba(255,255,255,0.04)",
+        levels: ["rgba(255,255,255,0.04)", "rgba(156,194,255,0.34)", "rgba(156,194,255,0.52)", "rgba(156,194,255,0.76)", "#9cc2ff"],
+        accent: "#9cc2ff",
+        glow: "rgba(156,194,255,0.18)",
+      };
+    }
+
+    return {
+      base: "rgba(255,255,255,0.05)",
+      levels: ["rgba(255,255,255,0.05)", "rgba(137,214,143,0.28)", "rgba(137,214,143,0.46)", "rgba(137,214,143,0.68)", "#89d68f"],
+      accent: "#89d68f",
+      glow: "rgba(137,214,143,0.16)",
+    };
+  }
+
+  function buildContributionGrid(contributions, x, y, trackWidth, theme, palette, options) {
+    if (!contributions?.weeks?.length) return "";
+
+    const weeks = contributions.weeks.slice(-16);
+    const cols = weeks.length;
+    const gap = 3;
+    const cell = Math.max(7, Math.min(11, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
+    const gridW = cols * cell + Math.max(0, cols - 1) * gap;
+    const gridH = 7 * cell + 6 * gap;
+    const colors = getContributionThemeColors(theme, palette);
+    const title = options?.title || "CONTRIBUTIONS";
+    const labelColor = options?.labelColor || palette.dim;
+    const totalLabel = `${formatCompactStat(contributions.total)} this year`;
+    const activeLabel = `${contributions.activeDays} active days`;
+
+    const cells = [];
+    const connectorSegments = [];
+
+    weeks.forEach((week, col) => {
+      (week.days || []).forEach((day, row) => {
+        const px = x + col * (cell + gap);
+        const py = y + row * (cell + gap);
+        const level = day?.level || 0;
+        const cx = px + cell / 2;
+        const cy = py + cell / 2;
+
+        if (theme === "petal") {
+          cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.36))}" fill="${colors.base}"></rect>`);
+          if (level > 0) {
+            const petalR = Math.max(1.1, cell * 0.12);
+            const spread = cell * 0.18;
+            if (level >= 3) {
+              cells.push(`<circle cx="${cx - spread}" cy="${cy}" r="${petalR}" fill="${colors.levels[level]}"></circle>`);
+              cells.push(`<circle cx="${cx + spread}" cy="${cy}" r="${petalR}" fill="${colors.levels[level]}"></circle>`);
+              cells.push(`<circle cx="${cx}" cy="${cy - spread}" r="${petalR}" fill="${colors.levels[level]}"></circle>`);
+              cells.push(`<circle cx="${cx}" cy="${cy + spread}" r="${petalR}" fill="${colors.levels[level]}"></circle>`);
+            }
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(1.6, cell * (0.12 + level * 0.06))}" fill="${colors.levels[level]}"></circle>`);
+          }
+          return;
+        }
+
+        if (theme === "firefly") {
+          cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.48))}" fill="${colors.base}"></rect>`);
+          if (level > 0) {
+            const r = Math.max(1.4, cell * (0.12 + level * 0.05));
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${r * 2.2}" fill="${colors.glow}" opacity="${0.18 + level * 0.08}"></circle>`);
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${colors.levels[level]}"></circle>`);
+          }
+          return;
+        }
+
+        if (theme === "constellation") {
+          cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.34))}" fill="${colors.base}"></rect>`);
+          if (level > 0) {
+            const nextDay = week.days?.[row + 1];
+            const nextWeek = weeks[col + 1]?.days?.[row];
+            if (nextDay?.level > 0) {
+              connectorSegments.push(`<line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy + cell + gap}" stroke="${colors.glow}" stroke-width="1"></line>`);
+            }
+            if (nextWeek?.level > 0) {
+              connectorSegments.push(`<line x1="${cx}" y1="${cy}" x2="${cx + cell + gap}" y2="${cy}" stroke="${colors.glow}" stroke-width="1"></line>`);
+            }
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(1.3, cell * (0.11 + level * 0.045))}" fill="${colors.levels[level]}"></circle>`);
+          }
+          return;
+        }
+
+        cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.4))}" fill="${colors.levels[level]}"></rect>`);
+      });
+    });
+
+    return `
+  <text x="${x}" y="${y - 14}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${labelColor}" letter-spacing="0.5">${title}</text>
+  <text x="${x + gridW}" y="${y - 14}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="${labelColor}">${escapeXml(totalLabel)}</text>
+  <g>
+    ${connectorSegments.join("\n    ")}
+    ${cells.join("\n    ")}
+  </g>
+  <text x="${x}" y="${y + gridH + 16}" font-family="IBM Plex Mono, monospace" font-size="10" fill="${labelColor}">${escapeXml(activeLabel)}</text>`;
+  }
+
   function normalizeState(input) {
     const state = input || {};
     const rawTheme = String(state.theme || defaults.theme);
@@ -739,6 +892,7 @@
       githubStats: normalizeGithubStats(state.githubStats),
       accent: isValidHex(state.accent) ? String(state.accent) : null,
       showLangs: ["auto", "on", "off"].includes(state.showLangs) ? state.showLangs : "auto",
+      showContribs: ["auto", "on", "off"].includes(state.showContribs) ? state.showContribs : defaults.showContribs,
       langCount: safeNumber(state.langCount, 4, 1, 6),
       hideAvatar: parseBool(state.hideAvatar),
       hideCommand: parseBool(state.hideCommand),
@@ -748,6 +902,7 @@
       langStyle: ["bar", "icons"].includes(state.langStyle) ? state.langStyle : "bar",
       iconSize: ["sm", "md", "lg"].includes(state.iconSize) ? state.iconSize : "md",
       motion: ["off", "pulse", "scan", "boot"].includes(state.motion) ? state.motion : "off",
+      contribTheme: ["petal", "moss", "firefly", "constellation"].includes(state.contribTheme) ? state.contribTheme : defaults.contribTheme,
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
       hideProfile: parseBool(state.hideProfile),
@@ -762,11 +917,13 @@
       if (key === "provider" || key === "githubStats") return;
       if (value === null || value === false || value === "") return;
       if (key === "showLangs" && value === "auto") return;
+      if (key === "showContribs" && value === defaults.showContribs) return;
       if (key === "langCount" && value === 4) return;
       if (key === "barStyle" && value === "bar") return;
       if (key === "langStyle" && value === "bar") return;
       if (key === "iconSize" && value === "md") return;
       if (key === "motion" && value === "off") return;
+      if (key === "contribTheme" && value === defaults.contribTheme) return;
       if (key === "langIconsUri") return;
       if (key === "profileUri") return;
       if (key === "langIconCount") return;
@@ -957,7 +1114,7 @@
     return WINDOW_BUTTONS[provider.buttonMode] ?? WINDOW_BUTTONS.traffic;
   }
 
-  function buildAmberDashboard(state, palette, provider, topLangs) {
+  function buildAmberDashboard(state, palette, provider, topLangs, contributions) {
     const statusText = getStatusText(state);
     const outerX = 28;
     const outerY = 96;
@@ -1029,6 +1186,7 @@
     const langsToShow = showLangs ? topLangs.slice(0, maxLangs) : null;
     const LANGS_LABEL_Y = rpLangsTop + 13;
     const LANGS_Y = rpLangsTop + 26;
+    const canShowContribs = contributions && showStats && rpLangsAvail >= 96;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="#231f1d"></rect>
@@ -1060,13 +1218,16 @@
   ${showStats
     ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
   ${buildStatBars(state.githubStats, rightX + 18, STATS_Y, rightW - 36, accent, dim, undefined, state.stats, state.barStyle, "bar-grad")}
-  ${showLangs || (state.langStyle === "icons" && state.langIconsUri && langsToShow && rpLangsAvail >= 28)
+  ${canShowContribs
+    ? `<rect x="${rightX}" y="${rpLangsTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+  ${buildContributionGrid(contributions, rightX + 18, rpLangsTop + 8, rightW - 36, state.contribTheme, palette, { labelColor: label })}`
+    : (showLangs || (state.langStyle === "icons" && state.langIconsUri && langsToShow && rpLangsAvail >= 28)
     ? `<rect x="${rightX}" y="${rpLangsTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
   <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TOP LANGS</text>
   ${state.langStyle === "icons" && state.langIconsUri && langsToShow
     ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, state.langIconCount ?? langsToShow.length, state.iconSize)
     : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle, "bar-grad")}`
-    : ""}`
+    : "")}`
     : `<text x="${rightX + 18}" y="${rpDataTop + 13}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TAGLINE</text>
   <text x="${rightX + 18}" y="${rpDataTop + 44}" font-family="Sora, Arial, sans-serif" font-size="16" font-weight="600" fill="#f2efec">${escapeXml(truncateText(state.tagline, 52))}</text>
   ${state.role ? `<text x="${rightX + 18}" y="${rpDataTop + 70}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.role, 36))}</text>` : ""}`}
@@ -1077,7 +1238,7 @@
   ${state.hideCommand ? "" : `<text x="${state.width - 54}" y="${footerY + 32}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">$ ${escapeXml(truncateText(state.command, 32))}</text>`}`;
   }
 
-  function buildObsidianWorkspace(state, palette, provider, topLangs) {
+  function buildObsidianWorkspace(state, palette, provider, topLangs, contributions) {
     const statusText = getStatusText(state);
     const outerX = 28;
     const outerY = 96;
@@ -1114,6 +1275,7 @@
     const ink = "#dbfff0";
     const dim = "#89b7a5";
     const model = `${provider.label}/${state.theme}`;
+    const showContribs = contributions && responseH >= 108;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="#0f1613"></rect>
@@ -1145,7 +1307,9 @@
 
   <rect x="${mainX}" y="${responseY}" width="${mainW}" height="${responseH}" rx="10" fill="#0e1915"></rect>
   <text x="${mainX + 22}" y="${responseY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">output</text>
-  ${state.githubStats
+  ${showContribs
+    ? buildContributionGrid(contributions, mainX + 22, responseY + 36, mainW - 44, state.contribTheme, palette, { labelColor: dim })
+    : state.githubStats
     ? (topLangs
         ? (state.langStyle === "icons" && state.langIconsUri
             ? buildLangIcons(state.langIconsUri, mainX + 22, responseY + 34, mainW - 44, state.langIconCount ?? topLangs.length, state.iconSize)
@@ -1160,7 +1324,7 @@
   <text x="${outerX + 36}" y="${footerY + 30}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.status, 64))}</text>`;
   }
 
-  function buildPrismCanvas(state, palette, provider, topLangs) {
+  function buildPrismCanvas(state, palette, provider, topLangs, contributions) {
     const statusText = getStatusText(state);
     const outerX = 28;
     const outerY = 96;
@@ -1197,6 +1361,7 @@
     const ink = "#1b2450";
     const dim = "#6070a5";
     const model = `${provider.label}/${state.theme}`;
+    const showContribs = contributions && lowerH >= 108 && lrW >= 180;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="rgba(239,243,255,0.9)"></rect>
@@ -1223,8 +1388,10 @@
   <text x="${lmX + 18}" y="${lowerY + 80}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">theme   ${escapeXml(state.theme)}</text>
 
   <rect x="${lrX}" y="${lowerY}" width="${lrW}" height="${lowerH}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
-  <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
-  ${topLangs
+  <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${showContribs ? "contributions" : topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
+  ${showContribs
+    ? buildContributionGrid(contributions, lrX + 18, lowerY + 38, lrW - 36, state.contribTheme, palette, { labelColor: dim, title: "ACTIVITY" })
+    : topLangs
     ? (state.langStyle === "icons" && state.langIconsUri
         ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, state.langIconCount ?? topLangs.length, state.iconSize)
         : buildLangBars(topLangs, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.barStyle))
@@ -1250,6 +1417,7 @@
             .filter((l) => !state.excludeLangs.includes(l.name.toLowerCase()))
             .slice(0, state.langCount)
         : null;
+    const effectiveContributions = shouldShowContributions(state) ? state.githubStats.contributions : null;
 
     if (state.provider === "amber") {
       return applyMotion(`
@@ -1288,7 +1456,7 @@
   <circle cx="92" cy="60" r="7" fill="#ffc75a"></circle>
   <circle cx="116" cy="60" r="7" fill="#6ecf59"></circle>
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="15" fill="#c4b9b0">About ${escapeXml(state.name)}</text>
-  ${buildAmberDashboard(state, palette, provider, effectiveTopLangs)}
+  ${buildAmberDashboard(state, palette, provider, effectiveTopLangs, effectiveContributions)}
 </svg>`.trim(), state, palette);
     }
 
@@ -1299,7 +1467,7 @@
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#0f1f18"></rect>
   ${buildWindowButtons(provider)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
-  ${buildObsidianWorkspace(state, palette, provider, effectiveTopLangs)}
+  ${buildObsidianWorkspace(state, palette, provider, effectiveTopLangs, effectiveContributions)}
 </svg>`.trim(), state, palette);
     }
 
@@ -1310,7 +1478,7 @@
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#eef3ff"></rect>
   ${buildWindowButtons(provider)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
-  ${buildPrismCanvas(state, palette, provider, effectiveTopLangs)}
+  ${buildPrismCanvas(state, palette, provider, effectiveTopLangs, effectiveContributions)}
 </svg>`.trim(), state, palette);
     }
 
@@ -1347,6 +1515,7 @@
       : 0;
     const showLangs = maxLangs > 0;
     const langsToShow = showLangs ? effectiveTopLangs.slice(0, maxLangs) : null;
+    const showContribs = effectiveContributions && showStats && langsAvailH >= 96;
 
     return applyMotion(`
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
@@ -1371,9 +1540,11 @@
     : `<circle cx="${contentX + 8}" cy="${DATA_TOP + 8}" r="5" fill="${palette.success}"></circle>
   <text x="${contentX + 24}" y="${DATA_TOP + 14}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
 
-  ${showStats && (showLangs || (state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs))
+  ${showStats && (showContribs || showLangs || (state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs))
     ? `<rect x="${contentX}" y="${LANGS_TOP - 2}" width="${contentW}" height="1" fill="rgba(255,255,255,0.05)"></rect>
-  ${state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs
+  ${showContribs
+    ? buildContributionGrid(effectiveContributions, contentX, LANGS_TOP + 8, contentW, state.contribTheme, palette, { labelColor: palette.dim })
+    : state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs
     ? buildLangIcons(state.langIconsUri, contentX, LANGS_TOP, contentW, state.langIconCount ?? effectiveTopLangs.length, state.iconSize)
     : buildLangBars(langsToShow, contentX, LANGS_TOP, contentW, palette.accent, palette.dim, undefined, state.barStyle)}`
     : ""}
