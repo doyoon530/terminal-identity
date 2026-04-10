@@ -15,8 +15,10 @@
 </p>
 
 <p align="center">
-  <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/ember&avatar=GG&pattern=grid&width=980&height=600&langStyle=icons&excludeLangs=Jupyter%20Notebook&v=3"
-  width="100%" alt="Terminal Identity demo card" />
+  <a href="https://github.com/doyoon530/terminal-identity">
+    <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/ember&avatar=GG&pattern=grid&width=980&height=600&langStyle=icons&iconSize=lg&excludeLangs=Jupyter%20Notebook&v=4"
+    width="100%" alt="Terminal Identity demo card" />
+  </a>
 </p>
 
 Terminal-style SVG cards for GitHub READMEs. One URL, one `<img>` tag. Pick a provider shell (`classic`, `amber`, `obsidian`, `prism`), pair it with a theme, and optionally pass a GitHub username to pull in live public stats and top languages.
@@ -67,6 +69,7 @@ Add `username=your-handle` to show live GitHub stats and top languages:
 | `iconSize` | `md` | Icon size when `langStyle=icons`: `sm`, `md`, or `lg` |
 | `barStyle` | `bar` | Graph style for stats and lang bars: `bar`, `dots`, or `blocks` |
 | `hideAvatar` | `false` | Set to `true` to hide the avatar block |
+| `hideProfile` | `false` | Set to `true` to hide the GitHub profile picture (amber provider) |
 | `hideCommand` | `false` | Set to `true` to hide the command line |
 | `stats` | all | Comma-separated stats to show: `repos,stars,forks,followers` |
 | `excludeLangs` | — | Comma-separated language names to exclude, e.g. `HTML,CSS` |

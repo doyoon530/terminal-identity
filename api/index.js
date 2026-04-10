@@ -21,6 +21,20 @@ async function fetchLangIconsDataUri(iconKeys) {
   }
 }
 
+async function fetchProfileImageUri(avatarUrl) {
+  if (!avatarUrl) return null;
+  try {
+    const res = await fetch(`${avatarUrl}&s=120`);
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    const b64 = Buffer.from(buf).toString("base64");
+    const ct = res.headers.get("content-type") || "image/png";
+    return `data:${ct};base64,${b64}`;
+  } catch (_) {
+    return null;
+  }
+}
+
 module.exports = async function handler(req, res) {
   const query = req.query || {};
   const width = Math.min(Math.max(Number(query.width) || 980, 720), 1400);
@@ -38,6 +52,10 @@ module.exports = async function handler(req, res) {
       const githubStats = await fetchGithubStats(state.username);
       if (githubStats) {
         nextState = { ...state, githubStats };
+        if (!state.hideProfile && githubStats.avatarUrl) {
+          const profileUri = await fetchProfileImageUri(githubStats.avatarUrl);
+          if (profileUri) nextState = { ...nextState, profileUri };
+        }
       }
     }
 

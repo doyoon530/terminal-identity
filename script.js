@@ -56,6 +56,7 @@ function getState() {
     langCount: document.getElementById("langCount").value,
     hideAvatar: document.getElementById("hideAvatar").checked,
     hideCommand: document.getElementById("hideCommand").checked,
+    hideProfile: document.getElementById("hideProfile").checked,
     stats: ["repos", "stars", "forks", "followers"].filter((s) => document.getElementById(`stat-${s}`).checked).join(","),
     excludeLangs: document.getElementById("excludeLangs").value.trim(),
   });
@@ -82,6 +83,7 @@ function fillForm(state) {
   document.getElementById("langCount").value = state.langCount || "";
   document.getElementById("hideAvatar").checked = state.hideAvatar === "true" || state.hideAvatar === true;
   document.getElementById("hideCommand").checked = state.hideCommand === "true" || state.hideCommand === true;
+  document.getElementById("hideProfile").checked = state.hideProfile === "true" || state.hideProfile === true;
   const statsArr = Array.isArray(state.stats) ? state.stats : ["repos", "stars", "forks", "followers"];
   ["repos", "stars", "forks", "followers"].forEach((s) => {
     document.getElementById(`stat-${s}`).checked = statsArr.includes(s);
@@ -114,6 +116,7 @@ function loadStateFromUrl() {
     langCount: params.get("langCount"),
     hideAvatar: params.get("hideAvatar"),
     hideCommand: params.get("hideCommand"),
+    hideProfile: params.get("hideProfile"),
     stats: params.get("stats"),
     excludeLangs: params.get("excludeLangs"),
   });
@@ -128,8 +131,10 @@ function getApiBaseUrl() {
   return "https://your-domain.vercel.app/api";
 }
 
-function buildMarkdown(apiUrl) {
-  return `<img src="${apiUrl}" width="100%" alt="Terminal identity card" />`;
+function buildMarkdown(apiUrl, link) {
+  const img = `<img src="${apiUrl}" width="100%" alt="Terminal identity card" />`;
+  if (!link) return img;
+  return `<a href="${link}">\n  ${img}\n</a>`;
 }
 
 function updateShareUrl(state) {
@@ -166,6 +171,9 @@ async function render() {
 
   if (githubStats) {
     nextState = { ...state, githubStats };
+    if (!state.hideProfile && githubStats.avatarUrl) {
+      nextState = { ...nextState, profileUri: `${githubStats.avatarUrl}&s=120` };
+    }
   }
 
   // Playground: use skillicons URL directly (inline SVG can load external resources)
@@ -181,11 +189,12 @@ async function render() {
 
   const svg = buildSvg(nextState);
   const apiUrl = buildApiUrl(state, getApiBaseUrl());
+  const link = document.getElementById("link").value.trim();
 
   svgMount.innerHTML = svg;
   svgOutput.value = svg;
   apiOutput.value = apiUrl;
-  markdownOutput.value = buildMarkdown(apiUrl);
+  markdownOutput.value = buildMarkdown(apiUrl, link);
   updateShareUrl(state);
 }
 

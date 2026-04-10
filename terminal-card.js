@@ -564,6 +564,8 @@
       langStyle: ["bar", "icons"].includes(state.langStyle) ? state.langStyle : "bar",
       iconSize: ["sm", "md", "lg"].includes(state.iconSize) ? state.iconSize : "md",
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
+      profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
+      hideProfile: parseBool(state.hideProfile),
     };
   }
 
@@ -578,6 +580,7 @@
       if (key === "langStyle" && value === "bar") return;
       if (key === "iconSize" && value === "md") return;
       if (key === "langIconsUri") return;
+      if (key === "profileUri") return;
       if (key === "stats") {
         if (value.length < 4) params.set("stats", value.join(","));
         return;
@@ -672,10 +675,22 @@
     const rightW = Math.max(state.width - rightX - 54, 0);
     const rightY = contentY;
 
-    // Left panel: show lines that fit within leftH
-    const showLPTag  = leftH >= 140;
-    const showLPCmd  = !state.hideCommand && leftH >= 172;
-    const showLPStat = leftH >= 210;
+    // Profile image (circular)
+    const showProfile = !!state.profileUri && !state.hideProfile;
+    const PROFILE_R  = 32;
+    const PROFILE_CX = leftX + 16 + PROFILE_R;
+    const PROFILE_CY = contentY + 68;
+
+    // Dynamic Y positions for left panel content
+    const ROLE_Y   = showProfile ? contentY + 120 : contentY + 58;
+    const TAG_Y    = showProfile ? contentY + 148 : contentY + 88;
+    const CMD_Y    = showProfile ? contentY + 172 : contentY + 114;
+    const STAT_CY  = showProfile ? contentY + 198 : contentY + 142;
+    const STAT_TY  = showProfile ? contentY + 204 : contentY + 148;
+
+    const showLPTag  = leftH >= (showProfile ? 155 : 100);
+    const showLPCmd  = !state.hideCommand && leftH >= (showProfile ? 179 : 126);
+    const showLPStat = leftH >= (showProfile ? 205 : 154);
 
     // Right panel - "about" section always visible
     const RP_DIV_Y  = rightY + 116;
@@ -707,13 +722,21 @@
 
   <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
 
-  <text x="${leftX + 16}" y="${contentY + 20}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">$ ${escapeXml(cliTheme)}</text>
-  <text x="${leftX + 16}" y="${contentY + 60}" font-family="IBM Plex Mono, monospace" font-size="22" fill="#f6f2ef">About ${escapeXml(state.name)}</text>
-  <text x="${leftX + 16}" y="${contentY + 96}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 30))}</text>
-  ${showLPTag ? `<text x="${leftX + 16}" y="${contentY + 128}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
-  ${showLPCmd ? `<text x="${leftX + 16}" y="${contentY + 162}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">$ ${escapeXml(truncateText(state.command, 30))}</text>` : ""}
-  ${showLPStat ? `<circle cx="${leftX + 24}" cy="${contentY + 196}" r="5" fill="#7adf8d"></circle>
-  <text x="${leftX + 38}" y="${contentY + 202}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 38))}</text>` : ""}
+  <text x="${leftX + 16}" y="${contentY + 20}" font-family="IBM Plex Mono, monospace" font-size="14" fill="#f6f2ef">About ${escapeXml(state.name)}</text>
+
+  ${showProfile ? `<defs>
+    <clipPath id="profile-clip-${escapeXml(state.username || "anon")}">
+      <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R}"/>
+    </clipPath>
+  </defs>
+  <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="rgba(255,255,255,0.08)"/>
+  <image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#profile-clip-${escapeXml(state.username || "anon")})" preserveAspectRatio="xMidYMid slice"/>` : ""}
+
+  <text x="${leftX + 16}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 30))}</text>
+  ${showLPTag ? `<text x="${leftX + 16}" y="${TAG_Y}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
+  ${showLPCmd ? `<text x="${leftX + 16}" y="${CMD_Y}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">$ ${escapeXml(truncateText(state.command, 30))}</text>` : ""}
+  ${showLPStat ? `<circle cx="${leftX + 24}" cy="${STAT_CY}" r="5" fill="#7adf8d"></circle>
+  <text x="${leftX + 38}" y="${STAT_TY}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 38))}</text>` : ""}
 
   <text x="${rightX + 18}" y="${rightY + 20}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">about</text>
   <text x="${rightX + 18}" y="${rightY + 50}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 36))}</text>

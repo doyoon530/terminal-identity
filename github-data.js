@@ -53,6 +53,7 @@ async function fetchGithubStats(username) {
 
     return {
       username: normalized,
+      avatarUrl: String(user.avatar_url || ""),
       repos: Number(user.public_repos || repoList.length || 0),
       followers: Number(user.followers || 0),
       stars,
