@@ -328,12 +328,21 @@
       return null;
     }
 
+    const topLangs =
+      Array.isArray(stats.topLangs) && stats.topLangs.length > 0
+        ? stats.topLangs
+            .slice(0, 4)
+            .filter((l) => l && typeof l.name === "string" && typeof l.count === "number")
+            .map((l) => ({ name: String(l.name).slice(0, 20), count: Math.max(0, Math.floor(l.count)) }))
+        : null;
+
     return {
       username: String(stats.username || "").slice(0, 39),
       repos: safeNumber(stats.repos, 0, 0, 100000),
       followers: safeNumber(stats.followers, 0, 0, 100000000),
       stars: safeNumber(stats.stars, 0, 0, 100000000),
       forks: safeNumber(stats.forks, 0, 0, 100000000),
+      topLangs,
     };
   }
 
@@ -400,6 +409,32 @@
           `<rect x="${x + labelW}" y="${rowY + 5}" width="${barTrack}" height="${barH}" rx="1" fill="${bg}"></rect>`,
           `<rect x="${x + labelW}" y="${rowY + 5}" width="${filled}" height="${barH}" rx="1" fill="${accentColor}"></rect>`,
           `<text x="${x + labelW + barTrack + 8}" y="${rowY + 12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dimColor}">${formatCompactStat(item.value)}</text>`,
+        ].join("\n  ");
+      })
+      .join("\n  ");
+  }
+
+  function buildLangBars(topLangs, x, y, trackWidth, accentColor, dimColor, trackBg) {
+    const bg = trackBg || "rgba(255,255,255,0.08)";
+    const total = topLangs.reduce((s, l) => s + l.count, 0) || 1;
+    const maxVal = Math.max(...topLangs.map((l) => l.count), 1);
+    const labelW = 90;
+    const valW = 36;
+    const barTrack = Math.max(trackWidth - labelW - valW, 40);
+    const rowH = 18;
+    const barH = 3;
+
+    return topLangs
+      .slice(0, 4)
+      .map((lang, i) => {
+        const filled = Math.max(2, Math.round((lang.count / maxVal) * barTrack));
+        const rowY = y + i * rowH;
+        const pct = Math.round((lang.count / total) * 100);
+        return [
+          `<text x="${x}" y="${rowY + 12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dimColor}">${escapeXml(truncateText(lang.name, 12))}</text>`,
+          `<rect x="${x + labelW}" y="${rowY + 5}" width="${barTrack}" height="${barH}" rx="1" fill="${bg}"></rect>`,
+          `<rect x="${x + labelW}" y="${rowY + 5}" width="${filled}" height="${barH}" rx="1" fill="${accentColor}"></rect>`,
+          `<text x="${x + labelW + barTrack + 8}" y="${rowY + 12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dimColor}">${pct}%</text>`,
         ].join("\n  ");
       })
       .join("\n  ");
@@ -557,7 +592,12 @@
 
   <text x="${rightX + 18}" y="${rightY + 136}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats ? "github stats" : "run"}</text>
   ${state.githubStats
-    ? buildStatBars(state.githubStats, rightX + 18, rightY + 148, rightWidth - 36, accent, dim)
+    ? `${buildStatBars(state.githubStats, rightX + 18, rightY + 148, rightWidth - 36, accent, dim)}
+  ${state.githubStats.topLangs && state.height >= 600
+    ? `<rect x="${rightX}" y="${rightY + 222}" width="${rightWidth}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+  <text x="${rightX + 18}" y="${rightY + 236}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">top langs</text>
+  ${buildLangBars(state.githubStats.topLangs, rightX + 18, rightY + 248, rightWidth - 36, accent, dim)}`
+    : ""}`
     : `<text x="${rightX + 18}" y="${rightY + 160}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">$ ${escapeXml(truncateText(state.command, 40))}</text>
 
   <rect x="${rightX}" y="${rightY + 178}" width="${rightWidth}" height="1" fill="rgba(255,255,255,0.07)"></rect>
@@ -627,7 +667,9 @@
   <rect x="${mainX}" y="${responseY}" width="${mainWidth}" height="${responseHeight}" rx="10" fill="#0e1915"></rect>
   <text x="${mainX + 22}" y="${responseY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">output</text>
   ${state.githubStats
-    ? buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainWidth - 44, accent, dim)
+    ? (state.githubStats.topLangs
+        ? buildLangBars(state.githubStats.topLangs, mainX + 22, responseY + 34, mainWidth - 44, accent, dim)
+        : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainWidth - 44, accent, dim))
     : `<text x="${mainX + 22}" y="${responseY + 52}" font-family="Sora, Arial, sans-serif" font-size="15" font-weight="600" fill="${ink}">${escapeXml(truncateText(state.tagline, 38))}</text>
   <circle cx="${mainX + 22}" cy="${responseY + 76}" r="5" fill="${accent}"></circle>
   <text x="${mainX + 36}" y="${responseY + 82}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(state.status, 44))}</text>`}
@@ -677,11 +719,13 @@
   )}</text>
 
   <rect x="${lowerLeftX}" y="${lowerLeftY}" width="${lowerLeftWidth}" height="${lowerLeftHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
-  <text x="${lowerLeftX + 18}" y="${lowerLeftY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">quick facts</text>
-  <text x="${lowerLeftX + 18}" y="${lowerLeftY + 56}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
+  <text x="${lowerLeftX + 18}" y="${lowerLeftY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats && state.githubStats.topLangs ? "github stats" : "quick facts"}</text>
+  ${state.githubStats && state.githubStats.topLangs
+    ? buildStatBars(state.githubStats, lowerLeftX + 18, lowerLeftY + 34, lowerLeftWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
+    : `<text x="${lowerLeftX + 18}" y="${lowerLeftY + 56}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
   <text x="${lowerLeftX + 18}" y="${lowerLeftY + 80}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(
     state.username ? `github  @${state.username}` : `pattern  ${state.pattern}`
-  )}</text>
+  )}</text>`}
 
   <rect x="${lowerMidX}" y="${lowerMidY}" width="${lowerMidWidth}" height="${lowerMidHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
   <text x="${lowerMidX + 18}" y="${lowerMidY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prompt</text>
@@ -691,10 +735,12 @@
   <text x="${lowerMidX + 18}" y="${lowerMidY + 80}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">theme   ${escapeXml(state.theme)}</text>
 
   <rect x="${lowerRightX}" y="${lowerRightY}" width="${lowerRightWidth}" height="${lowerRightHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
-  <text x="${lowerRightX + 18}" y="${lowerRightY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats ? "github stats" : "status"}</text>
-  ${state.githubStats
-    ? buildStatBars(state.githubStats, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
-    : `<circle cx="${lowerRightX + 26}" cy="${lowerRightY + 58}" r="5" fill="#7f94ff"></circle>
+  <text x="${lowerRightX + 18}" y="${lowerRightY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats && state.githubStats.topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
+  ${state.githubStats && state.githubStats.topLangs
+    ? buildLangBars(state.githubStats.topLangs, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
+    : state.githubStats
+      ? buildStatBars(state.githubStats, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
+      : `<circle cx="${lowerRightX + 26}" cy="${lowerRightY + 58}" r="5" fill="#7f94ff"></circle>
   <text x="${lowerRightX + 40}" y="${lowerRightY + 64}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(statusText, 20))}</text>`}`;
   }
 
@@ -764,6 +810,11 @@
     ? buildStatBars(state.githubStats, 256, 302, state.width - 256 - 56, palette.accent, palette.dim)
     : `<circle cx="264" cy="310" r="5" fill="${palette.success}"></circle>
   <text x="280" y="316" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
+
+  ${state.githubStats && state.githubStats.topLangs && state.height >= 560
+    ? `<rect x="256" y="380" width="${state.width - 256 - 56}" height="1" fill="rgba(255,255,255,0.05)"></rect>
+  ${buildLangBars(state.githubStats.topLangs, 256, 388, state.width - 256 - 56, palette.accent, palette.dim)}`
+    : ""}
 
   <rect x="28" y="${state.height - 76}" width="${state.width - 56}" height="1" fill="rgba(255,255,255,0.08)"></rect>
   <circle cx="56" cy="${state.height - 54}" r="5" fill="${palette.success}"></circle>
