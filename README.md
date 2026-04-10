@@ -16,7 +16,7 @@
 
 <p align="center">
   <a href="https://github.com/doyoon530/terminal-identity">
-    <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/ember&avatar=GG&pattern=grid&width=980&height=600&langStyle=icons&iconSize=lg&excludeLangs=Jupyter%20Notebook&v=4"
+    <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/ember&avatar=GG&pattern=grid&width=980&height=600&langStyle=icons&iconSize=lg&excludeLangs=Jupyter%20Notebook&v=5"
     width="100%" alt="Terminal Identity demo card" />
   </a>
 </p>

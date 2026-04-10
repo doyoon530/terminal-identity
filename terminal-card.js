@@ -679,18 +679,18 @@
     const showProfile = !!state.profileUri && !state.hideProfile;
     const PROFILE_R  = 32;
     const PROFILE_CX = leftX + 16 + PROFILE_R;
-    const PROFILE_CY = contentY + 68;
+    const PROFILE_CY = contentY + 46;
 
     // Dynamic Y positions for left panel content
-    const ROLE_Y   = showProfile ? contentY + 120 : contentY + 58;
-    const TAG_Y    = showProfile ? contentY + 148 : contentY + 88;
-    const CMD_Y    = showProfile ? contentY + 172 : contentY + 114;
-    const STAT_CY  = showProfile ? contentY + 198 : contentY + 142;
-    const STAT_TY  = showProfile ? contentY + 204 : contentY + 148;
+    const ROLE_Y   = showProfile ? contentY + 100 : contentY + 36;
+    const TAG_Y    = showProfile ? contentY + 128 : contentY + 66;
+    const CMD_Y    = showProfile ? contentY + 152 : contentY + 92;
+    const STAT_CY  = showProfile ? contentY + 178 : contentY + 118;
+    const STAT_TY  = showProfile ? contentY + 184 : contentY + 124;
 
-    const showLPTag  = leftH >= (showProfile ? 155 : 100);
-    const showLPCmd  = !state.hideCommand && leftH >= (showProfile ? 179 : 126);
-    const showLPStat = leftH >= (showProfile ? 205 : 154);
+    const showLPTag  = leftH >= (showProfile ? 135 : 78);
+    const showLPCmd  = !state.hideCommand && leftH >= (showProfile ? 159 : 104);
+    const showLPStat = leftH >= (showProfile ? 185 : 130);
 
     // Right panel - "about" section always visible
     const RP_DIV_Y  = rightY + 116;
@@ -721,8 +721,6 @@
   <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerW - 1}" height="${outerH - 1}" rx="13.5" stroke="rgba(255,255,255,0.05)"></rect>
 
   <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
-
-  <text x="${leftX + 16}" y="${contentY + 20}" font-family="IBM Plex Mono, monospace" font-size="14" fill="#f6f2ef">About ${escapeXml(state.name)}</text>
 
   ${showProfile ? `<defs>
     <clipPath id="profile-clip-${escapeXml(state.username || "anon")}">
@@ -949,6 +947,7 @@
   <circle cx="68" cy="60" r="7" fill="#ee8b62"></circle>
   <circle cx="92" cy="60" r="7" fill="#ffc75a"></circle>
   <circle cx="116" cy="60" r="7" fill="#6ecf59"></circle>
+  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="15" fill="#c4b9b0">About ${escapeXml(state.name)}</text>
   ${buildAmberDashboard(state, palette, provider, effectiveTopLangs)}
 </svg>`.trim();
     }
