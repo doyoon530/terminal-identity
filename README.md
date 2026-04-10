@@ -1,6 +1,8 @@
 # Terminal Identity
 
-Terminal Identity is a tiny Vercel-ready SVG generator that turns a few query params into a beautiful terminal-style profile card for your GitHub README.
+Terminal Identity generates beautiful terminal-style SVG profile cards from simple URL params, so you can drop a distinctive hero card into your GitHub README in seconds.
+
+Live demo: [terminal-identity-opal.vercel.app](https://terminal-identity-opal.vercel.app)
 
 ## Why this has star potential
 
@@ -31,11 +33,11 @@ Terminal Identity is a tiny Vercel-ready SVG generator that turns a few query pa
 ## Preset examples
 
 ```html
-<img src="https://your-domain.vercel.app/api?name=mina.sh&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&status=building%20products%2C%20docs%2C%20and%20weird%20little%20experiments&command=pnpm%20create%20tiny-hit&theme=graphite&avatar=MS&pattern=pulse" width="100%" alt="Indie hacker terminal identity card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&status=building%20products%2C%20docs%2C%20and%20weird%20little%20experiments&command=pnpm%20create%20tiny-hit&theme=graphite&avatar=MS&pattern=pulse" width="100%" alt="Indie hacker terminal identity card" />
 ```
 
 ```html
-<img src="https://your-domain.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=sakura&avatar=JW&pattern=rings" width="100%" alt="Design engineer terminal identity card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=sakura&avatar=JW&pattern=rings" width="100%" alt="Design engineer terminal identity card" />
 ```
 
 ## API example
@@ -47,7 +49,7 @@ Terminal Identity is a tiny Vercel-ready SVG generator that turns a few query pa
 Use it in a README like this:
 
 ```html
-<img src="https://your-domain.vercel.app/api?name=ggam&role=frontend%20engineer&theme=ember" width="100%" alt="Terminal identity card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&theme=ember" width="100%" alt="Terminal identity card" />
 ```
 
 ## Run locally
