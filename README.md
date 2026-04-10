@@ -91,40 +91,34 @@ Example:
 
 ### Minimal hero
 
-```md
-# Hi there
+<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&theme=claude/ember&avatar=GG&pattern=grid" width="100%" alt="Minimal hero terminal identity card" />
 
+```html
 <img src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&theme=claude/ember&avatar=GG&pattern=grid" width="100%" alt="Terminal identity card" />
 ```
 
 ### Live GitHub status
 
-```md
-# Hi there
+<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&command=npx%20terminal-identity&theme=gpt/graphite&avatar=GG&pattern=grid" width="100%" alt="Terminal identity card with live GitHub stats" />
 
+```html
 <img src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&command=npx%20terminal-identity&theme=gpt/graphite&avatar=GG&pattern=grid" width="100%" alt="Terminal identity card with live GitHub stats" />
 ```
 
 ### Profile intro
 
-```md
-# Jiwon Kim
-
 <img src="https://terminal-identity-opal.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=claude/sakura&avatar=JW&pattern=rings&width=980&height=520" width="100%" alt="Jiwon terminal identity card" />
 
-I build expressive, careful interfaces and design systems.
+```html
+<img src="https://terminal-identity-opal.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=claude/sakura&avatar=JW&pattern=rings&width=980&height=520" width="100%" alt="Jiwon terminal identity card" />
 ```
 
 ### Builder profile
 
-```md
-# Mina
-
 <img src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&status=building%20products%2C%20docs%2C%20and%20weird%20little%20experiments&command=pnpm%20create%20tiny-hit&theme=gpt/graphite&avatar=MS&pattern=pulse&width=980&height=520" width="100%" alt="Mina terminal identity card" />
 
-- Building small products
-- Writing docs
-- Sharing experiments
+```html
+<img src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&status=building%20products%2C%20docs%2C%20and%20weird%20little%20experiments&command=pnpm%20create%20tiny-hit&theme=gpt/graphite&avatar=MS&pattern=pulse&width=980&height=520" width="100%" alt="Mina terminal identity card" />
 ```
 
 ## Theme Gallery
