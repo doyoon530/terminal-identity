@@ -779,14 +779,14 @@
     const leftX = 52;
     const leftY = 128;
     const leftW = Math.min(260, Math.round(outerW * 0.27));
-    const leftH = outerH - 68;
+    const leftH = outerH - 86;  // footerY - leftY: leftY=outerY+32, footerY=outerY+outerH-54 → outerH-86
 
     const mainX = leftX + leftW + 18;
     const mainY = 128;
     const mainW = state.width - mainX - 52;
 
     // Proportional main + response heights
-    const availH = outerH - 68;
+    const availH = outerH - 86;
     const mainH = Math.round(availH * 0.56);
     const responseY = mainY + mainH + 14;
     const responseH = Math.max(availH - mainH - 14, 60);
@@ -1050,7 +1050,7 @@
   <rect x="28" y="${FOOT_SEP}" width="${state.width - 56}" height="1" fill="rgba(255,255,255,0.08)"></rect>
   <circle cx="56" cy="${state.height - 54}" r="5" fill="${palette.success}"></circle>
   <text x="72" y="${FOOT_TY}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">${escapeXml(state.githubStats ? getStatusText(state) : state.status)}</text>
-  ${state.hideCommand ? "" : `<text x="256" y="${FOOT_TY}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>`}
+  ${state.hideCommand ? "" : `<text x="${state.width - PAD - 28}" y="${FOOT_TY}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>`}
 </svg>`.trim();
   }
 
