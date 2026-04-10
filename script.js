@@ -1,6 +1,7 @@
 const {
   defaults,
   presets,
+  LANG_ICON_MAP,
   normalizeState,
   serializeState,
   buildSvg,
@@ -49,6 +50,7 @@ function getState() {
     height: document.getElementById("height").value,
     accent: document.getElementById("accent").value.trim(),
     barStyle: document.getElementById("barStyle").value,
+    langStyle: document.getElementById("langStyle").value,
     showLangs: document.getElementById("showLangs").value,
     langCount: document.getElementById("langCount").value,
     hideAvatar: document.getElementById("hideAvatar").checked,
@@ -73,6 +75,7 @@ function fillForm(state) {
   document.getElementById("height").value = state.height;
   document.getElementById("accent").value = state.accent || "";
   document.getElementById("barStyle").value = state.barStyle || "bar";
+  document.getElementById("langStyle").value = state.langStyle || "bar";
   document.getElementById("showLangs").value = state.showLangs || "auto";
   document.getElementById("langCount").value = state.langCount || "";
   document.getElementById("hideAvatar").checked = state.hideAvatar === "true" || state.hideAvatar === true;
@@ -103,6 +106,7 @@ function loadStateFromUrl() {
     height: params.get("height"),
     accent: params.get("accent"),
     barStyle: params.get("barStyle"),
+    langStyle: params.get("langStyle"),
     showLangs: params.get("showLangs"),
     langCount: params.get("langCount"),
     hideAvatar: params.get("hideAvatar"),
@@ -158,10 +162,18 @@ async function render() {
   }
 
   if (githubStats) {
-    nextState = {
-      ...state,
-      githubStats,
-    };
+    nextState = { ...state, githubStats };
+  }
+
+  // Playground: use skillicons URL directly (inline SVG can load external resources)
+  if (state.langStyle === "icons" && nextState.githubStats?.topLangs) {
+    const effectiveLangs = nextState.githubStats.topLangs
+      .filter((l) => !state.excludeLangs.includes(l.name.toLowerCase()))
+      .slice(0, state.langCount);
+    const iconKeys = effectiveLangs.map((l) => LANG_ICON_MAP[l.name]).filter(Boolean);
+    if (iconKeys.length > 0) {
+      nextState = { ...nextState, langIconsUri: `https://skillicons.dev/icons?i=${iconKeys.join(",")}` };
+    }
   }
 
   const svg = buildSvg(nextState);

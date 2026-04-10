@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/ember&avatar=GG&pattern=grid&width=980&height=600&v=2"
+  <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/ember&avatar=GG&pattern=grid&width=980&height=600&langStyle=icons&excludeLangs=Jupyter%20Notebook&v=3"
   width="100%" alt="Terminal Identity demo card" />
 </p>
 
@@ -49,7 +49,7 @@ Add `username=your-handle` to show live GitHub stats and top languages:
 
 | Param | Default | Description |
 | --- | --- | --- |
-| `name` | `ggam` | Display name |
+| `name` | `doyoon530` | Display name |
 | `username` | — | GitHub handle — enables live stats and top languages |
 | `role` | `frontend engineer` | Subtitle / role line |
 | `tagline` | — | Main sentence |
@@ -63,12 +63,16 @@ Add `username=your-handle` to show live GitHub stats and top languages:
 | `accent` | — | Override accent color with a hex value, e.g. `%23ff7a59` |
 | `showLangs` | `auto` | Top languages display: `auto`, `on`, or `off` |
 | `langCount` | `4` | Number of top languages to show (1–6) |
+| `langStyle` | `bar` | Language display style: `bar` or `icons` |
+| `barStyle` | `bar` | Graph style for stats and lang bars: `bar`, `dots`, or `blocks` |
 | `hideAvatar` | `false` | Set to `true` to hide the avatar block |
 | `hideCommand` | `false` | Set to `true` to hide the command line |
 | `stats` | all | Comma-separated stats to show: `repos,stars,forks,followers` |
 | `excludeLangs` | — | Comma-separated language names to exclude, e.g. `HTML,CSS` |
 
 > **Note:** `showLangs=auto` shows top languages only when a `username` is provided and GitHub returns language data. Use `on` to always attempt to show them, `off` to hide entirely.
+
+> **Icons note:** `langStyle=icons` fetches icons from [skillicons.dev](https://skillicons.dev) at render time. Supported languages: JavaScript, TypeScript, Python, Rust, Go, Java, Kotlin, Swift, Ruby, PHP, C, C++, C#, HTML, CSS, SCSS, Dart, Lua, Scala, Elixir, Haskell, Shell, R, Perl, Zig, OCaml, Dockerfile, Vue, Svelte, and more.
 
 ---
 
@@ -248,6 +252,12 @@ index.html          Live playground
 script.js           Playground logic
 styles.css          Playground styles
 ```
+
+---
+
+## Acknowledgements
+
+Language icons powered by [skillicons.dev](https://skillicons.dev) — MIT License © [tandpfun](https://github.com/tandpfun/skill-icons)
 
 ---
 

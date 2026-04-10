@@ -166,8 +166,51 @@
 
   const STAT_KEYS = ["repos", "stars", "forks", "followers"];
 
+  // Maps GitHub language names → skillicons.dev keys
+  // MIT License © tandpfun — https://github.com/tandpfun/skill-icons
+  const LANG_ICON_MAP = {
+    "JavaScript": "js",
+    "TypeScript": "ts",
+    "Python": "py",
+    "Rust": "rust",
+    "Go": "go",
+    "Java": "java",
+    "Kotlin": "kotlin",
+    "Swift": "swift",
+    "Ruby": "ruby",
+    "PHP": "php",
+    "C": "c",
+    "C++": "cpp",
+    "C#": "cs",
+    "HTML": "html",
+    "CSS": "css",
+    "SCSS": "sass",
+    "Sass": "sass",
+    "Dart": "dart",
+    "Lua": "lua",
+    "Scala": "scala",
+    "Elixir": "elixir",
+    "Haskell": "haskell",
+    "Shell": "bash",
+    "Bash": "bash",
+    "R": "r",
+    "Perl": "perl",
+    "Zig": "zig",
+    "OCaml": "ocaml",
+    "Dockerfile": "docker",
+    "Vue": "vue",
+    "Svelte": "svelte",
+    "Clojure": "clojure",
+    "Erlang": "erlang",
+    "Julia": "julia",
+    "Crystal": "crystal",
+    "HCL": "terraform",
+    "Solidity": "solidity",
+    "Nix": "nix",
+  };
+
   const defaults = {
-    name: "ggam",
+    name: "doyoon530",
     username: "",
     role: "frontend engineer",
     tagline: "Building tiny tools with taste.",
@@ -497,6 +540,13 @@
       .join("\n  ");
   }
 
+  function buildLangIcons(uri, x, y, trackWidth, count) {
+    // Each skillicons icon is 45×45 with 15px gap; display at 26px height
+    const iconH = 26;
+    const iconW = Math.min(count * 32, trackWidth);
+    return `<image x="${x}" y="${y}" width="${iconW}" height="${iconH}" href="${escapeXml(uri)}" preserveAspectRatio="xMinYMid meet"></image>`;
+  }
+
   function normalizeState(input) {
     const state = input || {};
     const rawTheme = String(state.theme || defaults.theme);
@@ -532,6 +582,8 @@
       stats: parseStatsList(state.stats),
       excludeLangs: parseExcludeLangs(state.excludeLangs),
       barStyle: ["bar", "dots", "blocks"].includes(state.barStyle) ? state.barStyle : "bar",
+      langStyle: ["bar", "icons"].includes(state.langStyle) ? state.langStyle : "bar",
+      langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
     };
   }
 
@@ -543,6 +595,8 @@
       if (key === "showLangs" && value === "auto") return;
       if (key === "langCount" && value === 4) return;
       if (key === "barStyle" && value === "bar") return;
+      if (key === "langStyle" && value === "bar") return;
+      if (key === "langIconsUri") return;
       if (key === "stats") {
         if (value.length < 4) params.set("stats", value.join(","));
         return;
@@ -678,7 +732,7 @@
   <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
 
   <text x="${leftX + 16}" y="${contentY + 20}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">$ ${escapeXml(cliTheme)}</text>
-  <text x="${leftX + 16}" y="${contentY + 60}" font-family="IBM Plex Mono, monospace" font-size="22" fill="#f6f2ef">Welcome back, ${escapeXml(state.name)}!</text>
+  <text x="${leftX + 16}" y="${contentY + 60}" font-family="IBM Plex Mono, monospace" font-size="22" fill="#f6f2ef">About ${escapeXml(state.name)}</text>
   <text x="${leftX + 16}" y="${contentY + 96}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 30))}</text>
   ${showLPTag ? `<text x="${leftX + 16}" y="${contentY + 128}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
   ${showLPCmd ? `<text x="${leftX + 16}" y="${contentY + 162}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">$ ${escapeXml(truncateText(state.command, 30))}</text>` : ""}
@@ -695,10 +749,12 @@
   ${showStats
     ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">github stats</text>
   ${buildStatBars(state.githubStats, rightX + 18, STATS_Y, rightW - 36, accent, dim, undefined, state.stats, state.barStyle)}
-  ${showLangs
+  ${showLangs || (state.langStyle === "icons" && state.langIconsUri && langsToShow && rpLangsAvail >= 28)
     ? `<rect x="${rightX}" y="${rpLangsTop - 2}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
   <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">top langs</text>
-  ${buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle)}`
+  ${state.langStyle === "icons" && state.langIconsUri && langsToShow
+    ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, langsToShow.length)
+    : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle)}`
     : ""}`
     : state.githubStats
       ? `<circle cx="${rightX + 26}" cy="${rpDataTop + 16}" r="5" fill="#7adf8d"></circle>
@@ -783,7 +839,9 @@
   <text x="${mainX + 22}" y="${responseY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">output</text>
   ${state.githubStats
     ? (topLangs
-        ? buildLangBars(topLangs, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.barStyle)
+        ? (state.langStyle === "icons" && state.langIconsUri
+            ? buildLangIcons(state.langIconsUri, mainX + 22, responseY + 34, mainW - 44, topLangs.length)
+            : buildLangBars(topLangs, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.barStyle))
         : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.stats, state.barStyle))
     : `<text x="${mainX + 22}" y="${responseY + 52}" font-family="Sora, Arial, sans-serif" font-size="15" font-weight="600" fill="${ink}">${escapeXml(truncateText(state.tagline, 38))}</text>
   <circle cx="${mainX + 22}" cy="${responseY + 76}" r="5" fill="${accent}"></circle>
@@ -860,7 +918,9 @@
   <rect x="${lrX}" y="${lowerY}" width="${lrW}" height="${lowerH}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
   <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
   ${topLangs
-    ? buildLangBars(topLangs, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.barStyle)
+    ? (state.langStyle === "icons" && state.langIconsUri
+        ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, topLangs.length)
+        : buildLangBars(topLangs, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.barStyle))
     : state.githubStats
       ? buildStatBars(state.githubStats, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats, state.barStyle)
       : `<circle cx="${lrX + 26}" cy="${lowerY + 58}" r="5" fill="#7f94ff"></circle>
@@ -975,9 +1035,11 @@
     : `<circle cx="${contentX + 8}" cy="${DATA_TOP + 8}" r="5" fill="${palette.success}"></circle>
   <text x="${contentX + 24}" y="${DATA_TOP + 14}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
 
-  ${showStats && showLangs
+  ${showStats && (showLangs || (state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs))
     ? `<rect x="${contentX}" y="${LANGS_TOP - 2}" width="${contentW}" height="1" fill="rgba(255,255,255,0.05)"></rect>
-  ${buildLangBars(langsToShow, contentX, LANGS_TOP, contentW, palette.accent, palette.dim, undefined, state.barStyle)}`
+  ${state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs
+    ? buildLangIcons(state.langIconsUri, contentX, LANGS_TOP, contentW, effectiveTopLangs.length)
+    : buildLangBars(langsToShow, contentX, LANGS_TOP, contentW, palette.accent, palette.dim, undefined, state.barStyle)}`
     : ""}
 
   <rect x="28" y="${FOOT_SEP}" width="${state.width - 56}" height="1" fill="rgba(255,255,255,0.08)"></rect>
@@ -997,6 +1059,7 @@
     presets,
     providerMap,
     themeMap,
+    LANG_ICON_MAP,
     normalizeState,
     serializeState,
     buildSvg,

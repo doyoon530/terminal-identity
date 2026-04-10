@@ -1,4 +1,4 @@
-const { buildSvg, normalizeState } = require("../terminal-card");
+const { buildSvg, normalizeState, LANG_ICON_MAP } = require("../terminal-card");
 const { fetchGithubStats } = require("../github-data");
 
 function buildFallbackSvg(width, height) {
@@ -6,6 +6,19 @@ function buildFallbackSvg(width, height) {
   <rect width="${width}" height="${height}" rx="26" fill="#161218"/>
   <text x="${width / 2}" y="${height / 2}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" fill="#888">terminal identity — reload to retry</text>
 </svg>`.trim();
+}
+
+async function fetchLangIconsDataUri(iconKeys) {
+  try {
+    const url = `https://skillicons.dev/icons?i=${iconKeys.join(",")}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const svg = await res.text();
+    const b64 = Buffer.from(svg).toString("base64");
+    return `data:image/svg+xml;base64,${b64}`;
+  } catch (_) {
+    return null;
+  }
 }
 
 module.exports = async function handler(req, res) {
@@ -25,6 +38,18 @@ module.exports = async function handler(req, res) {
       const githubStats = await fetchGithubStats(state.username);
       if (githubStats) {
         nextState = { ...state, githubStats };
+      }
+    }
+
+    // Fetch lang icons if requested
+    if (state.langStyle === "icons" && nextState.githubStats?.topLangs) {
+      const effectiveLangs = nextState.githubStats.topLangs
+        .filter((l) => !state.excludeLangs.includes(l.name.toLowerCase()))
+        .slice(0, state.langCount);
+      const iconKeys = effectiveLangs.map((l) => LANG_ICON_MAP[l.name]).filter(Boolean);
+      if (iconKeys.length > 0) {
+        const uri = await fetchLangIconsDataUri(iconKeys);
+        if (uri) nextState = { ...nextState, langIconsUri: uri };
       }
     }
 
