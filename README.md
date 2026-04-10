@@ -31,7 +31,7 @@
 </p>
 
 <p align="center">
-  <img src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=claude/ember&avatar=GG&pattern=grid&width=980&height=520" width="100%" alt="Terminal Identity demo card" />
+  <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=claude/ember&avatar=GG&pattern=grid&width=980&height=520" width="100%" alt="Terminal Identity demo card" />
 </p>
 
 Terminal Identity turns a few query params into a polished terminal-style hero card you can paste straight into a GitHub README. It supports `classic`, `claude`, `gpt`, and `gemini` shells, theme combinations like `claude/sakura`, and optional live GitHub stats with `username=...`.
