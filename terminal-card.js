@@ -687,10 +687,8 @@
     // Dynamic Y positions for left panel content
     const ROLE_Y = showProfile ? ABOUT_LBL_Y + 24 : contentY + 44;
     const TAG_Y  = showProfile ? ROLE_Y + 32      : ROLE_Y + 30;
-    const CMD_Y  = showProfile ? TAG_Y  + 26      : TAG_Y  + 26;
 
     const showLPTag = leftH >= (ROLE_Y - contentY + 38);
-    const showLPCmd = !state.hideCommand && leftH >= (CMD_Y - contentY + 16);
 
     const rpDataTop = rightY + 16;
     const rpDataBot = Math.max(footerY - 12, rpDataTop);
@@ -736,7 +734,6 @@
   <circle cx="${leftX + 24}" cy="${ROLE_Y - 6}" r="3.5" fill="${accent}"/>
   <text x="${leftX + 34}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 26))}</text>
   ${showLPTag ? `<text x="${leftX + 20}" y="${TAG_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="#d4cdc9">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
-  ${showLPCmd ? `<text x="${leftX + 20}" y="${CMD_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dim}">$ ${escapeXml(truncateText(state.command, 32))}</text>` : ""}
 
   ${showStats
     ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
