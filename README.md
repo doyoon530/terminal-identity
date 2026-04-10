@@ -15,10 +15,8 @@
 </p>
 
 <p align="center">
-  <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&r
-  ole=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status
-  =available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&
-  theme=claude/ember&avatar=GG&pattern=grid&width=980&height=600" width="100%" alt="Terminal Identity demo card" />
+  <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=claude/ember&avatar=GG&pattern=grid&width=980&height=600"     
+  width="100%" alt="Terminal Identity demo card" /> 
 </p>
 
 Terminal-style SVG cards for GitHub READMEs. One URL, one `<img>` tag. Pick a provider shell (`classic`, `claude`, `gpt`, `gemini`), pair it with a theme, and optionally pass a GitHub username to pull in live public stats.
