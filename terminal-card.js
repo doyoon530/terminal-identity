@@ -744,18 +744,27 @@
   }
 
   function isEmojiContributionTheme(theme) {
-    return theme === "garden";
+    return theme === "moon" || theme === "star";
   }
 
   function getContributionThemeColors(theme, palette) {
     const accent = palette.accentAlt || palette.accent;
 
-    if (theme === "garden") {
+    if (theme === "moon") {
       return {
-        base: "rgba(87,68,47,0.20)",
-        levels: ["rgba(87,68,47,0.20)", "rgba(120,190,96,0.18)", "rgba(120,190,96,0.22)", "rgba(255,172,132,0.16)", "rgba(255,182,193,0.14)"],
-        accent: "#ffb0c7",
-        glow: "rgba(255,176,199,0.18)",
+        base: "rgba(72,83,118,0.18)",
+        levels: ["rgba(72,83,118,0.18)", "rgba(106,118,164,0.20)", "rgba(130,142,196,0.22)", "rgba(166,177,230,0.24)", "rgba(209,218,255,0.26)"],
+        accent: "#d1daff",
+        glow: "rgba(209,218,255,0.16)",
+      };
+    }
+
+    if (theme === "star") {
+      return {
+        base: "rgba(0,0,0,0.38)",
+        levels: ["rgba(0,0,0,0.38)", "rgba(18,22,34,0.56)", "rgba(20,24,40,0.62)", "rgba(24,28,46,0.72)", "rgba(28,34,56,0.82)"],
+        accent: "#ffd86b",
+        glow: "rgba(255,216,107,0.18)",
       };
     }
 
@@ -829,13 +838,25 @@
         const cx = px + cell / 2;
         const cy = py + cell / 2;
 
-        if (theme === "garden") {
-          const emojiMap = ["", "🌱", "🌿", "🌷", "🌸"];
-          const emoji = emojiMap[level] || "";
+        if (theme === "moon") {
+          const emojiMap = ["🌑", "🌒", "🌓", "🌔", "🌕"];
+          const emoji = emojiMap[level] || "🌑";
           const emojiSize = Math.max(10, Math.min(16, cell + 2));
           cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(3, Math.floor(cell * 0.34))}" fill="${colors.levels[level] || colors.base}"></rect>`);
-          if (emoji) {
-            cells.push(`<text x="${cx}" y="${cy + 0.5}" text-anchor="middle" dominant-baseline="middle" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif" font-size="${emojiSize}">${emoji}</text>`);
+          cells.push(`<text x="${cx}" y="${cy + 0.5}" text-anchor="middle" dominant-baseline="middle" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif" font-size="${emojiSize}">${emoji}</text>`);
+          return;
+        }
+
+        if (theme === "star") {
+          const opacityMap = [0, 0.28, 0.5, 0.74, 1];
+          const sizeMap = [0, 0.78, 0.88, 0.98, 1.08];
+          const starOpacity = opacityMap[level] ?? 0;
+          const starScale = sizeMap[level] ?? 1;
+          const starSize = Math.max(10, Math.min(16, (cell + 2) * starScale));
+          cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.26))}" fill="${level === 0 ? "#111111" : (colors.levels[level] || colors.base)}"></rect>`);
+          if (level > 0) {
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(1.8, cell * 0.28)}" fill="${colors.glow}" opacity="${0.12 + level * 0.08}"></circle>`);
+            cells.push(`<text x="${cx}" y="${cy + 0.5}" text-anchor="middle" dominant-baseline="middle" opacity="${starOpacity}" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif" font-size="${starSize}">⭐</text>`);
           }
           return;
         }
@@ -935,7 +956,7 @@
       langStyle: ["bar", "icons"].includes(state.langStyle) ? state.langStyle : "bar",
       iconSize: ["sm", "md", "lg"].includes(state.iconSize) ? state.iconSize : "md",
       motion: ["off", "pulse", "scan", "boot"].includes(state.motion) ? state.motion : "off",
-      contribTheme: ["garden", "petal", "moss", "firefly", "constellation"].includes(state.contribTheme) ? state.contribTheme : defaults.contribTheme,
+      contribTheme: ["moon", "star", "petal", "moss", "firefly", "constellation"].includes(state.contribTheme) ? state.contribTheme : defaults.contribTheme,
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
       hideProfile: parseBool(state.hideProfile),
