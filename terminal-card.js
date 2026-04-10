@@ -718,15 +718,15 @@
     const DIVIDER_Y   = PROFILE_CY + PROFILE_R + 14;
     const ABOUT_LBL_Y = DIVIDER_Y + 14;
 
+    // Dynamic Y positions for left panel content
+    const ROLE_Y    = showProfile ? ABOUT_LBL_Y + 24 : contentY + 44;
+    const BIO_TOP_Y = ROLE_Y + 26;
+
     // Bio text wrapping (bio overrides tagline in left panel)
     const bioSource = state.bio || state.tagline;
     const BIO_LINE_H = 17;
     const bioMaxLines = Math.max(1, Math.floor((leftH - (ROLE_Y - contentY) - 26 - 10) / BIO_LINE_H));
     const bioLines = wrapText(bioSource, 38, bioMaxLines);
-
-    // Dynamic Y positions for left panel content
-    const ROLE_Y    = showProfile ? ABOUT_LBL_Y + 24 : contentY + 44;
-    const BIO_TOP_Y = ROLE_Y + 26;
 
     const showLPBio = bioLines.length > 0 && leftH >= (ROLE_Y - contentY + BIO_LINE_H + 10);
 
