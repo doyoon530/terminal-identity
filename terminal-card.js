@@ -744,7 +744,7 @@
   }
 
   function usesLargeContributionMarks(theme) {
-    return theme === "moon" || theme === "star";
+    return theme === "moon" || theme === "star" || theme === "orbit" || theme === "signal" || theme === "citylight";
   }
 
   function buildStarPoints(cx, cy, outerR, innerR) {
@@ -767,6 +767,18 @@
     if (level === 2) return -radius * 0.1;
     if (level === 3) return radius * 0.24;
     return null;
+  }
+
+  function buildArcPath(cx, cy, radius, startDeg, endDeg) {
+    const startRad = (Math.PI / 180) * startDeg;
+    const endRad = (Math.PI / 180) * endDeg;
+    const x1 = (cx + Math.cos(startRad) * radius).toFixed(2);
+    const y1 = (cy + Math.sin(startRad) * radius).toFixed(2);
+    const x2 = (cx + Math.cos(endRad) * radius).toFixed(2);
+    const y2 = (cy + Math.sin(endRad) * radius).toFixed(2);
+    const largeArc = Math.abs(endDeg - startDeg) > 180 ? 1 : 0;
+    const sweep = endDeg > startDeg ? 1 : 0;
+    return `M ${x1} ${y1} A ${radius.toFixed(2)} ${radius.toFixed(2)} 0 ${largeArc} ${sweep} ${x2} ${y2}`;
   }
 
   function getContributionThemeColors(theme, palette) {
@@ -807,6 +819,42 @@
         starFillLevels: ["transparent", "#91abff", "#d7e2ff", "#ffe18c", "#ffc35d"],
         starCoreLevels: ["transparent", "#f7fbff", "#ffffff", "#fff8d1", "#fff4df"],
         starStrokeLevels: ["transparent", "rgba(235,241,255,0.26)", "rgba(242,246,255,0.38)", "rgba(255,245,199,0.44)", "rgba(255,231,169,0.52)"],
+      };
+    }
+
+    if (theme === "orbit") {
+      return {
+        base: "rgba(18,22,40,0.34)",
+        levels: ["rgba(18,22,40,0.34)", "rgba(26,33,56,0.46)", "rgba(34,43,70,0.56)", "rgba(43,53,84,0.64)", "rgba(52,63,98,0.72)"],
+        accent: "#9cd7ff",
+        glow: "rgba(156,215,255,0.18)",
+        orbitPlanetLevels: ["transparent", "#88a9ff", "#80d7ff", "#d0b6ff", "#ffd87d"],
+        orbitCoreLevels: ["transparent", "#eef3ff", "#f4fbff", "#fff5ff", "#fff7df"],
+        orbitRingLevels: ["transparent", "rgba(136,169,255,0.42)", "rgba(128,215,255,0.46)", "rgba(208,182,255,0.5)", "rgba(255,216,125,0.54)"],
+        orbitSatelliteLevels: ["transparent", "#dce7ff", "#ffffff", "#fff2ff", "#fff4cf"],
+      };
+    }
+
+    if (theme === "signal") {
+      return {
+        base: "rgba(11,20,26,0.34)",
+        levels: ["rgba(11,20,26,0.34)", "rgba(14,28,36,0.46)", "rgba(17,35,46,0.56)", "rgba(19,42,56,0.66)", "rgba(24,52,70,0.76)"],
+        accent: "#7de7ff",
+        glow: "rgba(125,231,255,0.18)",
+        signalDotLevels: ["transparent", "#8ee8ff", "#7dffcf", "#ffd873", "#ff9868"],
+        signalArcLevels: ["transparent", "rgba(142,232,255,0.36)", "rgba(125,255,207,0.42)", "rgba(255,216,115,0.48)", "rgba(255,152,104,0.58)"],
+        signalGlowLevels: ["transparent", "rgba(142,232,255,0.18)", "rgba(125,255,207,0.2)", "rgba(255,216,115,0.24)", "rgba(255,152,104,0.3)"],
+      };
+    }
+
+    if (theme === "citylight") {
+      return {
+        base: "rgba(12,13,18,0.46)",
+        levels: ["rgba(12,13,18,0.46)", "rgba(18,20,28,0.58)", "rgba(22,25,36,0.66)", "rgba(27,31,44,0.74)", "rgba(31,36,52,0.82)"],
+        accent: "#ffd36b",
+        glow: "rgba(255,211,107,0.16)",
+        windowLevels: ["transparent", "#7de3ff", "#ffe08f", "#ffd36b", "#ffb36b"],
+        roofLevels: ["transparent", "rgba(125,227,255,0.3)", "rgba(255,224,143,0.34)", "rgba(255,211,107,0.4)", "rgba(255,179,107,0.46)"],
       };
     }
 
@@ -924,6 +972,83 @@
           return;
         }
 
+        if (theme === "orbit") {
+          const orbitR = Math.max(2.4, cell * 0.31);
+          const innerOrbitR = orbitR * 0.62;
+          const planetR = Math.max(1.4, cell * (0.11 + level * 0.03));
+          const planetFill = colors.orbitPlanetLevels?.[level] || colors.accent;
+          const planetCore = colors.orbitCoreLevels?.[level] || "#ffffff";
+          const ringColor = colors.orbitRingLevels?.[level] || colors.glow;
+          const satelliteFill = colors.orbitSatelliteLevels?.[level] || "#ffffff";
+          cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.28))}" fill="${colors.levels[level] || colors.base}"></rect>`);
+          if (level > 0) {
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(3.2, orbitR * 1.24)}" fill="${colors.glow}" opacity="${0.1 + level * 0.06}"></circle>`);
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${orbitR}" fill="none" stroke="${ringColor}" stroke-width="${Math.max(0.6, cell * 0.06)}" opacity="${0.45 + level * 0.1}"></circle>`);
+            if (level >= 3) {
+              cells.push(`<circle cx="${cx}" cy="${cy}" r="${innerOrbitR}" fill="none" stroke="${ringColor}" stroke-width="${Math.max(0.45, cell * 0.045)}" opacity="${0.4 + level * 0.08}"></circle>`);
+            }
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${planetR}" fill="${planetFill}"></circle>`);
+            cells.push(`<circle cx="${cx - planetR * 0.18}" cy="${cy - planetR * 0.18}" r="${Math.max(0.7, planetR * 0.45)}" fill="${planetCore}" opacity="${0.55 + level * 0.08}"></circle>`);
+            if (level >= 2) {
+              cells.push(`<circle cx="${cx + orbitR * 0.76}" cy="${cy - orbitR * 0.1}" r="${Math.max(0.8, cell * 0.1)}" fill="${satelliteFill}" opacity="${0.72 + level * 0.05}"></circle>`);
+            }
+            if (level >= 4) {
+              cells.push(`<circle cx="${cx - orbitR * 0.54}" cy="${cy + orbitR * 0.48}" r="${Math.max(0.7, cell * 0.09)}" fill="${satelliteFill}" opacity="0.9"></circle>`);
+            }
+          }
+          return;
+        }
+
+        if (theme === "signal") {
+          const signalCenterY = cy + cell * 0.12;
+          const dotFill = colors.signalDotLevels?.[level] || colors.accent;
+          const arcStroke = colors.signalArcLevels?.[level] || colors.glow;
+          const glowFill = colors.signalGlowLevels?.[level] || colors.glow;
+          cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.26))}" fill="${colors.levels[level] || colors.base}"></rect>`);
+          if (level > 0) {
+            cells.push(`<circle cx="${cx}" cy="${signalCenterY}" r="${Math.max(1.2, cell * 0.12)}" fill="${dotFill}"></circle>`);
+            cells.push(`<circle cx="${cx}" cy="${signalCenterY}" r="${Math.max(2.4, cell * 0.26)}" fill="${glowFill}" opacity="${0.12 + level * 0.05}"></circle>`);
+            const arcRadii = [cell * 0.2, cell * 0.31, cell * 0.42];
+            arcRadii.slice(0, Math.min(level, 3)).forEach((radius, index) => {
+              cells.push(`<path d="${buildArcPath(cx, signalCenterY, radius, 208, 332)}" fill="none" stroke="${arcStroke}" stroke-width="${Math.max(0.55, cell * (0.045 + index * 0.01))}" stroke-linecap="round" opacity="${0.55 + index * 0.12}"></path>`);
+            });
+            if (level >= 4) {
+              cells.push(`<path d="M ${cx.toFixed(2)} ${(signalCenterY - cell * 0.46).toFixed(2)} L ${cx.toFixed(2)} ${(signalCenterY - cell * 0.18).toFixed(2)}" stroke="${dotFill}" stroke-width="${Math.max(0.6, cell * 0.06)}" stroke-linecap="round" opacity="0.9"></path>`);
+            }
+          }
+          return;
+        }
+
+        if (theme === "citylight") {
+          const windowFill = colors.windowLevels?.[level] || colors.accent;
+          const roofFill = colors.roofLevels?.[level] || colors.glow;
+          const insetX = px + Math.max(1.2, cell * 0.18);
+          const insetY = py + Math.max(1.2, cell * 0.16);
+          const buildingW = Math.max(4, cell - (insetX - px) * 2);
+          const buildingH = Math.max(5, cell - (insetY - py) * 1.5);
+          const windowW = Math.max(1.1, buildingW * 0.22);
+          const windowH = Math.max(1.4, buildingH * 0.18);
+          const litCount = [0, 1, 2, 3, 4][level] ?? 0;
+          const windows = [
+            { x: insetX + buildingW * 0.14, y: insetY + buildingH * 0.18 },
+            { x: insetX + buildingW * 0.6, y: insetY + buildingH * 0.18 },
+            { x: insetX + buildingW * 0.14, y: insetY + buildingH * 0.56 },
+            { x: insetX + buildingW * 0.6, y: insetY + buildingH * 0.56 },
+          ];
+          cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.2))}" fill="${colors.levels[level] || colors.base}"></rect>`);
+          cells.push(`<rect x="${insetX}" y="${insetY}" width="${buildingW}" height="${buildingH}" rx="${Math.max(1.2, cell * 0.12)}" fill="${level === 0 ? "#13151d" : "#191d28"}"></rect>`);
+          if (level > 0) {
+            cells.push(`<rect x="${insetX}" y="${insetY}" width="${buildingW}" height="${Math.max(1.2, cell * 0.12)}" rx="${Math.max(0.8, cell * 0.08)}" fill="${roofFill}" opacity="${0.55 + level * 0.08}"></rect>`);
+            windows.slice(0, litCount).forEach((win, index) => {
+              cells.push(`<rect x="${win.x.toFixed(2)}" y="${win.y.toFixed(2)}" width="${windowW.toFixed(2)}" height="${windowH.toFixed(2)}" rx="${Math.max(0.5, cell * 0.04)}" fill="${windowFill}" opacity="${0.5 + index * 0.08 + level * 0.06}"></rect>`);
+            });
+            if (level >= 4) {
+              cells.push(`<rect x="${(insetX + buildingW * 0.82).toFixed(2)}" y="${(insetY - cell * 0.08).toFixed(2)}" width="${Math.max(0.7, cell * 0.06)}" height="${Math.max(1.8, cell * 0.22)}" rx="${Math.max(0.4, cell * 0.03)}" fill="${windowFill}" opacity="0.92"></rect>`);
+            }
+          }
+          return;
+        }
+
         if (theme === "petal") {
           cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.36))}" fill="${colors.base}"></rect>`);
           if (level > 0) {
@@ -1019,7 +1144,7 @@
       langStyle: ["bar", "icons"].includes(state.langStyle) ? state.langStyle : "bar",
       iconSize: ["sm", "md", "lg"].includes(state.iconSize) ? state.iconSize : "md",
       motion: ["off", "pulse", "scan", "boot"].includes(state.motion) ? state.motion : "off",
-      contribTheme: ["moon", "star", "petal", "moss", "firefly", "constellation"].includes(state.contribTheme) ? state.contribTheme : defaults.contribTheme,
+      contribTheme: ["moon", "star", "orbit", "signal", "citylight", "petal", "moss", "firefly", "constellation"].includes(state.contribTheme) ? state.contribTheme : defaults.contribTheme,
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
       hideProfile: parseBool(state.hideProfile),

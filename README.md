@@ -179,7 +179,7 @@ Want a contribution block too:
 | `accent` | — | Override accent color with a hex value, e.g. `%23ff7a59` |
 | `motion` | `off` | Animated SVG overlay: `off`, `pulse`, `scan`, or `boot` |
 | `showContribs` | `off` | Contribution grid display: `off`, `on`, or `auto` |
-| `contribTheme` | `moss` | Contribution concept theme: `moon`, `star`, `moss`, `petal`, `firefly`, or `constellation` |
+| `contribTheme` | `moss` | Contribution concept theme: `moon`, `star`, `orbit`, `signal`, `citylight`, `moss`, `petal`, `firefly`, or `constellation` |
 | `showLangs` | `auto` | Top languages display: `auto`, `on`, or `off` |
 | `langCount` | `4` | Number of top languages to show (1–6) |
 | `langStyle` | `bar` | Language display style: `bar` or `icons` |
@@ -343,7 +343,7 @@ Returns an `image/svg+xml` response. Drop it directly in any Markdown `<img>` ta
 
 Animated cards use the same endpoint. Add `motion=pulse`, `motion=scan`, or `motion=boot` to return an animated SVG instead of a static one.
 
-Contribution cards use the same endpoint too. Add `showContribs=on` and a `contribTheme` like `moon`, `star`, `moss`, or `firefly` to render a compact GitHub activity block inside the card. `moon` now draws custom SVG moon phases with brighter fills as activity rises, and `star` draws a custom SVG star with brighter fills and warmer glow as activity rises.
+Contribution cards use the same endpoint too. Add `showContribs=on` and a `contribTheme` like `moon`, `star`, `orbit`, `signal`, `citylight`, `moss`, or `firefly` to render a compact GitHub activity block inside the card. `moon` draws custom SVG moon phases, `star` uses a custom glowing star, `orbit` draws a tiny planet system, `signal` renders radar-like arcs, and `citylight` turns activity into lit windows.
 
 > **Accent color:** URL-encode `#` as `%23` when passing the `accent` param. Example: `accent=%23ff7a59` for `#ff7a59`.
 
