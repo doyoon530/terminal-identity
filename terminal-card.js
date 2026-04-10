@@ -433,7 +433,11 @@
 
   function wrapText(text, maxPx, maxLines) {
     if (!text) return [];
-    const words = String(text).split(/\s+/).filter(Boolean);
+    // Keep **...** spans (including spaces inside) as one unsplittable unit
+    const words = [];
+    const tokRe = /\*\*[\s\S]*?\*\*|\S+/g;
+    let tok;
+    while ((tok = tokRe.exec(String(text))) !== null) words.push(tok[0]);
     const lines = [];
     let current = "";
     let currentPx = 0;
@@ -447,11 +451,19 @@
 
     for (const word of words) {
       if (lines.length >= maxLines) break;
-      const chars = [...word];
+      const displayWord = word.replace(/\*\*/g, "");
+      const chars = [...displayWord];
       const wordPx = chars.reduce((w, c) => w + charPxWidth(c), 0);
 
       // Word itself too wide for one line: hard-break character by character
       if (wordPx > maxPx) {
+        if (word.includes("**")) {
+          // Don't hard-break bold-marked words — push as-is
+          flush();
+          if (lines.length < maxLines) lines.push(word);
+          current = ""; currentPx = 0;
+          continue;
+        }
         if (current) flush();
         let chunk = "";
         let chunkPx = 0;
@@ -484,6 +496,21 @@
     }
     flush();
     return lines;
+  }
+
+  function renderBoldLine(text, baseFill) {
+    if (!/\*\*/.test(text)) return escapeXml(text);
+    const re = /\*\*(.+?)\*\*/g;
+    let out = "";
+    let last = 0;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) out += `<tspan>${escapeXml(text.slice(last, m.index))}</tspan>`;
+      out += `<tspan font-weight="700" fill="#f2efec">${escapeXml(m[1])}</tspan>`;
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) out += `<tspan>${escapeXml(text.slice(last))}</tspan>`;
+    return out;
   }
 
   function truncateText(value, limit) {
@@ -822,7 +849,7 @@
   ${showLPBio ? bioLines.map((line, i) => {
     const lineY = BIO_TOP_Y + i * BIO_LINE_H;
     if (lineY > contentY + leftH - 10) return "";
-    return `<text x="${leftX + 20}" y="${lineY}" font-family="IBM Plex Mono, Apple SD Gothic Neo, Malgun Gothic, monospace" font-size="12" fill="#d4cdc9">${escapeXml(line)}</text>`;
+    return `<text x="${leftX + 20}" y="${lineY}" font-family="IBM Plex Mono, Apple SD Gothic Neo, Malgun Gothic, monospace" font-size="12" fill="#d4cdc9">${renderBoldLine(line)}</text>`;
   }).join("\n  ") : ""}
 
   ${showStats
