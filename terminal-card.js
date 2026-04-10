@@ -313,6 +313,8 @@
     },
   ];
 
+  const STAT_KEYS = ["repos", "stars", "forks", "followers"];
+
   function escapeXml(value) {
     return String(value)
       .replaceAll("&", "&amp;")
@@ -329,8 +331,6 @@
   function parseBool(value) {
     return value === true || value === "true" || value === "1";
   }
-
-  const STAT_KEYS = ["repos", "stars", "forks", "followers"];
 
   function parseStatsList(value) {
     if (Array.isArray(value)) {
@@ -600,57 +600,88 @@
     const activityHandle = state.username ? `@${state.username}` : state.name;
     const outerX = 28;
     const outerY = 96;
-    const outerWidth = state.width - 56;
-    const outerHeight = state.height - 124;
-    const leftX = 54;
-    const leftY = 132;
-    const leftWidth = 370;
-    const leftHeight = 222;
-    const rightX = 446;
-    const rightY = 132;
-    const rightWidth = state.width - rightX - 54;
+    const outerW = state.width - 56;
+    const outerH = state.height - 124;
     const footerY = state.height - 142;
+    const contentY = outerY + 36;
     const accent = state.accent || "#f08a61";
     const dim = "#9c928d";
-    const promptY = state.height - 82;
     const cliTheme = `${provider.label}/${state.theme}`;
 
+    // Proportional columns
+    const leftX = 54;
+    const leftW = Math.min(380, Math.round(outerW * 0.42));
+    const leftH = Math.max(footerY - contentY - 8, 0);
+    const rightX = leftX + leftW + 18;
+    const rightW = Math.max(state.width - rightX - 54, 0);
+    const rightY = contentY;
+
+    // Left panel: show lines that fit within leftH
+    const showLPTag  = leftH >= 140;
+    const showLPCmd  = !state.hideCommand && leftH >= 172;
+    const showLPStat = leftH >= 210;
+
+    // Right panel - "about" section always visible
+    const RP_DIV_Y  = rightY + 116;
+    const rpDataTop = RP_DIV_Y + 20;
+    const rpDataBot = Math.max(footerY - 12, rpDataTop);
+
+    // Stats in right panel
+    const statKeys = state.stats || STAT_KEYS;
+    const statsH = statKeys.length * 18;
+    const showStats = state.githubStats && (rpDataBot - rpDataTop) >= statsH + 16;
+    const STATS_LABEL_Y = rpDataTop + 12;
+    const STATS_Y = rpDataTop + 16;
+    const statsEndY = showStats ? STATS_Y + statsH : rpDataTop;
+
+    // Langs in right panel (below stats)
+    const rpLangsTop = statsEndY + 14;
+    const rpLangsAvail = rpDataBot - rpLangsTop - 16;
+    const maxLangs = topLangs
+      ? Math.min(topLangs.length, Math.max(0, Math.floor(rpLangsAvail / 18)))
+      : 0;
+    const showLangs = topLangs && showStats && maxLangs > 0;
+    const langsToShow = showLangs ? topLangs.slice(0, maxLangs) : null;
+    const LANGS_LABEL_Y = rpLangsTop + 12;
+    const LANGS_Y = rpLangsTop + 16;
+
     return `
-  <rect x="${outerX}" y="${outerY}" width="${outerWidth}" height="${outerHeight}" rx="14" fill="#231f1d"></rect>
-  <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerWidth - 1}" height="${outerHeight - 1}" rx="13.5" stroke="rgba(255,255,255,0.05)"></rect>
+  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="#231f1d"></rect>
+  <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerW - 1}" height="${outerH - 1}" rx="13.5" stroke="rgba(255,255,255,0.05)"></rect>
 
-  <rect x="${leftX}" y="${leftY}" width="${leftWidth}" height="${leftHeight}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
+  <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
 
-  <text x="${leftX + 16}" y="${leftY + 20}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">$ ${escapeXml(cliTheme)}</text>
-  <text x="${leftX + 16}" y="${leftY + 60}" font-family="IBM Plex Mono, monospace" font-size="22" fill="#f6f2ef">Welcome back, ${escapeXml(state.name)}!</text>
-  <text x="${leftX + 16}" y="${leftY + 96}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 30))}</text>
-  <text x="${leftX + 16}" y="${leftY + 128}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 44))}</text>
-  ${state.hideCommand ? "" : `<text x="${leftX + 16}" y="${leftY + 162}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">$ ${escapeXml(truncateText(state.command, 30))}</text>`}
-  <circle cx="${leftX + 24}" cy="${leftY + 196}" r="5" fill="#7adf8d"></circle>
-  <text x="${leftX + 38}" y="${leftY + 202}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 38))}</text>
+  <text x="${leftX + 16}" y="${contentY + 20}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">$ ${escapeXml(cliTheme)}</text>
+  <text x="${leftX + 16}" y="${contentY + 60}" font-family="IBM Plex Mono, monospace" font-size="22" fill="#f6f2ef">Welcome back, ${escapeXml(state.name)}!</text>
+  <text x="${leftX + 16}" y="${contentY + 96}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 30))}</text>
+  ${showLPTag ? `<text x="${leftX + 16}" y="${contentY + 128}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
+  ${showLPCmd ? `<text x="${leftX + 16}" y="${contentY + 162}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">$ ${escapeXml(truncateText(state.command, 30))}</text>` : ""}
+  ${showLPStat ? `<circle cx="${leftX + 24}" cy="${contentY + 196}" r="5" fill="#7adf8d"></circle>
+  <text x="${leftX + 38}" y="${contentY + 202}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 38))}</text>` : ""}
 
   <text x="${rightX + 18}" y="${rightY + 20}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">about</text>
   <text x="${rightX + 18}" y="${rightY + 50}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 36))}</text>
   <text x="${rightX + 18}" y="${rightY + 76}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 52))}</text>
   <text x="${rightX + 18}" y="${rightY + 98}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(state.username ? `@${state.username}` : state.name)}</text>
 
-  <rect x="${rightX}" y="${rightY + 116}" width="${rightWidth}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+  <rect x="${rightX}" y="${RP_DIV_Y}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
 
-  <text x="${rightX + 18}" y="${rightY + 136}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats ? "github stats" : "run"}</text>
-  ${state.githubStats
-    ? `${buildStatBars(state.githubStats, rightX + 18, rightY + 148, rightWidth - 36, accent, dim, undefined, state.stats)}
-  ${topLangs && state.height >= 600
-    ? `<rect x="${rightX}" y="${rightY + 222}" width="${rightWidth}" height="1" fill="rgba(255,255,255,0.07)"></rect>
-  <text x="${rightX + 18}" y="${rightY + 236}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">top langs</text>
-  ${buildLangBars(topLangs, rightX + 18, rightY + 248, rightWidth - 36, accent, dim)}`
+  ${showStats
+    ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">github stats</text>
+  ${buildStatBars(state.githubStats, rightX + 18, STATS_Y, rightW - 36, accent, dim, undefined, state.stats)}
+  ${showLangs
+    ? `<rect x="${rightX}" y="${rpLangsTop - 2}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+  <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">top langs</text>
+  ${buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim)}`
     : ""}`
-    : `${state.hideCommand ? "" : `<text x="${rightX + 18}" y="${rightY + 160}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">$ ${escapeXml(truncateText(state.command, 40))}</text>`}
-
-  <rect x="${rightX}" y="${rightY + 178}" width="${rightWidth}" height="1" fill="rgba(255,255,255,0.07)"></rect>
-
-  <text x="${rightX + 18}" y="${rightY + 198}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">status</text>
-  <circle cx="${rightX + 26}" cy="${rightY + 220}" r="5" fill="#7adf8d"></circle>
-  <text x="${rightX + 40}" y="${rightY + 226}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">${escapeXml(truncateText(statusText, 52))}</text>`}
+    : state.githubStats
+      ? `<circle cx="${rightX + 26}" cy="${rpDataTop + 16}" r="5" fill="#7adf8d"></circle>
+  <text x="${rightX + 40}" y="${rpDataTop + 22}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">${escapeXml(truncateText(statusText, 52))}</text>`
+      : `${state.hideCommand ? "" : `<text x="${rightX + 18}" y="${rpDataTop + 28}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">$ ${escapeXml(truncateText(state.command, 40))}</text>`}
+  <rect x="${rightX}" y="${rpDataTop + 46}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+  <text x="${rightX + 18}" y="${rpDataTop + 66}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">status</text>
+  <circle cx="${rightX + 26}" cy="${rpDataTop + 88}" r="5" fill="#7adf8d"></circle>
+  <text x="${rightX + 40}" y="${rpDataTop + 94}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">${escapeXml(truncateText(statusText, 52))}</text>`}
 
   <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.1)"></line>`;
   }
@@ -660,19 +691,34 @@
     const identityHandle = getIdentityHandle(state);
     const outerX = 28;
     const outerY = 96;
-    const outerWidth = state.width - 56;
-    const outerHeight = state.height - 124;
+    const outerW = state.width - 56;
+    const outerH = state.height - 124;
+    const footerY = outerY + outerH - 54;  // FIX: was hardcoded 422!
+
     const leftX = 52;
     const leftY = 128;
-    const leftWidth = 240;
-    const leftHeight = 268;
-    const mainX = 316;
+    const leftW = Math.min(260, Math.round(outerW * 0.27));
+    const leftH = outerH - 68;
+
+    const mainX = leftX + leftW + 18;
     const mainY = 128;
-    const mainWidth = state.width - mainX - 52;
-    const mainHeight = 174;
-    const responseY = mainY + mainHeight + 18;
-    const responseHeight = 98;
-    const footerY = 422;
+    const mainW = state.width - mainX - 52;
+
+    // Proportional main + response heights
+    const availH = outerH - 68;
+    const mainH = Math.round(availH * 0.56);
+    const responseY = mainY + mainH + 14;
+    const responseH = Math.max(availH - mainH - 14, 60);
+
+    // Scale content inside main panel relative to standard 174px height
+    const mS = Math.min(mainH / 174, 1.35);
+    const M_LABEL_Y = mainY + 24;
+    const M_TAG_Y   = mainY + Math.round(64 * mS);
+    const M_DIV_Y   = mainY + Math.round(88 * mS);
+    const M_CMD_Y   = mainY + Math.round(122 * mS);
+    const M_DOT_CY  = mainY + Math.round(148 * mS);
+    const M_STA_TY  = mainY + Math.round(154 * mS);
+
     const accent = state.accent || "#74f0b8";
     const soft = "#173229";
     const ink = "#dbfff0";
@@ -680,9 +726,9 @@
     const model = `${provider.label}/${state.theme}`;
 
     return `
-  <rect x="${outerX}" y="${outerY}" width="${outerWidth}" height="${outerHeight}" rx="14" fill="#0f1613"></rect>
+  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="#0f1613"></rect>
 
-  <rect x="${leftX}" y="${leftY}" width="${leftWidth}" height="${leftHeight}" rx="10" fill="#101c17"></rect>
+  <rect x="${leftX}" y="${leftY}" width="${leftW}" height="${leftH}" rx="10" fill="#101c17"></rect>
   <text x="${leftX + 18}" y="${leftY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">workspace</text>
   <text x="${leftX + 18}" y="${leftY + 62}" font-family="IBM Plex Mono, monospace" font-size="17" fill="${ink}">${escapeXml(state.name)}</text>
   <text x="${leftX + 18}" y="${leftY + 84}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(
@@ -695,31 +741,31 @@
   <text x="${leftX + 18}" y="${leftY + 196}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">model</text>
   <text x="${leftX + 18}" y="${leftY + 218}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(model)}</text>
 
-  <rect x="${mainX}" y="${mainY}" width="${mainWidth}" height="${mainHeight}" rx="10" fill="#111f19"></rect>
-  <text x="${mainX + 22}" y="${mainY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prompt</text>
-  <text x="${mainX + 22}" y="${mainY + 64}" font-family="Sora, Arial, sans-serif" font-size="22" font-weight="700" fill="${ink}">${escapeXml(
+  <rect x="${mainX}" y="${mainY}" width="${mainW}" height="${mainH}" rx="10" fill="#111f19"></rect>
+  <text x="${mainX + 22}" y="${M_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prompt</text>
+  <text x="${mainX + 22}" y="${M_TAG_Y}" font-family="Sora, Arial, sans-serif" font-size="22" font-weight="700" fill="${ink}">${escapeXml(
     truncateText(state.tagline, 36)
   )}</text>
-  <rect x="${mainX + 22}" y="${mainY + 88}" width="${mainWidth - 44}" height="1" fill="rgba(116,240,184,0.12)"></rect>
-  ${state.hideCommand ? "" : `<text x="${mainX + 22}" y="${mainY + 122}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${dim}">$ ${escapeXml(state.command)}</text>`}
-  <circle cx="${mainX + 22}" cy="${mainY + 152}" r="5" fill="${accent}"></circle>
-  <text x="${mainX + 36}" y="${mainY + 158}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(
+  <rect x="${mainX + 22}" y="${M_DIV_Y}" width="${mainW - 44}" height="1" fill="rgba(116,240,184,0.12)"></rect>
+  ${state.hideCommand ? "" : `<text x="${mainX + 22}" y="${M_CMD_Y}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${dim}">$ ${escapeXml(state.command)}</text>`}
+  <circle cx="${mainX + 22}" cy="${M_DOT_CY}" r="5" fill="${accent}"></circle>
+  <text x="${mainX + 36}" y="${M_STA_TY}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(
     truncateText(statusText, 48)
   )}</text>
 
-  <rect x="${mainX}" y="${responseY}" width="${mainWidth}" height="${responseHeight}" rx="10" fill="#0e1915"></rect>
+  <rect x="${mainX}" y="${responseY}" width="${mainW}" height="${responseH}" rx="10" fill="#0e1915"></rect>
   <text x="${mainX + 22}" y="${responseY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">output</text>
   ${state.githubStats
     ? (topLangs
-        ? buildLangBars(topLangs, mainX + 22, responseY + 34, mainWidth - 44, accent, dim)
-        : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainWidth - 44, accent, dim, undefined, state.stats))
+        ? buildLangBars(topLangs, mainX + 22, responseY + 34, mainW - 44, accent, dim)
+        : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.stats))
     : `<text x="${mainX + 22}" y="${responseY + 52}" font-family="Sora, Arial, sans-serif" font-size="15" font-weight="600" fill="${ink}">${escapeXml(truncateText(state.tagline, 38))}</text>
   <circle cx="${mainX + 22}" cy="${responseY + 76}" r="5" fill="${accent}"></circle>
   <text x="${mainX + 36}" y="${responseY + 82}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(state.status, 44))}</text>`}
 
-  <rect x="${outerX}" y="${outerY + outerHeight - 54}" width="${outerWidth}" height="1" fill="rgba(116,240,184,0.08)"></rect>
-  <circle cx="${outerX + 22}" cy="${outerY + outerHeight - 30}" r="5" fill="${accent}"></circle>
-  <text x="${outerX + 36}" y="${outerY + outerHeight - 24}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.status, 64))}</text>`;
+  <rect x="${outerX}" y="${footerY}" width="${outerW}" height="1" fill="rgba(116,240,184,0.08)"></rect>
+  <circle cx="${outerX + 22}" cy="${footerY + 24}" r="5" fill="${accent}"></circle>
+  <text x="${outerX + 36}" y="${footerY + 30}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.status, 64))}</text>`;
   }
 
   function buildGeminiCanvas(state, palette, provider, topLangs) {
@@ -727,24 +773,34 @@
     const identityHandle = getIdentityHandle(state);
     const outerX = 28;
     const outerY = 96;
-    const outerWidth = state.width - 56;
-    const outerHeight = state.height - 124;
+    const outerW = state.width - 56;
+    const outerH = state.height - 124;
+
     const cardX = 58;
-    const cardY = 132;
-    const cardWidth = state.width - 116;
-    const cardHeight = 148;
-    const lowerLeftX = 58;
-    const lowerLeftY = 304;
-    const lowerLeftWidth = 286;
-    const lowerLeftHeight = 110;
-    const lowerMidX = 364;
-    const lowerMidY = 304;
-    const lowerMidWidth = 162;
-    const lowerMidHeight = 110;
-    const lowerRightX = lowerMidX + lowerMidWidth + 18;
-    const lowerRightY = 304;
-    const lowerRightWidth = state.width - lowerRightX - 58;
-    const lowerRightHeight = 110;
+    const cardY = outerY + 36;  // y = 132
+    const cardW = state.width - 116;
+    const cardH = Math.min(Math.round(outerH * 0.40), 190);
+
+    const lowerY = cardY + cardH + 14;
+    const lowerH = Math.min(Math.round(outerH * 0.30), 130);
+
+    // Proportional lower panel widths
+    const innerW = state.width - 116;
+    const llW = Math.round(innerW * 0.345);
+    const lmW = Math.round(innerW * 0.195);
+    const lrW = innerW - llW - lmW - 28;  // remaining (2 gaps × 14)
+
+    const llX = 58;
+    const lmX = llX + llW + 14;
+    const lrX = lmX + lmW + 14;
+
+    // Scale top card content
+    const cS = Math.min(cardH / 148, 1.35);
+    const C_META_Y   = cardY + Math.round(26 * cS);
+    const C_NAME_Y   = cardY + Math.round(72 * cS);
+    const C_HANDLE_Y = cardY + Math.round(106 * cS);
+    const C_TAG_Y    = cardY + Math.min(Math.round(136 * cS), cardH - 12);
+
     const accent = state.accent || "#94a8ff";
     const accentSoft = "#dce4ff";
     const ink = "#1b2450";
@@ -752,37 +808,37 @@
     const model = `${provider.label}/${state.theme}`;
 
     return `
-  <rect x="${outerX}" y="${outerY}" width="${outerWidth}" height="${outerHeight}" rx="14" fill="rgba(239,243,255,0.9)"></rect>
-  <rect x="${cardX}" y="${cardY}" width="${cardWidth}" height="${cardHeight}" rx="10" fill="rgba(255,255,255,0.85)"></rect>
-  <text x="${cardX + 24}" y="${cardY + 26}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">gemini canvas  •  ${escapeXml(model)}</text>
-  <text x="${cardX + 24}" y="${cardY + 72}" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="700" fill="${ink}">${escapeXml(state.name)}</text>
-  <text x="${cardX + 24}" y="${cardY + 106}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">${escapeXml(identityHandle)}</text>
-  <text x="${cardX + 24}" y="${cardY + 136}" font-family="Sora, Arial, sans-serif" font-size="15" fill="${dim}">${escapeXml(
+  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="rgba(239,243,255,0.9)"></rect>
+  <rect x="${cardX}" y="${cardY}" width="${cardW}" height="${cardH}" rx="10" fill="rgba(255,255,255,0.85)"></rect>
+  <text x="${cardX + 24}" y="${C_META_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">gemini canvas  •  ${escapeXml(model)}</text>
+  <text x="${cardX + 24}" y="${C_NAME_Y}" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="700" fill="${ink}">${escapeXml(state.name)}</text>
+  <text x="${cardX + 24}" y="${C_HANDLE_Y}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">${escapeXml(identityHandle)}</text>
+  <text x="${cardX + 24}" y="${C_TAG_Y}" font-family="Sora, Arial, sans-serif" font-size="15" fill="${dim}">${escapeXml(
     truncateText(state.tagline, 56)
   )}</text>
 
-  <rect x="${lowerLeftX}" y="${lowerLeftY}" width="${lowerLeftWidth}" height="${lowerLeftHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
-  <text x="${lowerLeftX + 18}" y="${lowerLeftY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "github stats" : "quick facts"}</text>
+  <rect x="${llX}" y="${lowerY}" width="${llW}" height="${lowerH}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
+  <text x="${llX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "github stats" : "quick facts"}</text>
   ${topLangs
-    ? buildStatBars(state.githubStats, lowerLeftX + 18, lowerLeftY + 34, lowerLeftWidth - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats)
-    : `<text x="${lowerLeftX + 18}" y="${lowerLeftY + 56}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
-  <text x="${lowerLeftX + 18}" y="${lowerLeftY + 80}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(
+    ? buildStatBars(state.githubStats, llX + 18, lowerY + 34, llW - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats)
+    : `<text x="${llX + 18}" y="${lowerY + 56}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
+  <text x="${llX + 18}" y="${lowerY + 80}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(
     state.username ? `github  @${state.username}` : `pattern  ${state.pattern}`
   )}</text>`}
 
-  <rect x="${lowerMidX}" y="${lowerMidY}" width="${lowerMidWidth}" height="${lowerMidHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
-  <text x="${lowerMidX + 18}" y="${lowerMidY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prompt</text>
-  ${state.hideCommand ? "" : `<text x="${lowerMidX + 18}" y="${lowerMidY + 56}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(state.command, 18))}</text>`}
-  <text x="${lowerMidX + 18}" y="${lowerMidY + 80}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">theme   ${escapeXml(state.theme)}</text>
+  <rect x="${lmX}" y="${lowerY}" width="${lmW}" height="${lowerH}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
+  <text x="${lmX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prompt</text>
+  ${state.hideCommand ? "" : `<text x="${lmX + 18}" y="${lowerY + 56}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(state.command, 18))}</text>`}
+  <text x="${lmX + 18}" y="${lowerY + 80}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">theme   ${escapeXml(state.theme)}</text>
 
-  <rect x="${lowerRightX}" y="${lowerRightY}" width="${lowerRightWidth}" height="${lowerRightHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
-  <text x="${lowerRightX + 18}" y="${lowerRightY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
+  <rect x="${lrX}" y="${lowerY}" width="${lrW}" height="${lowerH}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
+  <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
   ${topLangs
-    ? buildLangBars(topLangs, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
+    ? buildLangBars(topLangs, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)")
     : state.githubStats
-      ? buildStatBars(state.githubStats, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats)
-      : `<circle cx="${lowerRightX + 26}" cy="${lowerRightY + 58}" r="5" fill="#7f94ff"></circle>
-  <text x="${lowerRightX + 40}" y="${lowerRightY + 64}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(statusText, 20))}</text>`}`;
+      ? buildStatBars(state.githubStats, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats)
+      : `<circle cx="${lrX + 26}" cy="${lowerY + 58}" r="5" fill="#7f94ff"></circle>
+  <text x="${lrX + 40}" y="${lowerY + 64}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(statusText, 20))}</text>`}`;
   }
 
   function buildSvg(input) {
@@ -836,8 +892,39 @@
 </svg>`.trim();
     }
 
-    const contentX = state.hideAvatar ? 56 : 256;
-    const contentW = state.width - contentX - 56;
+    const PAD = 28;
+    const BODY_Y = 128;          // content area starts here
+    const FOOT_SEP = state.height - 76;  // footer separator line
+    const FOOT_TY = state.height - 48;   // footer text baseline
+
+    const contentX = state.hideAvatar ? PAD + 28 : 256;
+    const contentW = state.width - contentX - PAD - 28;
+
+    // Top content (fixed relative to BODY_Y)
+    const LBL_Y  = BODY_Y + 16;   // "$ provider/theme"
+    const NAME_Y = BODY_Y + 68;   // name
+    const ROLE_Y = BODY_Y + 108;  // role or @username
+    const TAG_Y  = BODY_Y + 144;  // tagline
+
+    // Data zone: between tagline and footer separator
+    const DATA_TOP = TAG_Y + 32;  // y ≈ 304
+    const DATA_BOT = FOOT_SEP - 12;
+    const dataH = Math.max(DATA_BOT - DATA_TOP, 0);
+
+    // Stats: show if data zone has room for all selected stat rows
+    const statCount = (state.stats || STAT_KEYS).length;
+    const statsH = statCount * 18;
+    const showStats = state.githubStats && dataH >= statsH;
+    const STATS_Y = DATA_TOP;
+
+    // Langs: fill remaining space after stats
+    const LANGS_TOP = showStats ? DATA_TOP + statsH + 10 : DATA_TOP;
+    const langsAvailH = DATA_BOT - LANGS_TOP;
+    const maxLangs = effectiveTopLangs
+      ? Math.min(effectiveTopLangs.length, Math.max(0, Math.floor(langsAvailH / 18)))
+      : 0;
+    const showLangs = maxLangs > 0;
+    const langsToShow = showLangs ? effectiveTopLangs.slice(0, maxLangs) : null;
 
     return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
@@ -850,27 +937,27 @@
   ${state.hideAvatar ? "" : `<rect x="56" y="128" width="152" height="152" rx="10" fill="${palette.panelSoft}"></rect>
   <text x="132" y="220" text-anchor="middle" font-family="Sora, Arial, sans-serif" font-size="52" font-weight="700" fill="${palette.accent}">${escapeXml(state.avatar)}</text>`}
 
-  <text x="${contentX}" y="144" font-family="IBM Plex Mono, monospace" font-size="12" fill="${palette.dim}">$ ${provider.label}/${state.theme}</text>
-  <text x="${contentX}" y="196" font-family="Sora, Arial, sans-serif" font-size="44" font-weight="700" fill="${palette.title}">${escapeXml(state.name)}</text>
-  <text x="${contentX}" y="236" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.accent}">${escapeXml(
+  <text x="${contentX}" y="${LBL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${palette.dim}">$ ${provider.label}/${state.theme}</text>
+  <text x="${contentX}" y="${NAME_Y}" font-family="Sora, Arial, sans-serif" font-size="44" font-weight="700" fill="${palette.title}">${escapeXml(state.name)}</text>
+  <text x="${contentX}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.accent}">${escapeXml(
     state.username ? `@${state.username}` : state.role
   )}</text>
-  <text x="${contentX}" y="272" font-family="Sora, Arial, sans-serif" font-size="16" fill="${palette.text}">${escapeXml(state.tagline)}</text>
+  <text x="${contentX}" y="${TAG_Y}" font-family="Sora, Arial, sans-serif" font-size="16" fill="${palette.text}">${escapeXml(state.tagline)}</text>
 
-  ${state.githubStats && state.height >= 460
-    ? buildStatBars(state.githubStats, contentX, 302, contentW, palette.accent, palette.dim, undefined, state.stats)
-    : `<circle cx="${contentX + 8}" cy="310" r="5" fill="${palette.success}"></circle>
-  <text x="${contentX + 24}" y="316" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
+  ${showStats
+    ? buildStatBars(state.githubStats, contentX, STATS_Y, contentW, palette.accent, palette.dim, undefined, state.stats)
+    : `<circle cx="${contentX + 8}" cy="${DATA_TOP + 8}" r="5" fill="${palette.success}"></circle>
+  <text x="${contentX + 24}" y="${DATA_TOP + 14}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
 
-  ${effectiveTopLangs && state.height >= 560
-    ? `<rect x="${contentX}" y="380" width="${contentW}" height="1" fill="rgba(255,255,255,0.05)"></rect>
-  ${buildLangBars(effectiveTopLangs, contentX, 388, contentW, palette.accent, palette.dim)}`
+  ${showStats && showLangs
+    ? `<rect x="${contentX}" y="${LANGS_TOP - 2}" width="${contentW}" height="1" fill="rgba(255,255,255,0.05)"></rect>
+  ${buildLangBars(langsToShow, contentX, LANGS_TOP, contentW, palette.accent, palette.dim)}`
     : ""}
 
-  <rect x="28" y="${state.height - 76}" width="${state.width - 56}" height="1" fill="rgba(255,255,255,0.08)"></rect>
+  <rect x="28" y="${FOOT_SEP}" width="${state.width - 56}" height="1" fill="rgba(255,255,255,0.08)"></rect>
   <circle cx="56" cy="${state.height - 54}" r="5" fill="${palette.success}"></circle>
-  <text x="72" y="${state.height - 48}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">${escapeXml(state.githubStats ? getStatusText(state) : state.status)}</text>
-  ${state.hideCommand ? "" : `<text x="256" y="${state.height - 48}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>`}
+  <text x="72" y="${FOOT_TY}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">${escapeXml(state.githubStats ? getStatusText(state) : state.status)}</text>
+  ${state.hideCommand ? "" : `<text x="256" y="${FOOT_TY}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>`}
 </svg>`.trim();
   }
 
