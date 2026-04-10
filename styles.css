@@ -163,6 +163,32 @@ textarea:focus {
   cursor: pointer;
 }
 
+.check-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.check-item input[type="checkbox"] {
+  width: auto;
+  border: none;
+  padding: 0;
+  accent-color: var(--text);
+  cursor: pointer;
+}
+
 .action-row {
   display: flex;
   flex-wrap: wrap;

@@ -182,6 +182,8 @@
     langCount: 4,
     hideAvatar: false,
     hideCommand: false,
+    stats: STAT_KEYS,
+    excludeLangs: [],
   };
 
   const presets = [
@@ -328,6 +330,24 @@
     return value === true || value === "true" || value === "1";
   }
 
+  const STAT_KEYS = ["repos", "stars", "forks", "followers"];
+
+  function parseStatsList(value) {
+    if (Array.isArray(value)) {
+      const filtered = value.filter((s) => STAT_KEYS.includes(s));
+      return filtered.length > 0 ? filtered : STAT_KEYS;
+    }
+    if (!value) return STAT_KEYS;
+    const parsed = String(value).split(",").map((s) => s.trim()).filter((s) => STAT_KEYS.includes(s));
+    return parsed.length > 0 ? parsed : STAT_KEYS;
+  }
+
+  function parseExcludeLangs(value) {
+    if (Array.isArray(value)) return value.map((s) => String(s).toLowerCase().trim()).filter(Boolean);
+    if (!value) return [];
+    return String(value).split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  }
+
   function safeNumber(value, fallback, min, max) {
     const parsed = Number(value);
     if (Number.isNaN(parsed)) {
@@ -398,14 +418,15 @@
     return state.role;
   }
 
-  function buildStatBars(stats, x, y, trackWidth, accentColor, dimColor, trackBg) {
+  function buildStatBars(stats, x, y, trackWidth, accentColor, dimColor, trackBg, keys) {
     const bg = trackBg || "rgba(255,255,255,0.08)";
-    const items = [
+    const allItems = [
       { label: "repos",     value: stats.repos },
       { label: "stars",     value: stats.stars },
       { label: "forks",     value: stats.forks },
       { label: "followers", value: stats.followers },
     ];
+    const items = keys && keys.length < 4 ? allItems.filter((item) => keys.includes(item.label)) : allItems;
     const maxVal = Math.max(...items.map((s) => s.value), 1);
     const labelW = 74;
     const valW = 42;
@@ -484,6 +505,8 @@
       langCount: safeNumber(state.langCount, 4, 1, 6),
       hideAvatar: parseBool(state.hideAvatar),
       hideCommand: parseBool(state.hideCommand),
+      stats: parseStatsList(state.stats),
+      excludeLangs: parseExcludeLangs(state.excludeLangs),
     };
   }
 
@@ -494,6 +517,14 @@
       if (value === null || value === false || value === "") return;
       if (key === "showLangs" && value === "auto") return;
       if (key === "langCount" && value === 4) return;
+      if (key === "stats") {
+        if (value.length < 4) params.set("stats", value.join(","));
+        return;
+      }
+      if (key === "excludeLangs") {
+        if (value.length > 0) params.set("excludeLangs", value.join(","));
+        return;
+      }
       if (key === "theme") {
         params.set(
           "theme",
@@ -607,7 +638,7 @@
 
   <text x="${rightX + 18}" y="${rightY + 136}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats ? "github stats" : "run"}</text>
   ${state.githubStats
-    ? `${buildStatBars(state.githubStats, rightX + 18, rightY + 148, rightWidth - 36, accent, dim)}
+    ? `${buildStatBars(state.githubStats, rightX + 18, rightY + 148, rightWidth - 36, accent, dim, undefined, state.stats)}
   ${topLangs && state.height >= 600
     ? `<rect x="${rightX}" y="${rightY + 222}" width="${rightWidth}" height="1" fill="rgba(255,255,255,0.07)"></rect>
   <text x="${rightX + 18}" y="${rightY + 236}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">top langs</text>
@@ -681,7 +712,7 @@
   ${state.githubStats
     ? (topLangs
         ? buildLangBars(topLangs, mainX + 22, responseY + 34, mainWidth - 44, accent, dim)
-        : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainWidth - 44, accent, dim))
+        : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainWidth - 44, accent, dim, undefined, state.stats))
     : `<text x="${mainX + 22}" y="${responseY + 52}" font-family="Sora, Arial, sans-serif" font-size="15" font-weight="600" fill="${ink}">${escapeXml(truncateText(state.tagline, 38))}</text>
   <circle cx="${mainX + 22}" cy="${responseY + 76}" r="5" fill="${accent}"></circle>
   <text x="${mainX + 36}" y="${responseY + 82}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(state.status, 44))}</text>`}
@@ -733,7 +764,7 @@
   <rect x="${lowerLeftX}" y="${lowerLeftY}" width="${lowerLeftWidth}" height="${lowerLeftHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
   <text x="${lowerLeftX + 18}" y="${lowerLeftY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "github stats" : "quick facts"}</text>
   ${topLangs
-    ? buildStatBars(state.githubStats, lowerLeftX + 18, lowerLeftY + 34, lowerLeftWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
+    ? buildStatBars(state.githubStats, lowerLeftX + 18, lowerLeftY + 34, lowerLeftWidth - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats)
     : `<text x="${lowerLeftX + 18}" y="${lowerLeftY + 56}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
   <text x="${lowerLeftX + 18}" y="${lowerLeftY + 80}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(
     state.username ? `github  @${state.username}` : `pattern  ${state.pattern}`
@@ -749,7 +780,7 @@
   ${topLangs
     ? buildLangBars(topLangs, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
     : state.githubStats
-      ? buildStatBars(state.githubStats, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
+      ? buildStatBars(state.githubStats, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats)
       : `<circle cx="${lowerRightX + 26}" cy="${lowerRightY + 58}" r="5" fill="#7f94ff"></circle>
   <text x="${lowerRightX + 40}" y="${lowerRightY + 64}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(statusText, 20))}</text>`}`;
   }
@@ -766,7 +797,9 @@
     const topBarText = provider.topBarText || palette.dim;
     const effectiveTopLangs =
       state.showLangs !== "off" && state.githubStats && state.githubStats.topLangs
-        ? state.githubStats.topLangs.slice(0, state.langCount)
+        ? state.githubStats.topLangs
+            .filter((l) => !state.excludeLangs.includes(l.name.toLowerCase()))
+            .slice(0, state.langCount)
         : null;
 
     if (state.provider === "claude") {
@@ -825,7 +858,7 @@
   <text x="${contentX}" y="272" font-family="Sora, Arial, sans-serif" font-size="16" fill="${palette.text}">${escapeXml(state.tagline)}</text>
 
   ${state.githubStats && state.height >= 460
-    ? buildStatBars(state.githubStats, contentX, 302, contentW, palette.accent, palette.dim)
+    ? buildStatBars(state.githubStats, contentX, 302, contentW, palette.accent, palette.dim, undefined, state.stats)
     : `<circle cx="${contentX + 8}" cy="310" r="5" fill="${palette.success}"></circle>
   <text x="${contentX + 24}" y="316" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
 

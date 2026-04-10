@@ -154,6 +154,21 @@
               </label>
             </div>
 
+            <label>
+              Show stats
+              <div class="check-row">
+                <label class="check-item"><input type="checkbox" id="stat-repos" checked /> repos</label>
+                <label class="check-item"><input type="checkbox" id="stat-stars" checked /> stars</label>
+                <label class="check-item"><input type="checkbox" id="stat-forks" checked /> forks</label>
+                <label class="check-item"><input type="checkbox" id="stat-followers" checked /> followers</label>
+              </div>
+            </label>
+
+            <label>
+              Exclude langs
+              <input id="excludeLangs" name="excludeLangs" type="text" placeholder="HTML, CSS, Dockerfile" />
+            </label>
+
             <div class="action-row">
               <button type="button" id="presetButton">Load demo</button>
               <button type="button" id="copySvgButton" class="primary">Copy SVG</button>

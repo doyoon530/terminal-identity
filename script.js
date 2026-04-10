@@ -52,6 +52,8 @@ function getState() {
     langCount: document.getElementById("langCount").value,
     hideAvatar: document.getElementById("hideAvatar").checked,
     hideCommand: document.getElementById("hideCommand").checked,
+    stats: ["repos", "stars", "forks", "followers"].filter((s) => document.getElementById(`stat-${s}`).checked).join(","),
+    excludeLangs: document.getElementById("excludeLangs").value.trim(),
   });
 }
 
@@ -73,6 +75,13 @@ function fillForm(state) {
   document.getElementById("langCount").value = state.langCount || "";
   document.getElementById("hideAvatar").checked = state.hideAvatar === "true" || state.hideAvatar === true;
   document.getElementById("hideCommand").checked = state.hideCommand === "true" || state.hideCommand === true;
+  const statsArr = Array.isArray(state.stats) ? state.stats : ["repos", "stars", "forks", "followers"];
+  ["repos", "stars", "forks", "followers"].forEach((s) => {
+    document.getElementById(`stat-${s}`).checked = statsArr.includes(s);
+  });
+  document.getElementById("excludeLangs").value = Array.isArray(state.excludeLangs)
+    ? state.excludeLangs.join(", ")
+    : (state.excludeLangs || "");
 }
 
 function loadStateFromUrl() {
@@ -95,6 +104,8 @@ function loadStateFromUrl() {
     langCount: params.get("langCount"),
     hideAvatar: params.get("hideAvatar"),
     hideCommand: params.get("hideCommand"),
+    stats: params.get("stats"),
+    excludeLangs: params.get("excludeLangs"),
   });
   fillForm(state);
 }
