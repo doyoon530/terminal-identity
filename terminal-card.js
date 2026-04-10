@@ -621,10 +621,7 @@
   <circle cx="${rightX + 26}" cy="${rightY + 220}" r="5" fill="#7adf8d"></circle>
   <text x="${rightX + 40}" y="${rightY + 226}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">${escapeXml(truncateText(statusText, 52))}</text>`}
 
-  <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.1)"></line>
-  <text x="${outerX + 16}" y="${promptY}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">&gt;</text>
-  <rect x="${outerX + 32}" y="${promptY - 16}" width="10" height="24" fill="#f2efec" opacity="0.6"></rect>
-  <text x="${outerX + 50}" y="${promptY}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">Try \"edit &lt;filepath&gt; to ...\"</text>`;
+  <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.1)"></line>`;
   }
 
   function buildGptWorkspace(state, palette, provider, topLangs) {
