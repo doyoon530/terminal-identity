@@ -267,67 +267,103 @@ Available themes: `ember` · `aurora` · `cobalt` · `velvet` · `graphite` · `
 
 ## README Recipes
 
-Copy-paste starter cards for common profile types.
+Copy-paste starter cards for different contribution moods. Each example leans on a different `contribTheme` so you can see how far the same API can stretch.
 
-### Minimal hero
+### Moon phase dashboard
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=420&v=3" width="100%" alt="Minimal hero card" />
+`theme=amber/solar` · `showContribs=on` · `contribTheme=moon` · `showLangs=on`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=520&showContribs=on&contribTheme=moon&showLangs=on&langCount=4&langStyle=icons&iconSize=sm&v=41" width="100%" alt="Moon phase contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=420"
+  src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=520&showContribs=on&contribTheme=moon&showLangs=on&langCount=4&langStyle=icons&iconSize=sm"
   width="100%"
-  alt="Terminal identity card"
+  alt="Terminal identity card with moon phase activity"
 />
 ```
 
-### With live GitHub stats and top languages
+### Starfield maintainer
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&command=npx%20terminal-identity&theme=obsidian/graphite&avatar=GG&pattern=grid&width=980&height=520&v=3" width="100%" alt="Card with live GitHub stats" />
+`theme=obsidian/graphite` · `contribTheme=star` · `motion=pulse` · `pattern=pulse`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&username=doyoon530&role=open-source%20maintainer&tagline=Shipping%20small%20fixes%2C%20sharp%20docs%2C%20and%20stable%20releases.&status=reviewing%20PRs%20and%20polishing%20tooling&command=pnpm%20release%20--safe&theme=obsidian/graphite&avatar=MS&pattern=pulse&width=980&height=520&motion=pulse&showContribs=on&contribTheme=star&showLangs=on&langCount=4&langStyle=bar&barStyle=blocks&v=42" width="100%" alt="Starfield contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&command=npx%20terminal-identity&theme=obsidian/graphite&avatar=GG&pattern=grid&width=980&height=520"
+  src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&username=doyoon530&role=open-source%20maintainer&tagline=Shipping%20small%20fixes%2C%20sharp%20docs%2C%20and%20stable%20releases.&status=reviewing%20PRs%20and%20polishing%20tooling&command=pnpm%20release%20--safe&theme=obsidian/graphite&avatar=MS&pattern=pulse&width=980&height=520&motion=pulse&showContribs=on&contribTheme=star&showLangs=on&langCount=4&langStyle=bar&barStyle=blocks"
   width="100%"
-  alt="Terminal identity card with live GitHub stats"
+  alt="Terminal identity card with starfield activity"
 />
 ```
 
-### Custom accent + filtered stats
+### Orbit builder
 
-Show only stars and followers, exclude HTML/CSS from top langs:
+`theme=prism/aurora` · `contribTheme=orbit` · `accent=%239cd7ff` · `showLangs=off`
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=520&accent=%23ff7a59&stats=stars%2Cfollowers&excludeLangs=HTML%2CCSS&v=3" width="100%" alt="Card with custom accent and filtered stats" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=leo&username=doyoon530&role=product%20builder&tagline=Turning%20napkin%20ideas%20into%20small%20products%20people%20keep%20using.&status=building%20in%20public&command=pnpm%20ship%20--fast&theme=prism/aurora&avatar=LE&pattern=rings&width=980&height=520&accent=%239cd7ff&showContribs=on&contribTheme=orbit&showLangs=off&barStyle=dots&v=43" width="100%" alt="Orbit contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=520&accent=%23ff7a59&stats=stars%2Cfollowers&excludeLangs=HTML%2CCSS"
+  src="https://terminal-identity-opal.vercel.app/api?name=leo&username=doyoon530&role=product%20builder&tagline=Turning%20napkin%20ideas%20into%20small%20products%20people%20keep%20using.&status=building%20in%20public&command=pnpm%20ship%20--fast&theme=prism/aurora&avatar=LE&pattern=rings&width=980&height=520&accent=%239cd7ff&showContribs=on&contribTheme=orbit&showLangs=off&barStyle=dots"
   width="100%"
-  alt="Terminal identity card with custom accent"
+  alt="Terminal identity card with orbit activity"
 />
 ```
 
-### Design engineer
+### Signal radar card
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=amber/sakura&avatar=JW&pattern=rings&width=980&height=520&v=3" width="100%" alt="Design engineer card" />
+`theme=obsidian/aurora` · `contribTheme=signal` · `motion=scan` · `stats=stars,forks,followers`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=sora&username=doyoon530&role=platform%20engineer&tagline=Watching%20systems%2C%20signals%2C%20and%20all%20the%20small%20things%20that%20break%20first.&status=tracking%20latency%20and%20shipping%20fixes&command=pnpm%20run%20watch-signals&theme=obsidian/aurora&avatar=SR&pattern=grid&width=980&height=520&motion=scan&showContribs=on&contribTheme=signal&showLangs=off&stats=stars%2Cforks%2Cfollowers&barStyle=dots&v=44" width="100%" alt="Signal contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=amber/sakura&avatar=JW&pattern=rings&width=980&height=520"
+  src="https://terminal-identity-opal.vercel.app/api?name=sora&username=doyoon530&role=platform%20engineer&tagline=Watching%20systems%2C%20signals%2C%20and%20all%20the%20small%20things%20that%20break%20first.&status=tracking%20latency%20and%20shipping%20fixes&command=pnpm%20run%20watch-signals&theme=obsidian/aurora&avatar=SR&pattern=grid&width=980&height=520&motion=scan&showContribs=on&contribTheme=signal&showLangs=off&stats=stars%2Cforks%2Cfollowers&barStyle=dots"
   width="100%"
-  alt="Terminal identity card"
+  alt="Terminal identity card with signal activity"
 />
 ```
 
-### Indie hacker / builder
+### Citylight portfolio
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&status=building%20products%2C%20docs%2C%20and%20weird%20little%20experiments&command=pnpm%20create%20tiny-hit&theme=obsidian/graphite&avatar=MS&pattern=pulse&width=980&height=520&v=3" width="100%" alt="Indie hacker card" />
+`theme=amber/graphite` · `contribTheme=citylight` · `stats=repos,followers` · `excludeLangs=HTML,CSS`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=jiwon&username=doyoon530&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=amber/graphite&avatar=JW&pattern=grid&width=980&height=520&showContribs=on&contribTheme=citylight&showLangs=on&langCount=3&langStyle=icons&iconSize=sm&stats=repos%2Cfollowers&excludeLangs=HTML%2CCSS&v=45" width="100%" alt="Citylight contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&status=building%20products%2C%20docs%2C%20and%20weird%20little%20experiments&command=pnpm%20create%20tiny-hit&theme=obsidian/graphite&avatar=MS&pattern=pulse&width=980&height=520"
+  src="https://terminal-identity-opal.vercel.app/api?name=jiwon&username=doyoon530&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=amber/graphite&avatar=JW&pattern=grid&width=980&height=520&showContribs=on&contribTheme=citylight&showLangs=on&langCount=3&langStyle=icons&iconSize=sm&stats=repos%2Cfollowers&excludeLangs=HTML%2CCSS"
   width="100%"
-  alt="Terminal identity card"
+  alt="Terminal identity card with citylight activity"
+/>
+```
+
+### Constellation explorer
+
+`theme=prism/cobalt` · `contribTheme=constellation` · `showLangs=on` · `barStyle=blocks`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=noah&username=doyoon530&role=creative%20developer&tagline=Building%20interfaces%20that%20feel%20a%20little%20more%20alive.&status=crafting%20portfolio%20experiments&command=pnpm%20run%20ship-demo&theme=prism/cobalt&avatar=NH&pattern=rings&width=980&height=520&showContribs=on&contribTheme=constellation&showLangs=on&langCount=4&langStyle=bar&barStyle=blocks&v=46" width="100%" alt="Constellation contribution card" />
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=noah&username=doyoon530&role=creative%20developer&tagline=Building%20interfaces%20that%20feel%20a%20little%20more%20alive.&status=crafting%20portfolio%20experiments&command=pnpm%20run%20ship-demo&theme=prism/cobalt&avatar=NH&pattern=rings&width=980&height=520&showContribs=on&contribTheme=constellation&showLangs=on&langCount=4&langStyle=bar&barStyle=blocks"
+  width="100%"
+  alt="Terminal identity card with constellation activity"
+/>
+```
+
+### Firefly night mode
+
+`theme=obsidian/velvet` · `contribTheme=firefly` · `hideCommand=true` · `motion=boot`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=ara&username=doyoon530&role=night%20shift%20coder&tagline=Quiet%20hours%2C%20sharp%20focus%2C%20and%20tiny%20experiments%20that%20turn%20into%20features.&status=shipping%20after%20dark&theme=obsidian/velvet&avatar=AR&pattern=pulse&width=980&height=520&motion=boot&showContribs=on&contribTheme=firefly&showLangs=off&hideCommand=true&v=47" width="100%" alt="Firefly contribution card" />
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=ara&username=doyoon530&role=night%20shift%20coder&tagline=Quiet%20hours%2C%20sharp%20focus%2C%20and%20tiny%20experiments%20that%20turn%20into%20features.&status=shipping%20after%20dark&theme=obsidian/velvet&avatar=AR&pattern=pulse&width=980&height=520&motion=boot&showContribs=on&contribTheme=firefly&showLangs=off&hideCommand=true"
+  width="100%"
+  alt="Terminal identity card with firefly activity"
 />
 ```
 
