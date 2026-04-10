@@ -205,7 +205,7 @@
     avatar: "GG",
     pattern: "grid",
     width: 980,
-    height: 520,
+    height: "auto",
     accent: null,
     showLangs: "auto",
     showContribs: "off",
@@ -387,6 +387,10 @@
     return Math.min(Math.max(parsed, min), max);
   }
 
+  function isAutoHeightValue(value) {
+    return typeof value === "string" && value.trim().toLowerCase() === "auto";
+  }
+
   function normalizeGithubStats(stats) {
     if (!stats || typeof stats !== "object") {
       return null;
@@ -529,6 +533,21 @@
     }
 
     return units;
+  }
+
+  function wrapTextBlock(text, maxPx, maxLines, options) {
+    if (!text || maxLines <= 0) return [];
+
+    const lines = [];
+    const segments = String(text || "").split(/\r?\n/);
+
+    for (const segment of segments) {
+      if (lines.length >= maxLines) break;
+      if (!segment.trim()) continue;
+      lines.push(...wrapText(segment, maxPx, maxLines - lines.length, options));
+    }
+
+    return lines;
   }
 
   function wrapText(text, maxPx, maxLines, options) {
@@ -893,23 +912,228 @@
     };
   }
 
-  function buildContributionGrid(contributions, x, y, trackWidth, theme, palette, options) {
-    if (!contributions?.weeks?.length) return "";
-
+  function getContributionGridGeometry(weeksLength, trackWidth, theme, options) {
     const gap = 2;
-    const maxWeeks = contributions.weeks.length;
+    const maxWeeks = Math.max(0, weeksLength || 0);
+
+    if (!maxWeeks || trackWidth <= 0) {
+      return { cols: 0, cell: 0, gridW: 0, gridH: 0, gap };
+    }
+
     const enlargedMarkTheme = usesLargeContributionMarks(theme);
     const minVisibleCols = enlargedMarkTheme ? 10 : 16;
     const targetCell = safeNumber(options?.targetCell, enlargedMarkTheme ? 12 : 10, 6, 14);
     const minCols = safeNumber(options?.minCols, minVisibleCols, 10, 53);
     const desiredCols = Math.max(minVisibleCols, Math.floor((trackWidth + gap) / (targetCell + gap)));
     const cols = Math.min(maxWeeks, Math.max(minCols, desiredCols));
-    const weeks = contributions.weeks.slice(-cols);
     const cell = enlargedMarkTheme
       ? Math.max(8, Math.min(14, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))))
       : Math.max(5, Math.min(12, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
     const gridW = cols * cell + Math.max(0, cols - 1) * gap;
     const gridH = 7 * cell + 6 * gap;
+
+    return { cols, cell, gridW, gridH, gap };
+  }
+
+  function estimateContributionSectionHeight(contributions, trackWidth, theme, options) {
+    if (!contributions?.weeks?.length || trackWidth <= 0) return 0;
+
+    const { gridH } = getContributionGridGeometry(
+      contributions.weeks.length,
+      trackWidth,
+      theme,
+      options
+    );
+    const contentTop = safeNumber(options?.contentTop, 24, 0, 240);
+    const footerH = options?.showFooter === false ? 0 : 16;
+    const bottomPad = safeNumber(options?.bottomPad, 8, 0, 80);
+
+    return contentTop + gridH + footerH + bottomPad;
+  }
+
+  function shouldRenderLangIcons(state) {
+    return state.langStyle === "icons" && !!state.langIconsUri;
+  }
+
+  function getLangDisplayCount(state, topLangs, options) {
+    if (!topLangs?.length) return 0;
+
+    if (shouldRenderLangIcons(state)) {
+      const maxIcons = safeNumber(options?.maxIcons, 4, 1, 12);
+      const requested = state.langIconCount ?? topLangs.length;
+      return Math.min(topLangs.length, requested, maxIcons);
+    }
+
+    return Math.min(topLangs.length, safeNumber(options?.maxBars, topLangs.length, 1, 12));
+  }
+
+  function getLangSectionHeight(state, langCount, options) {
+    if (!langCount) return 0;
+
+    const contentTop = safeNumber(options?.contentTop, 22, 0, 120);
+    const bottomPad = safeNumber(options?.bottomPad, 8, 0, 80);
+    const contentH =
+      shouldRenderLangIcons(state)
+        ? (ICON_SIZES[state.iconSize] ?? ICON_SIZES.md)
+        : langCount * 18;
+
+    return contentTop + contentH + bottomPad;
+  }
+
+  function fitsAmberAutoHeight(state, topLangs, contributions) {
+    const outerW = state.width - 56;
+    const leftW = Math.min(380, Math.round(outerW * 0.42));
+    const leftH = state.height - 214;
+    const showProfile = !!state.profileUri && !state.hideProfile;
+    const contentY = 132;
+    const roleY = showProfile ? 270 : contentY + 44;
+    const bioTopY = roleY + 26;
+    const bioLines = wrapTextBlock(state.bio || state.tagline, leftW - 18, 48, { slackPx: 26 });
+    const leftRequired = bioLines.length
+      ? bioTopY - contentY + bioLines.length * 17 + 10
+      : roleY - contentY + 18;
+
+    if (leftH < leftRequired) return false;
+    if (!state.githubStats) return true;
+
+    const statsH = (state.stats || STAT_KEYS).length * 18;
+    let rightRequired = 42 + statsH;
+
+    if (topLangs?.length) {
+      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 4 });
+      rightRequired += getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
+    }
+
+    if (contributions?.weeks?.length) {
+      if (topLangs?.length) rightRequired += 14;
+      const rightW = Math.max(state.width - 126 - leftW, 0);
+      rightRequired += estimateContributionSectionHeight(
+        contributions,
+        rightW - 36,
+        state.contribTheme,
+        { targetCell: 7, minCols: 24, showFooter: false, contentTop: 24, bottomPad: 4 }
+      );
+    }
+
+    return state.height - 242 >= rightRequired;
+  }
+
+  function fitsObsidianAutoHeight(state, topLangs, contributions) {
+    const outerW = state.width - 56;
+    const outerH = state.height - 124;
+    const leftW = Math.min(260, Math.round(outerW * 0.27));
+    const mainW = Math.max(state.width - (52 + leftW + 18) - 52, 0);
+    const availH = outerH - 86;
+    const responseH = Math.max(availH - Math.round(availH * 0.56) - 14, 60);
+    let requiredResponseH = 88;
+
+    if (contributions?.weeks?.length) {
+      requiredResponseH = estimateContributionSectionHeight(
+        contributions,
+        mainW - 44,
+        state.contribTheme,
+        { contentTop: 36, bottomPad: 8 }
+      );
+    } else if (topLangs?.length) {
+      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
+      requiredResponseH = getLangSectionHeight(state, langCount, { contentTop: 34, bottomPad: 8 });
+    } else if (state.githubStats) {
+      requiredResponseH = 42 + (state.stats || STAT_KEYS).length * 18;
+    }
+
+    return responseH >= requiredResponseH;
+  }
+
+  function fitsPrismAutoHeight(state, topLangs, contributions) {
+    const outerH = state.height - 124;
+    const lowerHCap = state.heightAuto ? 190 : 130;
+    const lowerH = Math.min(Math.round(outerH * 0.3), lowerHCap);
+    const innerW = state.width - 116;
+    const llW = Math.round(innerW * 0.345);
+    const lmW = Math.round(innerW * 0.195);
+    const lrW = innerW - llW - lmW - 28;
+
+    const llRequired = topLangs?.length
+      ? 42 + (state.stats || STAT_KEYS).length * 18
+      : (state.hideCommand ? 88 : 96);
+    const lmRequired = state.hideCommand ? 88 : 96;
+
+    let lrRequired = 74;
+    if (contributions?.weeks?.length) {
+      lrRequired = estimateContributionSectionHeight(
+        contributions,
+        lrW - 36,
+        state.contribTheme,
+        { contentTop: 38, bottomPad: 8 }
+      );
+    } else if (topLangs?.length) {
+      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
+      lrRequired = getLangSectionHeight(state, langCount, { contentTop: 34, bottomPad: 8 });
+    } else if (state.githubStats) {
+      lrRequired = 42 + (state.stats || STAT_KEYS).length * 18;
+    }
+
+    return lowerH >= Math.max(llRequired, lmRequired, lrRequired);
+  }
+
+  function fitsClassicAutoHeight(state, topLangs, contributions) {
+    if (!state.githubStats) return true;
+
+    const pad = 28;
+    const contentX = state.hideAvatar ? pad + 28 : 256;
+    const contentW = state.width - contentX - pad - 28;
+    const dataH = state.height - 392;
+    let requiredDataH = (state.stats || STAT_KEYS).length * 18;
+
+    if (contributions?.weeks?.length) {
+      requiredDataH += 10 + estimateContributionSectionHeight(
+        contributions,
+        contentW,
+        state.contribTheme,
+        { contentTop: 8, bottomPad: 4 }
+      );
+    } else if (topLangs?.length) {
+      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
+      requiredDataH += 10 + getLangSectionHeight(state, langCount, {
+        contentTop: state.langStyle === "icons" ? 0 : 0,
+        bottomPad: 8,
+      });
+    }
+
+    return dataH >= requiredDataH;
+  }
+
+  function resolveAutoHeight(state, topLangs, contributions) {
+    const minHeight = 420;
+    const maxHeight = 1400;
+    const fits =
+      state.provider === "amber"
+        ? fitsAmberAutoHeight
+        : state.provider === "obsidian"
+        ? fitsObsidianAutoHeight
+        : state.provider === "prism"
+        ? fitsPrismAutoHeight
+        : fitsClassicAutoHeight;
+
+    for (let height = minHeight; height <= maxHeight; height += 10) {
+      if (fits({ ...state, height }, topLangs, contributions)) {
+        return height;
+      }
+    }
+
+    return maxHeight;
+  }
+
+  function buildContributionGrid(contributions, x, y, trackWidth, theme, palette, options) {
+    if (!contributions?.weeks?.length) return "";
+
+    const { cols, cell, gridH, gap } = getContributionGridGeometry(
+      contributions.weeks.length,
+      trackWidth,
+      theme,
+      options
+    );
+    const weeks = contributions.weeks.slice(-cols);
     const colors = getContributionThemeColors(theme, palette);
     const title = options?.title || "CONTRIBUTIONS";
     const labelColor = options?.labelColor || palette.dim;
@@ -1107,6 +1331,8 @@
 
   function normalizeState(input) {
     const state = input || {};
+    const rawHeight = state.height ?? defaults.height;
+    const heightAuto = isAutoHeightValue(rawHeight);
     const rawTheme = String(state.theme || defaults.theme);
     const [providerFromTheme, themeFromCombo] = rawTheme.includes("/")
       ? rawTheme.split("/", 2)
@@ -1130,7 +1356,8 @@
       avatar: String(state.avatar || defaults.avatar).slice(0, 4).toUpperCase(),
       pattern,
       width: safeNumber(state.width, defaults.width, 720, 1400),
-      height: safeNumber(state.height, defaults.height, 420, 820),
+      height: safeNumber(rawHeight, 520, 420, 1400),
+      heightAuto,
       githubStats: normalizeGithubStats(state.githubStats),
       accent: isValidHex(state.accent) ? String(state.accent) : null,
       showLangs: ["auto", "on", "off"].includes(state.showLangs) ? state.showLangs : "auto",
@@ -1157,7 +1384,12 @@
     const params = new URLSearchParams();
     Object.entries(state).forEach(([key, value]) => {
       if (key === "provider" || key === "githubStats") return;
+      if (key === "heightAuto") return;
       if (value === null || value === false || value === "") return;
+      if (key === "height" && state.heightAuto) {
+        params.set("height", "auto");
+        return;
+      }
       if (key === "showLangs" && value === "auto") return;
       if (key === "showContribs" && value === defaults.showContribs) return;
       if (key === "langCount" && value === 4) return;
@@ -1393,17 +1625,7 @@
     const BIO_LINE_H = 17;
     const bioMaxLines = Math.max(1, Math.floor((leftH - (ROLE_Y - contentY) - 26 - 10) / BIO_LINE_H));
     const BIO_TEXT_W = leftW - 18;  // panel width minus padding, lets copy use more of the card width
-    const bioLines = (() => {
-      const segments = String(bioSource || "").split(/\r?\n/);
-      const result = [];
-      for (const seg of segments) {
-        if (result.length >= bioMaxLines) break;
-        if (!seg.trim()) continue;
-        const wrapped = wrapText(seg, BIO_TEXT_W, bioMaxLines - result.length, { slackPx: 26 });
-        result.push(...wrapped);
-      }
-      return result;
-    })();
+    const bioLines = wrapTextBlock(bioSource, BIO_TEXT_W, bioMaxLines, { slackPx: 26 });
 
     const showLPBio = bioLines.length > 0 && leftH >= (ROLE_Y - contentY + BIO_LINE_H + 10);
 
@@ -1424,23 +1646,33 @@
     const hasContribs = contributions && showStats;
     const hasLangs = topLangs && showStats;
     const rpModuleAvail = rpDataBot - rpModuleTop;
-    const maxLangs = topLangs
-      ? Math.min(topLangs.length, Math.max(0, Math.floor(Math.max(54, rpModuleAvail) / 18)))
+    const maxBarLangs = topLangs
+      ? Math.min(topLangs.length, Math.max(0, Math.floor(Math.max(0, rpModuleAvail - 30) / 18)))
       : 0;
-    const showLangs = hasLangs && maxLangs > 0;
-    const langsToShow = showLangs ? topLangs.slice(0, Math.min(maxLangs, state.langStyle === "icons" ? 4 : maxLangs)) : null;
+    const langCount = shouldRenderLangIcons(state)
+      ? getLangDisplayCount(state, topLangs, { maxIcons: 4 })
+      : maxBarLangs;
+    const langModuleH = getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
+    const showLangs = hasLangs && langCount > 0 && rpModuleAvail >= langModuleH;
+    const langsToShow = showLangs ? topLangs.slice(0, langCount) : null;
     const langContentH = !showLangs
       ? 0
-      : state.langStyle === "icons"
+      : shouldRenderLangIcons(state)
         ? (ICON_SIZES[state.iconSize] ?? ICON_SIZES.md)
         : langsToShow.length * 18;
-    const langModuleH = showLangs ? langContentH + 30 : 0;
+    const langModuleTotalH = showLangs ? langContentH + 30 : 0;
     const LANGS_LABEL_Y = rpModuleTop + 11;
     const LANGS_Y = rpModuleTop + 22;
 
-    const contribModuleTop = rpModuleTop + (showLangs ? langModuleH + moduleGap : 0);
+    const contribModuleTop = rpModuleTop + (showLangs ? langModuleTotalH + moduleGap : 0);
     const contribAvailH = rpDataBot - contribModuleTop - 4;
-    const canShowContribs = hasContribs && contribAvailH >= 72;
+    const contribSectionH = estimateContributionSectionHeight(
+      contributions,
+      rightW - 36,
+      state.contribTheme,
+      { targetCell: 7, minCols: 24, showFooter: false, contentTop: 24, bottomPad: 4 }
+    );
+    const canShowContribs = hasContribs && contribAvailH >= contribSectionH;
     const CONTRIB_DIVIDER_Y = contribModuleTop - 2;
     const CONTRIB_GRID_Y = contribModuleTop + 24;
 
@@ -1477,7 +1709,7 @@
   ${showLangs
     ? `<rect x="${rightX}" y="${rpModuleTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
   <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TOP LANGS</text>
-  ${state.langStyle === "icons" && state.langIconsUri && langsToShow
+  ${shouldRenderLangIcons(state) && langsToShow
     ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, state.langIconCount ?? langsToShow.length, state.iconSize)
     : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle, "bar-grad")}`
     : ""}
@@ -1532,7 +1764,13 @@
     const ink = "#dbfff0";
     const dim = "#89b7a5";
     const model = `${provider.label}/${state.theme}`;
-    const showContribs = contributions && responseH >= 108;
+    const contribSectionH = estimateContributionSectionHeight(
+      contributions,
+      mainW - 44,
+      state.contribTheme,
+      { contentTop: 36, bottomPad: 8 }
+    );
+    const showContribs = contributions && responseH >= contribSectionH;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="#0f1613"></rect>
@@ -1568,7 +1806,7 @@
     ? buildContributionGrid(contributions, mainX + 22, responseY + 36, mainW - 44, state.contribTheme, palette, { labelColor: dim })
     : state.githubStats
     ? (topLangs
-        ? (state.langStyle === "icons" && state.langIconsUri
+        ? (shouldRenderLangIcons(state)
             ? buildLangIcons(state.langIconsUri, mainX + 22, responseY + 34, mainW - 44, state.langIconCount ?? topLangs.length, state.iconSize)
             : buildLangBars(topLangs, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.barStyle))
         : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.stats, state.barStyle))
@@ -1591,10 +1829,10 @@
     const cardX = 58;
     const cardY = outerY + 36;  // y = 132
     const cardW = state.width - 116;
-    const cardH = Math.min(Math.round(outerH * 0.40), 190);
+    const cardH = Math.min(Math.round(outerH * 0.40), state.heightAuto ? 240 : 190);
 
     const lowerY = cardY + cardH + 14;
-    const lowerH = Math.min(Math.round(outerH * 0.30), 130);
+    const lowerH = Math.min(Math.round(outerH * 0.30), state.heightAuto ? 190 : 130);
 
     // Proportional lower panel widths
     const innerW = state.width - 116;
@@ -1618,7 +1856,13 @@
     const ink = "#1b2450";
     const dim = "#6070a5";
     const model = `${provider.label}/${state.theme}`;
-    const showContribs = contributions && lowerH >= 108 && lrW >= 180;
+    const contribSectionH = estimateContributionSectionHeight(
+      contributions,
+      lrW - 36,
+      state.contribTheme,
+      { contentTop: 38, bottomPad: 8 }
+    );
+    const showContribs = contributions && lowerH >= contribSectionH && lrW >= 180;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="rgba(239,243,255,0.9)"></rect>
@@ -1649,7 +1893,7 @@
   ${showContribs
     ? buildContributionGrid(contributions, lrX + 18, lowerY + 38, lrW - 36, state.contribTheme, palette, { labelColor: dim, title: "ACTIVITY" })
     : topLangs
-    ? (state.langStyle === "icons" && state.langIconsUri
+    ? (shouldRenderLangIcons(state)
         ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, state.langIconCount ?? topLangs.length, state.iconSize)
         : buildLangBars(topLangs, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.barStyle))
     : state.githubStats
@@ -1659,15 +1903,9 @@
   }
 
   function buildSvg(input) {
-    const state = normalizeState(input);
-    const rawPalette = themeMap[state.theme];
-    const palette = state.accent ? { ...rawPalette, accent: state.accent } : rawPalette;
-    const provider = providerMap[state.provider];
+    let state = normalizeState(input);
     const bodyTop = 72;
-    const shellRadius = provider.shellRadius;
     const panelX = 28;
-    const topBarFill = provider.topBarFill || palette.panelSoft;
-    const topBarText = provider.topBarText || palette.dim;
     const effectiveTopLangs =
       state.showLangs !== "off" && state.githubStats && state.githubStats.topLangs
         ? state.githubStats.topLangs
@@ -1675,6 +1913,17 @@
             .slice(0, state.langCount)
         : null;
     const effectiveContributions = shouldShowContributions(state) ? state.githubStats.contributions : null;
+
+    if (state.heightAuto) {
+      state = { ...state, height: resolveAutoHeight(state, effectiveTopLangs, effectiveContributions) };
+    }
+
+    const rawPalette = themeMap[state.theme];
+    const palette = state.accent ? { ...rawPalette, accent: state.accent } : rawPalette;
+    const provider = providerMap[state.provider];
+    const shellRadius = provider.shellRadius;
+    const topBarFill = provider.topBarFill || palette.panelSoft;
+    const topBarText = provider.topBarText || palette.dim;
 
     if (state.provider === "amber") {
       return applyMotion(`
@@ -1770,9 +2019,20 @@
     const maxLangs = effectiveTopLangs
       ? Math.min(effectiveTopLangs.length, Math.max(0, Math.floor(langsAvailH / 18)))
       : 0;
-    const showLangs = maxLangs > 0;
-    const langsToShow = showLangs ? effectiveTopLangs.slice(0, maxLangs) : null;
-    const showContribs = effectiveContributions && showStats && langsAvailH >= 96;
+    const iconLangCount = getLangDisplayCount(state, effectiveTopLangs, { maxIcons: 6 });
+    const showLangs = shouldRenderLangIcons(state)
+      ? !!effectiveTopLangs && langsAvailH >= getLangSectionHeight(state, iconLangCount, { contentTop: 0, bottomPad: 8 })
+      : maxLangs > 0;
+    const langsToShow = showLangs
+      ? (shouldRenderLangIcons(state) ? effectiveTopLangs.slice(0, iconLangCount) : effectiveTopLangs.slice(0, maxLangs))
+      : null;
+    const contribSectionH = estimateContributionSectionHeight(
+      effectiveContributions,
+      contentW,
+      state.contribTheme,
+      { contentTop: 8, bottomPad: 4 }
+    );
+    const showContribs = effectiveContributions && showStats && langsAvailH >= contribSectionH;
 
     return applyMotion(`
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
@@ -1797,11 +2057,11 @@
     : `<circle cx="${contentX + 8}" cy="${DATA_TOP + 8}" r="5" fill="${palette.success}"></circle>
   <text x="${contentX + 24}" y="${DATA_TOP + 14}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
 
-  ${showStats && (showContribs || showLangs || (state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs))
+  ${showStats && (showContribs || showLangs || (shouldRenderLangIcons(state) && effectiveTopLangs))
     ? `<rect x="${contentX}" y="${LANGS_TOP - 2}" width="${contentW}" height="1" fill="rgba(255,255,255,0.05)"></rect>
   ${showContribs
     ? buildContributionGrid(effectiveContributions, contentX, LANGS_TOP + 8, contentW, state.contribTheme, palette, { labelColor: palette.dim })
-    : state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs
+    : shouldRenderLangIcons(state) && effectiveTopLangs
     ? buildLangIcons(state.langIconsUri, contentX, LANGS_TOP, contentW, state.langIconCount ?? effectiveTopLangs.length, state.iconSize)
     : buildLangBars(langsToShow, contentX, LANGS_TOP, contentW, palette.accent, palette.dim, undefined, state.barStyle)}`
     : ""}

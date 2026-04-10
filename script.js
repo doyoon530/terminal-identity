@@ -47,7 +47,7 @@ function getState() {
     avatar: document.getElementById("avatar").value.trim(),
     pattern: document.getElementById("pattern").value,
     width: document.getElementById("width").value,
-    height: document.getElementById("height").value,
+    height: document.getElementById("height").value.trim(),
     accent: document.getElementById("accent").value.trim(),
     motion: document.getElementById("motion").value,
     showContribs: document.getElementById("showContribs").value,
@@ -78,7 +78,7 @@ function fillForm(state) {
   document.getElementById("avatar").value = state.avatar;
   document.getElementById("pattern").value = state.pattern;
   document.getElementById("width").value = state.width;
-  document.getElementById("height").value = state.height;
+  document.getElementById("height").value = state.heightAuto ? "auto" : state.height;
   document.getElementById("accent").value = state.accent || "";
   document.getElementById("motion").value = state.motion || "off";
   document.getElementById("showContribs").value = state.showContribs || "off";

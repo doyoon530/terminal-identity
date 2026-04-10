@@ -38,7 +38,7 @@ async function fetchProfileImageUri(avatarUrl) {
 module.exports = async function handler(req, res) {
   const query = req.query || {};
   const width = Math.min(Math.max(Number(query.width) || 980, 720), 1400);
-  const height = Math.min(Math.max(Number(query.height) || 520, 420), 820);
+  const height = Math.min(Math.max(Number(query.height) || 520, 420), 1400);
 
   res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
   res.setHeader("Cache-Control", "public, max-age=0, s-maxage=1800, stale-while-revalidate=1800");
