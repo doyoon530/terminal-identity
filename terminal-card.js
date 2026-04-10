@@ -1181,22 +1181,31 @@
     const STATS_Y = rpDataTop + 24;
     const statsEndY = showStats ? STATS_Y + statsH : rpDataTop;
 
-    // Langs in right panel (below stats)
+    // Langs and contributions stack in independent modules below stats.
     const rpModuleTop = statsEndY + 18;
-    const rpModuleAvail = rpDataBot - rpModuleTop - 6;
+    const moduleGap = 14;
     const hasContribs = contributions && showStats;
     const hasLangs = topLangs && showStats;
-    const langModuleH = hasLangs ? (state.langStyle === "icons" ? ((ICON_SIZES[state.iconSize] ?? ICON_SIZES.md) + 22) : 54) : 0;
-    const contribModuleTop = rpModuleTop + (hasLangs ? langModuleH + 10 : 0);
-    const contribAvailH = rpDataBot - contribModuleTop - 2;
-    const canShowContribs = hasContribs && contribAvailH >= 56;
+    const rpModuleAvail = rpDataBot - rpModuleTop;
     const maxLangs = topLangs
       ? Math.min(topLangs.length, Math.max(0, Math.floor(Math.max(54, rpModuleAvail) / 18)))
       : 0;
     const showLangs = hasLangs && maxLangs > 0;
     const langsToShow = showLangs ? topLangs.slice(0, Math.min(maxLangs, state.langStyle === "icons" ? 4 : maxLangs)) : null;
+    const langContentH = !showLangs
+      ? 0
+      : state.langStyle === "icons"
+        ? (ICON_SIZES[state.iconSize] ?? ICON_SIZES.md)
+        : langsToShow.length * 18;
+    const langModuleH = showLangs ? langContentH + 30 : 0;
     const LANGS_LABEL_Y = rpModuleTop + 11;
-    const LANGS_Y = rpModuleTop + 24;
+    const LANGS_Y = rpModuleTop + 22;
+
+    const contribModuleTop = rpModuleTop + (showLangs ? langModuleH + moduleGap : 0);
+    const contribAvailH = rpDataBot - contribModuleTop - 4;
+    const canShowContribs = hasContribs && contribAvailH >= 72;
+    const CONTRIB_DIVIDER_Y = contribModuleTop - 2;
+    const CONTRIB_GRID_Y = contribModuleTop + 24;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="#231f1d"></rect>
@@ -1236,8 +1245,8 @@
     : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle, "bar-grad")}`
     : ""}
   ${canShowContribs
-    ? `<rect x="${rightX}" y="${contribModuleTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
-  ${buildContributionGrid(contributions, rightX + 18, contribModuleTop + 8, rightW - 36, state.contribTheme, palette, { labelColor: label, targetCell: 7, minCols: 24, showFooter: false })}`
+    ? `<rect x="${rightX}" y="${CONTRIB_DIVIDER_Y}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+  ${buildContributionGrid(contributions, rightX + 18, CONTRIB_GRID_Y, rightW - 36, state.contribTheme, palette, { labelColor: label, targetCell: 7, minCols: 24, showFooter: false })}`
     : ""}`
     : `<text x="${rightX + 18}" y="${rpDataTop + 13}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TAGLINE</text>
   <text x="${rightX + 18}" y="${rpDataTop + 44}" font-family="Sora, Arial, sans-serif" font-size="16" font-weight="600" fill="#f2efec">${escapeXml(truncateText(state.tagline, 52))}</text>
