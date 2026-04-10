@@ -39,6 +39,7 @@ function getState() {
     tagline: document.getElementById("tagline").value.trim(),
     status: document.getElementById("status").value.trim(),
     command: document.getElementById("command").value.trim(),
+    provider: document.getElementById("provider").value,
     theme: document.getElementById("theme").value,
     avatar: document.getElementById("avatar").value.trim(),
     pattern: document.getElementById("pattern").value,
@@ -53,6 +54,7 @@ function fillForm(state) {
   document.getElementById("tagline").value = state.tagline;
   document.getElementById("status").value = state.status;
   document.getElementById("command").value = state.command;
+  document.getElementById("provider").value = state.provider;
   document.getElementById("theme").value = state.theme;
   document.getElementById("avatar").value = state.avatar;
   document.getElementById("pattern").value = state.pattern;
@@ -68,6 +70,7 @@ function loadStateFromUrl() {
     tagline: params.get("tagline"),
     status: params.get("status"),
     command: params.get("command"),
+    provider: params.get("provider"),
     theme: params.get("theme"),
     avatar: params.get("avatar"),
     pattern: params.get("pattern"),

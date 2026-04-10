@@ -77,6 +77,16 @@
 
             <div class="option-grid">
               <label>
+                Provider style
+                <select id="provider" name="provider">
+                  <option value="classic">Classic</option>
+                  <option value="claude">Claude</option>
+                  <option value="gpt">GPT</option>
+                  <option value="gemini">Gemini</option>
+                </select>
+              </label>
+
+              <label>
                 Theme
                 <select id="theme" name="theme">
                   <option value="ember">Ember Shell</option>
@@ -90,6 +100,9 @@
                 </select>
               </label>
 
+            </div>
+
+            <div class="option-grid">
               <label>
                 Pattern
                 <select id="pattern" name="pattern">
@@ -98,9 +111,7 @@
                   <option value="pulse">Pulse</option>
                 </select>
               </label>
-            </div>
 
-            <div class="option-grid">
               <label>
                 Avatar initials
                 <input id="avatar" name="avatar" placeholder="GG" />

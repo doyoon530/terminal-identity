@@ -113,12 +113,64 @@
     },
   };
 
+  const providerMap = {
+    classic: {
+      label: "classic",
+      windowTitle: "identity.sh",
+      shellRadius: 26,
+      topBarFill: null,
+      topBarText: null,
+      buttonMode: "traffic",
+      frameTone: null,
+      badgeFill: "rgba(255,255,255,0.06)",
+      badgeText: null,
+      shellOverlay: null,
+    },
+    claude: {
+      label: "claude",
+      windowTitle: "claude session",
+      shellRadius: 30,
+      topBarFill: "#f2e7da",
+      topBarText: "#614730",
+      buttonMode: "dots",
+      frameTone: "rgba(178, 143, 108, 0.16)",
+      badgeFill: "rgba(123, 90, 61, 0.16)",
+      badgeText: "#8c6949",
+      shellOverlay: "rgba(255, 245, 232, 0.04)",
+    },
+    gpt: {
+      label: "gpt",
+      windowTitle: "gpt workspace",
+      shellRadius: 22,
+      topBarFill: "#0f1d18",
+      topBarText: "#bff4d8",
+      buttonMode: "minimal",
+      frameTone: "rgba(94, 234, 166, 0.14)",
+      badgeFill: "rgba(94, 234, 166, 0.12)",
+      badgeText: "#9de9c6",
+      shellOverlay: "rgba(16, 185, 129, 0.04)",
+    },
+    gemini: {
+      label: "gemini",
+      windowTitle: "gemini canvas",
+      shellRadius: 34,
+      topBarFill: "#ecf2ff",
+      topBarText: "#57678e",
+      buttonMode: "glow",
+      frameTone: "rgba(135, 158, 255, 0.18)",
+      badgeFill: "rgba(122, 147, 255, 0.12)",
+      badgeText: "#b7c6ff",
+      shellOverlay: "rgba(122, 147, 255, 0.05)",
+    },
+  };
+
   const defaults = {
     name: "ggam",
     role: "frontend engineer",
     tagline: "Building tiny tools with taste.",
     status: "available for cool internet projects",
     command: "npx terminal-identity",
+    provider: "classic",
     theme: "ember",
     avatar: "GG",
     pattern: "grid",
@@ -141,6 +193,7 @@
         tagline: "Shipping useful things before lunch.",
         status: "building products, docs, and weird little experiments",
         command: "pnpm create tiny-hit",
+        provider: "gpt",
         theme: "graphite",
         avatar: "MS",
         pattern: "pulse",
@@ -157,6 +210,7 @@
         tagline: "Design systems with motion, type, and restraint.",
         status: "open to product design and frontend collaborations",
         command: "npm run polish-ui",
+        provider: "claude",
         theme: "sakura",
         avatar: "JW",
         pattern: "rings",
@@ -173,6 +227,7 @@
         tagline: "Teaching APIs without making them feel scary.",
         status: "speaking, writing, and shipping DX experiments",
         command: "npx explain-like-im-new",
+        provider: "gemini",
         theme: "aurora",
         avatar: "AD",
         pattern: "grid",
@@ -189,6 +244,7 @@
         tagline: "Code, typography, and generative visuals in one place.",
         status: "available for interactive art and frontend commissions",
         command: "bun run make-something-strange",
+        provider: "claude",
         theme: "velvet",
         avatar: "NH",
         pattern: "pulse",
@@ -205,6 +261,7 @@
         tagline: "Reliable infrastructure with humane developer tooling.",
         status: "focused on observability, scale, and platform DX",
         command: "terraform apply confidence",
+        provider: "gpt",
         theme: "cobalt",
         avatar: "AR",
         pattern: "rings",
@@ -221,6 +278,7 @@
         tagline: "Turning napkin ideas into products people keep using.",
         status: "currently exploring AI, commerce, and tiny SaaS tools",
         command: "pnpm ship --fast",
+        provider: "gemini",
         theme: "matcha",
         avatar: "LE",
         pattern: "grid",
@@ -237,6 +295,7 @@
         tagline: "Clean interfaces, kind systems, and rapid iteration.",
         status: "available for startups that care about craft",
         command: "npm run build-bright",
+        provider: "claude",
         theme: "solar",
         avatar: "HA",
         pattern: "rings",
@@ -265,7 +324,13 @@
 
   function normalizeState(input) {
     const state = input || {};
-    const theme = themeMap[state.theme] ? state.theme : defaults.theme;
+    const rawTheme = String(state.theme || defaults.theme);
+    const [providerFromTheme, themeFromCombo] = rawTheme.includes("/")
+      ? rawTheme.split("/", 2)
+      : [null, rawTheme];
+    const providerCandidate = state.provider || providerFromTheme || defaults.provider;
+    const provider = providerMap[providerCandidate] ? providerCandidate : defaults.provider;
+    const theme = themeMap[themeFromCombo] ? themeFromCombo : defaults.theme;
     const pattern = ["grid", "rings", "pulse"].includes(state.pattern)
       ? state.pattern
       : defaults.pattern;
@@ -276,6 +341,7 @@
       tagline: String(state.tagline || defaults.tagline).slice(0, 100),
       status: String(state.status || defaults.status).slice(0, 72),
       command: String(state.command || defaults.command).slice(0, 52),
+      provider,
       theme,
       avatar: String(state.avatar || defaults.avatar).slice(0, 4).toUpperCase(),
       pattern,
@@ -287,6 +353,18 @@
   function serializeState(state) {
     const params = new URLSearchParams();
     Object.entries(state).forEach(([key, value]) => {
+      if (key === "provider") {
+        return;
+      }
+      if (key === "theme") {
+        params.set(
+          "theme",
+          state.provider && state.provider !== "classic"
+            ? `${state.provider}/${state.theme}`
+            : state.theme
+        );
+        return;
+      }
       params.set(key, String(value));
     });
     return params;
@@ -320,16 +398,48 @@
     return dots.join("");
   }
 
+  function buildWindowButtons(provider) {
+    if (provider.buttonMode === "dots") {
+      return `
+  <circle cx="72" cy="60" r="6" fill="#c59c72"></circle>
+  <circle cx="96" cy="60" r="6" fill="#ddc1a1"></circle>
+  <circle cx="120" cy="60" r="6" fill="#f4e4d1"></circle>`;
+    }
+
+    if (provider.buttonMode === "minimal") {
+      return `
+  <rect x="52" y="52" width="24" height="16" rx="8" fill="#13392f"></rect>
+  <rect x="84" y="52" width="24" height="16" rx="8" fill="#185041"></rect>
+  <rect x="116" y="52" width="24" height="16" rx="8" fill="#1f6855"></rect>`;
+    }
+
+    if (provider.buttonMode === "glow") {
+      return `
+  <circle cx="70" cy="60" r="8" fill="#8aa5ff"></circle>
+  <circle cx="96" cy="60" r="8" fill="#afc2ff"></circle>
+  <circle cx="122" cy="60" r="8" fill="#d8e2ff"></circle>`;
+    }
+
+    return `
+  <circle cx="68" cy="60" r="8" fill="#ff5f57"></circle>
+  <circle cx="94" cy="60" r="8" fill="#febc2e"></circle>
+  <circle cx="120" cy="60" r="8" fill="#28c840"></circle>`;
+  }
+
   function buildSvg(input) {
     const state = normalizeState(input);
     const palette = themeMap[state.theme];
+    const provider = providerMap[state.provider];
     const bodyTop = 72;
-    const bodyHeight = state.height - bodyTop - 24;
-    const shellRadius = 26;
+    const shellRadius = provider.shellRadius;
     const panelX = 28;
     const panelY = 96;
     const panelWidth = state.width - 56;
     const panelHeight = state.height - 124;
+    const topBarFill = provider.topBarFill || palette.panelSoft;
+    const topBarText = provider.topBarText || palette.dim;
+    const badgeText = provider.badgeText || palette.accentAlt;
+    const frameStroke = provider.frameTone || palette.line;
 
     return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
@@ -348,16 +458,19 @@
   </defs>
 
   <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#bgGradient)"></rect>
-  <rect x="0.5" y="0.5" width="${state.width - 1}" height="${state.height - 1}" rx="${shellRadius - 0.5}" stroke="${palette.line}"></rect>
+  <rect x="0.5" y="0.5" width="${state.width - 1}" height="${state.height - 1}" rx="${shellRadius - 0.5}" stroke="${frameStroke}"></rect>
+  ${
+    provider.shellOverlay
+      ? `<rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="${provider.shellOverlay}"></rect>`
+      : ""
+  }
 
-  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="18" fill="${palette.panelSoft}" filter="url(#shellGlow)"></rect>
-  <circle cx="68" cy="60" r="8" fill="#ff5f57"></circle>
-  <circle cx="94" cy="60" r="8" fill="#febc2e"></circle>
-  <circle cx="120" cy="60" r="8" fill="#28c840"></circle>
-  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.dim}">identity.sh</text>
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="18" fill="${topBarFill}" filter="url(#shellGlow)"></rect>
+  ${buildWindowButtons(provider)}
+  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="18" fill="${topBarText}">${provider.windowTitle}</text>
 
   <rect x="${panelX}" y="${panelY}" width="${panelWidth}" height="${panelHeight}" rx="24" fill="${palette.panelSoft}"></rect>
-  <rect x="${panelX + 0.5}" y="${panelY + 0.5}" width="${panelWidth - 1}" height="${panelHeight - 1}" rx="23.5" stroke="${palette.line}"></rect>
+  <rect x="${panelX + 0.5}" y="${panelY + 0.5}" width="${panelWidth - 1}" height="${panelHeight - 1}" rx="23.5" stroke="${frameStroke}"></rect>
 
   <g opacity="0.95">
     ${buildPattern(state.pattern, state.width, state.height, palette)}
@@ -367,7 +480,7 @@
   <rect x="68.5" y="152.5" width="167" height="167" rx="33.5" stroke="rgba(255,255,255,0.16)"></rect>
   <text x="152" y="252" text-anchor="middle" font-family="Sora, Arial, sans-serif" font-size="56" font-weight="700" fill="${palette.title}">${escapeXml(state.avatar)}</text>
 
-  <text x="280" y="178" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.accent}">$ whoami</text>
+  <text x="280" y="178" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.accent}">$ ${provider.label}/${state.theme}</text>
   <text x="280" y="226" font-family="Sora, Arial, sans-serif" font-size="48" font-weight="700" fill="${palette.title}">${escapeXml(state.name)}</text>
   <text x="280" y="266" font-family="IBM Plex Mono, monospace" font-size="24" fill="${palette.accentAlt}">${escapeXml(state.role)}</text>
   <text x="280" y="314" font-family="Sora, Arial, sans-serif" font-size="24" fill="${palette.text}">${escapeXml(state.tagline)}</text>
@@ -379,8 +492,8 @@
   <text x="68" y="${state.height - 102}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>
   <text x="68" y="${state.height - 66}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.dim}"># README-ready SVG card generated on demand</text>
 
-  <rect x="${state.width - 196}" y="${state.height - 118}" width="128" height="44" rx="22" fill="rgba(255,255,255,0.06)"></rect>
-  <text x="${state.width - 132}" y="${state.height - 90}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="16" fill="${palette.accentAlt}">${escapeXml(state.theme)}</text>
+  <rect x="${state.width - 236}" y="${state.height - 118}" width="168" height="44" rx="22" fill="${provider.badgeFill}"></rect>
+  <text x="${state.width - 152}" y="${state.height - 90}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="16" fill="${badgeText}">${escapeXml(provider.label + "/" + state.theme)}</text>
 </svg>`.trim();
   }
 
@@ -392,6 +505,7 @@
   return {
     defaults,
     presets,
+    providerMap,
     themeMap,
     normalizeState,
     serializeState,
