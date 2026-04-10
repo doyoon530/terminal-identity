@@ -9,16 +9,14 @@
   ·
   <a href="#providers--themes">Providers & themes</a>
   ·
+  <a href="#readme-recipes">Recipes</a>
+  ·
   <a href="#api">API</a>
 </p>
 
-<<<<<<< HEAD
-<img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=claude/ember&avatar=GG&pattern=grid&width=980&height=520" width="100%" alt="Terminal Identity demo card" />
-=======
 <p align="center">
   <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=claude/ember&avatar=GG&pattern=grid&width=980&height=520" width="100%" alt="Terminal Identity demo card" />
 </p>
->>>>>>> 572b699350862d9c19ae7ad4abc0611398726721
 
 Terminal-style SVG cards for GitHub READMEs. One URL, one `<img>` tag. Pick a provider shell (`classic`, `claude`, `gpt`, `gemini`), pair it with a theme, and optionally pass a GitHub username to pull in live public stats.
 
@@ -129,6 +127,60 @@ Available themes: `ember` · `aurora` · `cobalt` · `velvet` · `graphite` · `
 `provider=claude` · `theme=solar`
 
 </details>
+
+---
+
+## README Recipes
+
+Copy-paste starter cards for common profile types.
+
+### Minimal hero
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=claude/ember&avatar=GG&pattern=grid&width=980&height=420" width="100%" alt="Minimal hero card" />
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=claude/ember&avatar=GG&pattern=grid&width=980&height=420"
+  width="100%"
+  alt="Terminal identity card"
+/>
+```
+
+### With live GitHub stats
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&command=npx%20terminal-identity&theme=gpt/graphite&avatar=GG&pattern=grid&width=980&height=520" width="100%" alt="Card with live GitHub stats" />
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&command=npx%20terminal-identity&theme=gpt/graphite&avatar=GG&pattern=grid&width=980&height=520"
+  width="100%"
+  alt="Terminal identity card with live GitHub stats"
+/>
+```
+
+### Design engineer
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=claude/sakura&avatar=JW&pattern=rings&width=980&height=520" width="100%" alt="Design engineer card" />
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=claude/sakura&avatar=JW&pattern=rings&width=980&height=520"
+  width="100%"
+  alt="Terminal identity card"
+/>
+```
+
+### Indie hacker / builder
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&status=building%20products%2C%20docs%2C%20and%20weird%20little%20experiments&command=pnpm%20create%20tiny-hit&theme=gpt/graphite&avatar=MS&pattern=pulse&width=980&height=520" width="100%" alt="Indie hacker card" />
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&status=building%20products%2C%20docs%2C%20and%20weird%20little%20experiments&command=pnpm%20create%20tiny-hit&theme=gpt/graphite&avatar=MS&pattern=pulse&width=980&height=520"
+  width="100%"
+  alt="Terminal identity card"
+/>
+```
 
 ---
 
