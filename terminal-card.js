@@ -126,9 +126,9 @@
       badgeText: null,
       shellOverlay: null,
     },
-    claude: {
-      label: "claude",
-      windowTitle: "claude session",
+    amber: {
+      label: "amber",
+      windowTitle: "amber session",
       shellRadius: 30,
       topBarFill: "#f2e7da",
       topBarText: "#614730",
@@ -138,9 +138,9 @@
       badgeText: "#8c6949",
       shellOverlay: "rgba(255, 245, 232, 0.04)",
     },
-    gpt: {
-      label: "gpt",
-      windowTitle: "gpt workspace",
+    obsidian: {
+      label: "obsidian",
+      windowTitle: "obsidian workspace",
       shellRadius: 22,
       topBarFill: "#0f1d18",
       topBarText: "#bff4d8",
@@ -150,9 +150,9 @@
       badgeText: "#9de9c6",
       shellOverlay: "rgba(16, 185, 129, 0.04)",
     },
-    gemini: {
-      label: "gemini",
-      windowTitle: "gemini canvas",
+    prism: {
+      label: "prism",
+      windowTitle: "prism canvas",
       shellRadius: 34,
       topBarFill: "#ecf2ff",
       topBarText: "#57678e",
@@ -810,7 +810,7 @@
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="rgba(239,243,255,0.9)"></rect>
   <rect x="${cardX}" y="${cardY}" width="${cardW}" height="${cardH}" rx="10" fill="rgba(255,255,255,0.85)"></rect>
-  <text x="${cardX + 24}" y="${C_META_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">gemini canvas  •  ${escapeXml(model)}</text>
+  <text x="${cardX + 24}" y="${C_META_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prism canvas  •  ${escapeXml(model)}</text>
   <text x="${cardX + 24}" y="${C_NAME_Y}" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="700" fill="${ink}">${escapeXml(state.name)}</text>
   <text x="${cardX + 24}" y="${C_HANDLE_Y}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">${escapeXml(identityHandle)}</text>
   <text x="${cardX + 24}" y="${C_TAG_Y}" font-family="Sora, Arial, sans-serif" font-size="15" fill="${dim}">${escapeXml(
@@ -858,7 +858,7 @@
             .slice(0, state.langCount)
         : null;
 
-    if (state.provider === "claude") {
+    if (state.provider === "amber") {
       return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
   <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#373532"></rect>
@@ -870,7 +870,7 @@
 </svg>`.trim();
     }
 
-    if (state.provider === "gpt") {
+    if (state.provider === "obsidian") {
       return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
   <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#09110d"></rect>
@@ -881,7 +881,7 @@
 </svg>`.trim();
     }
 
-    if (state.provider === "gemini") {
+    if (state.provider === "prism") {
       return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
   <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#f5f7ff"></rect>
