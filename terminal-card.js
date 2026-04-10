@@ -665,6 +665,7 @@
     const contentY = outerY + 36;
     const accent = state.accent || "#f08a61";
     const dim = "#9c928d";
+    const label = "#c8a898";
     const cliTheme = `${provider.label}/${state.theme}`;
 
     // Proportional columns
@@ -692,29 +693,27 @@
     const showLPCmd  = !state.hideCommand && leftH >= (showProfile ? 159 : 104);
     const showLPStat = leftH >= (showProfile ? 185 : 130);
 
-    // Right panel - "about" section always visible
-    const RP_DIV_Y  = rightY + 116;
-    const rpDataTop = RP_DIV_Y + 20;
+    const rpDataTop = rightY + 16;
     const rpDataBot = Math.max(footerY - 12, rpDataTop);
 
     // Stats in right panel
     const statKeys = state.stats || STAT_KEYS;
     const statsH = statKeys.length * 18;
     const showStats = state.githubStats && (rpDataBot - rpDataTop) >= statsH + 16;
-    const STATS_LABEL_Y = rpDataTop + 12;
-    const STATS_Y = rpDataTop + 16;
+    const STATS_LABEL_Y = rpDataTop + 13;
+    const STATS_Y = rpDataTop + 24;
     const statsEndY = showStats ? STATS_Y + statsH : rpDataTop;
 
     // Langs in right panel (below stats)
-    const rpLangsTop = statsEndY + 14;
+    const rpLangsTop = statsEndY + 20;
     const rpLangsAvail = rpDataBot - rpLangsTop - 16;
     const maxLangs = topLangs
       ? Math.min(topLangs.length, Math.max(0, Math.floor(rpLangsAvail / 18)))
       : 0;
     const showLangs = topLangs && showStats && maxLangs > 0;
     const langsToShow = showLangs ? topLangs.slice(0, maxLangs) : null;
-    const LANGS_LABEL_Y = rpLangsTop + 12;
-    const LANGS_Y = rpLangsTop + 16;
+    const LANGS_LABEL_Y = rpLangsTop + 13;
+    const LANGS_Y = rpLangsTop + 26;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="#231f1d"></rect>
@@ -728,7 +727,9 @@
     </clipPath>
   </defs>
   <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="rgba(255,255,255,0.08)"/>
-  <image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#profile-clip-${escapeXml(state.username || "anon")})" preserveAspectRatio="xMidYMid slice"/>` : ""}
+  <image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#profile-clip-${escapeXml(state.username || "anon")})" preserveAspectRatio="xMidYMid slice"/>
+  ${state.username ? `<text x="${PROFILE_CX + PROFILE_R + 14}" y="${PROFILE_CY - 6}" font-family="IBM Plex Mono, monospace" font-size="15" fill="#f6f2ef">${escapeXml(state.name)}</text>
+  <text x="${PROFILE_CX + PROFILE_R + 14}" y="${PROFILE_CY + 14}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">@${escapeXml(state.username)}</text>` : ""}` : ""}
 
   <text x="${leftX + 16}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 30))}</text>
   ${showLPTag ? `<text x="${leftX + 16}" y="${TAG_Y}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
@@ -736,19 +737,12 @@
   ${showLPStat ? `<circle cx="${leftX + 24}" cy="${STAT_CY}" r="5" fill="#7adf8d"></circle>
   <text x="${leftX + 38}" y="${STAT_TY}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 38))}</text>` : ""}
 
-  <text x="${rightX + 18}" y="${rightY + 20}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">about</text>
-  <text x="${rightX + 18}" y="${rightY + 50}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 36))}</text>
-  <text x="${rightX + 18}" y="${rightY + 76}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 52))}</text>
-  <text x="${rightX + 18}" y="${rightY + 98}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(state.username ? `@${state.username}` : state.name)}</text>
-
-  <rect x="${rightX}" y="${RP_DIV_Y}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
-
   ${showStats
-    ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">github stats</text>
+    ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
   ${buildStatBars(state.githubStats, rightX + 18, STATS_Y, rightW - 36, accent, dim, undefined, state.stats, state.barStyle)}
   ${showLangs || (state.langStyle === "icons" && state.langIconsUri && langsToShow && rpLangsAvail >= 28)
-    ? `<rect x="${rightX}" y="${rpLangsTop - 2}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
-  <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">top langs</text>
+    ? `<rect x="${rightX}" y="${rpLangsTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+  <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TOP LANGS</text>
   ${state.langStyle === "icons" && state.langIconsUri && langsToShow
     ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, langsToShow.length, state.iconSize)
     : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle)}`
