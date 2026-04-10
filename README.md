@@ -49,6 +49,8 @@
 
 Add `username=your-handle` to pull live public GitHub stats and top languages.
 
+Want motion? Add `motion=pulse`, `motion=scan`, or `motion=boot` to the same API URL.
+
 > Try it in the **[live playground](https://terminal-identity-opal.vercel.app)** and copy the image URL or markdown directly.
 
 ---
@@ -91,6 +93,7 @@ Add `username=your-handle` to pull live public GitHub stats and top languages.
 - **One URL, real result** — no screenshots, no manual SVG editing, no build step
 - **Actually stylish** — provider shells feel more like product UI than generic badges
 - **Live public data** — add `username` to show repos, stars, followers, and top languages
+- **Animated SVG mode** — add `motion=pulse|scan|boot` and keep using the same image URL
 - **Good defaults** — most people only need `name`, `role`, `theme`, and maybe `username`
 - **Deep enough when you want it** — accent color, graph style, filtered stats, language icons, custom bio
 
@@ -105,6 +108,7 @@ Add `username=your-handle` to pull live public GitHub stats and top languages.
 - **Inline bold** — use `**text**` in bio for bold SVG text
 - **Multi-line bio** — wraps dynamically to fit the card height, with line-break support
 - **Background patterns** — grid, rings, pulse
+- **Animated SVG overlays** — `pulse`, `scan`, and `boot` work via the same `/api` endpoint
 - **Fully customizable** — accent color, dimensions (720–1400 × 420–820), stat filters, and more
 - **Zero config** — one `<img>` tag, hosted and cached on Vercel
 
@@ -130,6 +134,16 @@ Add `username=your-handle` to show live GitHub stats and top languages:
 />
 ```
 
+Need a moving version from the same endpoint:
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=520&motion=pulse"
+  width="100%"
+  alt="Animated terminal identity card"
+/>
+```
+
 > Try it interactively at the **[live playground](https://terminal-identity-opal.vercel.app)** — build your card visually and copy the URL or markdown directly.
 
 ---
@@ -151,6 +165,7 @@ Add `username=your-handle` to show live GitHub stats and top languages:
 | `width` | `980` | Card width in px (720–1400) |
 | `height` | `520` | Card height in px (420–820) |
 | `accent` | — | Override accent color with a hex value, e.g. `%23ff7a59` |
+| `motion` | `off` | Animated SVG overlay: `off`, `pulse`, `scan`, or `boot` |
 | `showLangs` | `auto` | Top languages display: `auto`, `on`, or `off` |
 | `langCount` | `4` | Number of top languages to show (1–6) |
 | `langStyle` | `bar` | Language display style: `bar` or `icons` |
@@ -311,6 +326,8 @@ GET https://terminal-identity-opal.vercel.app/api?[params]
 ```
 
 Returns an `image/svg+xml` response. Drop it directly in any Markdown `<img>` tag. GitHub caches images — append `&v=2` (or increment) to bust the cache when you update params.
+
+Animated cards use the same endpoint. Add `motion=pulse`, `motion=scan`, or `motion=boot` to return an animated SVG instead of a static one.
 
 > **Accent color:** URL-encode `#` as `%23` when passing the `accent` param. Example: `accent=%23ff7a59` for `#ff7a59`.
 

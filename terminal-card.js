@@ -211,6 +211,7 @@
     langCount: 4,
     hideAvatar: false,
     hideCommand: false,
+    motion: "off",
     stats: STAT_KEYS,
     excludeLangs: [],
     bio: "",
@@ -746,6 +747,7 @@
       barStyle: ["bar", "dots", "blocks"].includes(state.barStyle) ? state.barStyle : "bar",
       langStyle: ["bar", "icons"].includes(state.langStyle) ? state.langStyle : "bar",
       iconSize: ["sm", "md", "lg"].includes(state.iconSize) ? state.iconSize : "md",
+      motion: ["off", "pulse", "scan", "boot"].includes(state.motion) ? state.motion : "off",
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
       hideProfile: parseBool(state.hideProfile),
@@ -764,6 +766,7 @@
       if (key === "barStyle" && value === "bar") return;
       if (key === "langStyle" && value === "bar") return;
       if (key === "iconSize" && value === "md") return;
+      if (key === "motion" && value === "off") return;
       if (key === "langIconsUri") return;
       if (key === "profileUri") return;
       if (key === "langIconCount") return;
@@ -815,6 +818,110 @@
       }
     }
     return dots.join("");
+  }
+
+  function getMotionBounds(state) {
+    return {
+      x: 28,
+      y: 96,
+      width: state.width - 56,
+      height: state.height - 124,
+    };
+  }
+
+  function getMotionStatusAnchor(state) {
+    const outerY = 96;
+    const outerH = state.height - 124;
+
+    if (state.provider === "amber") {
+      const footerY = outerY + outerH - 54;
+      return { x: 50, y: footerY + 26 };
+    }
+
+    if (state.provider === "obsidian") {
+      const footerY = outerY + outerH - 54;
+      return { x: 50, y: footerY + 24 };
+    }
+
+    if (state.provider === "prism") {
+      const cardY = outerY + 36;
+      const cardH = Math.min(Math.round(outerH * 0.40), 190);
+      const lowerY = cardY + cardH + 14;
+      return { x: state.width - 176, y: lowerY + 58 };
+    }
+
+    return { x: 56, y: state.height - 54 };
+  }
+
+  function buildMotionOverlay(state, palette) {
+    if (!state.motion || state.motion === "off") return "";
+
+    const bounds = getMotionBounds(state);
+    const status = getMotionStatusAnchor(state);
+    const accent = palette.accentAlt || palette.accent;
+
+    if (state.motion === "pulse") {
+      return `
+  <g aria-hidden="true" pointer-events="none">
+    <circle cx="${status.x}" cy="${status.y}" r="5" fill="${palette.success}">
+      <animate attributeName="opacity" values="1;0.68;1" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="${status.x}" cy="${status.y}" r="8" fill="none" stroke="${accent}" stroke-width="2" opacity="0.65">
+      <animate attributeName="r" values="8;20;8" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.65;0;0.65" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="${status.x}" cy="${status.y}" r="8" fill="none" stroke="${accent}" stroke-width="1.2" opacity="0">
+      <animate attributeName="r" values="8;26;8" dur="1.6s" begin="0.24s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.55;0;0" dur="1.6s" begin="0.24s" repeatCount="indefinite"/>
+    </circle>
+  </g>`;
+    }
+
+    if (state.motion === "scan") {
+      const scanX = bounds.x + 14;
+      const scanWidth = bounds.width - 28;
+      const scanTop = bounds.y + 34;
+      const scanBottom = bounds.y + bounds.height - 28;
+      return `
+  <g aria-hidden="true" pointer-events="none">
+    <rect x="${scanX}" y="${scanTop}" width="${scanWidth}" height="2" fill="${accent}" opacity="0.62">
+      <animate attributeName="y" values="${scanTop};${scanBottom};${scanTop}" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.18;0.72;0.18" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="${scanX}" y="${scanTop - 10}" width="${scanWidth}" height="26" fill="${accent}" opacity="0.06">
+      <animate attributeName="y" values="${scanTop - 10};${scanBottom - 10};${scanTop - 10}" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.02;0.08;0.02" dur="3s" repeatCount="indefinite"/>
+    </rect>
+  </g>`;
+    }
+
+    if (state.motion === "boot") {
+      const shellFill = palette.shell;
+      const labelX = bounds.x + 18;
+      const labelY = bounds.y + 24;
+      return `
+  <g aria-hidden="true" pointer-events="none">
+    <rect x="${bounds.x}" y="${bounds.y}" width="${bounds.width}" height="${bounds.height}" rx="14" fill="${shellFill}" opacity="0.96">
+      <animate attributeName="width" values="${bounds.width};${bounds.width};0;0" keyTimes="0;0.22;0.46;1" dur="2.8s" repeatCount="indefinite"/>
+      <animate attributeName="x" values="${bounds.x};${bounds.x};${bounds.x + bounds.width};${bounds.x + bounds.width}" keyTimes="0;0.22;0.46;1" dur="2.8s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="${bounds.x - 120}" y="${bounds.y + 18}" width="120" height="2" fill="${accent}" opacity="0.92">
+      <animate attributeName="x" values="${bounds.x - 120};${bounds.x + bounds.width};${bounds.x + bounds.width}" keyTimes="0;0.46;1" dur="2.8s" repeatCount="indefinite"/>
+    </rect>
+    <text x="${labelX}" y="${labelY}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${accent}" opacity="0">
+      syncing interface
+      <animate attributeName="opacity" values="0;0.9;0;0" keyTimes="0;0.12;0.34;1" dur="2.8s" repeatCount="indefinite"/>
+    </text>
+  </g>`;
+    }
+
+    return "";
+  }
+
+  function applyMotion(svg, state, palette) {
+    const overlay = buildMotionOverlay(state, palette);
+    if (!overlay) return svg;
+    return svg.replace("</svg>", `${overlay}\n</svg>`);
   }
 
   const WINDOW_BUTTONS = {
@@ -1135,7 +1242,7 @@
         : null;
 
     if (state.provider === "amber") {
-      return `
+      return applyMotion(`
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
   <defs>
     <linearGradient id="amber-shell" x1="0" y1="0" x2="0" y2="1">
@@ -1172,29 +1279,29 @@
   <circle cx="116" cy="60" r="7" fill="#6ecf59"></circle>
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="15" fill="#c4b9b0">About ${escapeXml(state.name)}</text>
   ${buildAmberDashboard(state, palette, provider, effectiveTopLangs)}
-</svg>`.trim();
+</svg>`.trim(), state, palette);
     }
 
     if (state.provider === "obsidian") {
-      return `
+      return applyMotion(`
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
   <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#09110d"></rect>
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#0f1f18"></rect>
   ${buildWindowButtons(provider)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
   ${buildObsidianWorkspace(state, palette, provider, effectiveTopLangs)}
-</svg>`.trim();
+</svg>`.trim(), state, palette);
     }
 
     if (state.provider === "prism") {
-      return `
+      return applyMotion(`
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
   <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#f5f7ff"></rect>
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#eef3ff"></rect>
   ${buildWindowButtons(provider)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
   ${buildPrismCanvas(state, palette, provider, effectiveTopLangs)}
-</svg>`.trim();
+</svg>`.trim(), state, palette);
     }
 
     const PAD = 28;
@@ -1231,7 +1338,7 @@
     const showLangs = maxLangs > 0;
     const langsToShow = showLangs ? effectiveTopLangs.slice(0, maxLangs) : null;
 
-    return `
+    return applyMotion(`
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
   <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="${palette.shell}"></rect>
 
@@ -1265,7 +1372,7 @@
   <circle cx="56" cy="${state.height - 54}" r="5" fill="${palette.success}"></circle>
   <text x="72" y="${FOOT_TY}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">${escapeXml(state.githubStats ? getStatusText(state) : state.status)}</text>
   ${state.hideCommand ? "" : `<text x="${state.width - PAD - 28}" y="${FOOT_TY}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>`}
-</svg>`.trim();
+</svg>`.trim(), state, palette);
   }
 
   function buildApiUrl(input, baseUrl) {

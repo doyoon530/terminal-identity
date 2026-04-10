@@ -226,11 +226,23 @@
               <!-- Export -->
               <div class="form-section">
                 <p class="section-label">Export</p>
-                <label>
-                  click link
-                  <span class="hint">카드를 &lt;a&gt; 태그로 감싸기</span>
-                  <input id="link" name="link" type="url" placeholder="https://github.com/you/repo" />
-                </label>
+                <div class="option-grid">
+                  <label>
+                    motion
+                    <span class="hint">Animated SVG via the API URL</span>
+                    <select id="motion" name="motion">
+                      <option value="off">Static</option>
+                      <option value="pulse">Pulse</option>
+                      <option value="scan">Scan</option>
+                      <option value="boot">Boot</option>
+                    </select>
+                  </label>
+                  <label>
+                    click link
+                    <span class="hint">카드를 &lt;a&gt; 태그로 감싸기</span>
+                    <input id="link" name="link" type="url" placeholder="https://github.com/you/repo" />
+                  </label>
+                </div>
               </div>
 
             </div>

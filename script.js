@@ -49,6 +49,7 @@ function getState() {
     width: document.getElementById("width").value,
     height: document.getElementById("height").value,
     accent: document.getElementById("accent").value.trim(),
+    motion: document.getElementById("motion").value,
     barStyle: document.getElementById("barStyle").value,
     langStyle: document.getElementById("langStyle").value,
     iconSize: document.getElementById("iconSize").value,
@@ -77,6 +78,7 @@ function fillForm(state) {
   document.getElementById("width").value = state.width;
   document.getElementById("height").value = state.height;
   document.getElementById("accent").value = state.accent || "";
+  document.getElementById("motion").value = state.motion || "off";
   document.getElementById("barStyle").value = state.barStyle || "bar";
   document.getElementById("langStyle").value = state.langStyle || "bar";
   document.getElementById("iconSize").value = state.iconSize || "md";
@@ -111,6 +113,7 @@ function loadStateFromUrl() {
     width: params.get("width"),
     height: params.get("height"),
     accent: params.get("accent"),
+    motion: params.get("motion"),
     barStyle: params.get("barStyle"),
     langStyle: params.get("langStyle"),
     iconSize: params.get("iconSize"),
