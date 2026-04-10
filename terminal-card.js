@@ -391,6 +391,146 @@
     return typeof value === "string" && value.trim().toLowerCase() === "auto";
   }
 
+  function parseHexColor(value) {
+    const hex = String(value || "").trim();
+    const match = hex.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (!match) return null;
+    const raw = match[1];
+    const full = raw.length === 3 ? raw.split("").map((c) => c + c).join("") : raw;
+    const int = Number.parseInt(full, 16);
+    return {
+      r: (int >> 16) & 255,
+      g: (int >> 8) & 255,
+      b: int & 255,
+    };
+  }
+
+  function rgbToHex(rgb) {
+    if (!rgb) return null;
+    return `#${[rgb.r, rgb.g, rgb.b]
+      .map((value) => Math.max(0, Math.min(255, Math.round(value))).toString(16).padStart(2, "0"))
+      .join("")}`;
+  }
+
+  function mixHex(baseColor, mixColor, mixAmount) {
+    const base = parseHexColor(baseColor);
+    const mix = parseHexColor(mixColor);
+    if (!base) return mixColor || baseColor;
+    if (!mix) return baseColor;
+    const amount = Math.max(0, Math.min(1, Number(mixAmount) || 0));
+    return rgbToHex({
+      r: base.r + (mix.r - base.r) * amount,
+      g: base.g + (mix.g - base.g) * amount,
+      b: base.b + (mix.b - base.b) * amount,
+    });
+  }
+
+  function withAlpha(color, alpha) {
+    const rgb = parseHexColor(color);
+    if (!rgb) return color;
+    const opacity = Math.max(0, Math.min(1, Number(alpha) || 0));
+    return `rgba(${rgb.r},${rgb.g},${rgb.b},${opacity})`;
+  }
+
+  function getProviderSurfaces(providerName, palette, accentOverride) {
+    const accent = accentOverride || palette.accent;
+    const accentAlt = palette.accentAlt || accent;
+    const success = palette.success;
+
+    if (providerName === "amber") {
+      return {
+        shellTop: mixHex(palette.panelSoft, palette.title, 0.12),
+        shellBottom: mixHex(palette.shell, palette.panel, 0.22),
+        chromeFill: mixHex(palette.panelSoft, palette.title, 0.18),
+        chromeText: mixHex(palette.dim, palette.title, 0.32),
+        bodyFill: mixHex(palette.shell, palette.panel, 0.46),
+        panelFill: withAlpha(palette.title, 0.055),
+        panelStroke: withAlpha(palette.title, 0.07),
+        line: withAlpha(palette.title, 0.08),
+        softLine: withAlpha(palette.title, 0.05),
+        strongLine: withAlpha(palette.title, 0.1),
+        textStrong: palette.title,
+        textBody: palette.text,
+        textMuted: palette.dim,
+        label: mixHex(accent, palette.title, 0.46),
+        accent,
+        accentAlt,
+        success,
+        buttonColors: [
+          mixHex(accent, "#ffffff", 0.12),
+          mixHex(accentAlt, "#ffffff", 0.14),
+          mixHex(success, "#ffffff", 0.08),
+        ],
+      };
+    }
+
+    if (providerName === "obsidian") {
+      return {
+        shellFill: mixHex(palette.shell, "#050708", 0.35),
+        chromeFill: mixHex(palette.panel, palette.shell, 0.26),
+        chromeText: mixHex(palette.text, palette.title, 0.16),
+        bodyFill: mixHex(palette.shell, palette.panel, 0.38),
+        panelFill: mixHex(palette.panel, palette.panelSoft, 0.22),
+        panelFillAlt: mixHex(palette.panel, palette.shell, 0.14),
+        line: withAlpha(accentAlt, 0.12),
+        softLine: withAlpha(accentAlt, 0.07),
+        textStrong: palette.title,
+        textBody: palette.text,
+        textMuted: mixHex(palette.dim, palette.title, 0.08),
+        accent,
+        accentAlt,
+        success,
+        buttonColors: [
+          mixHex(palette.panelSoft, accent, 0.2),
+          mixHex(palette.panelSoft, accentAlt, 0.26),
+          mixHex(palette.panelSoft, success, 0.28),
+        ],
+      };
+    }
+
+    if (providerName === "prism") {
+      return {
+        shellFill: mixHex("#ffffff", palette.title, 0.44),
+        chromeFill: mixHex("#ffffff", accentAlt, 0.14),
+        chromeText: mixHex(palette.shell, palette.dim, 0.45),
+        bodyFill: mixHex("#f7f8fc", palette.title, 0.34),
+        panelFill: mixHex("#ffffff", palette.title, 0.72),
+        panelFillAlt: mixHex("#ffffff", accentAlt, 0.1),
+        line: withAlpha(mixHex(palette.shell, accent, 0.3), 0.1),
+        softLine: withAlpha(mixHex(palette.shell, accentAlt, 0.24), 0.07),
+        textStrong: mixHex(palette.shell, "#151821", 0.22),
+        textBody: mixHex(palette.shell, palette.dim, 0.34),
+        textMuted: mixHex(palette.dim, palette.shell, 0.26),
+        accent,
+        accentAlt,
+        success,
+        buttonColors: [
+          mixHex("#ffffff", accent, 0.56),
+          mixHex("#ffffff", accentAlt, 0.46),
+          mixHex("#ffffff", success, 0.42),
+        ],
+      };
+    }
+
+    return {
+      shellFill: palette.shell,
+      chromeFill: palette.panelSoft,
+      chromeText: palette.dim,
+      bodyFill: palette.shell,
+      panelFill: palette.panel,
+      panelFillAlt: palette.panelSoft,
+      line: palette.line,
+      softLine: withAlpha(palette.title, 0.05),
+      textStrong: palette.title,
+      textBody: palette.text,
+      textMuted: palette.dim,
+      accent,
+      accentAlt,
+      success,
+      buttonColors: [accent, accentAlt, success],
+    };
+  }
+
   function normalizeGithubStats(stats) {
     if (!stats || typeof stats !== "object") {
       return null;
@@ -631,7 +771,7 @@
     return lines;
   }
 
-  function renderBoldLine(text, baseFill) {
+  function renderBoldLine(text, boldFill) {
     if (!/\*\*/.test(text)) return escapeXml(text);
     const re = /\*\*(.+?)\*\*/g;
     let out = "";
@@ -639,7 +779,7 @@
     let m;
     while ((m = re.exec(text)) !== null) {
       if (m.index > last) out += `<tspan>${escapeXml(text.slice(last, m.index))}</tspan>`;
-      out += `<tspan font-weight="700" fill="#f2efec">${escapeXml(m[1])}</tspan>`;
+      out += `<tspan font-weight="700" fill="${escapeXml(boldFill || "#f2efec")}">${escapeXml(m[1])}</tspan>`;
       last = m.index + m[0].length;
     }
     if (last < text.length) out += `<tspan>${escapeXml(text.slice(last))}</tspan>`;
@@ -1565,30 +1705,37 @@
     return svg.replace("</svg>", `${overlay}\n</svg>`);
   }
 
-  const WINDOW_BUTTONS = {
-    dots: `
-  <circle cx="72" cy="60" r="6" fill="#c59c72"></circle>
-  <circle cx="96" cy="60" r="6" fill="#ddc1a1"></circle>
-  <circle cx="120" cy="60" r="6" fill="#f4e4d1"></circle>`,
-    minimal: `
-  <rect x="52" y="52" width="24" height="16" rx="8" fill="#13392f"></rect>
-  <rect x="84" y="52" width="24" height="16" rx="8" fill="#185041"></rect>
-  <rect x="116" y="52" width="24" height="16" rx="8" fill="#1f6855"></rect>`,
-    glow: `
-  <circle cx="70" cy="60" r="8" fill="#8aa5ff"></circle>
-  <circle cx="96" cy="60" r="8" fill="#afc2ff"></circle>
-  <circle cx="122" cy="60" r="8" fill="#d8e2ff"></circle>`,
-    traffic: `
-  <circle cx="68" cy="60" r="8" fill="#ff5f57"></circle>
-  <circle cx="94" cy="60" r="8" fill="#febc2e"></circle>
-  <circle cx="120" cy="60" r="8" fill="#28c840"></circle>`,
-  };
+  function buildWindowButtons(provider, surfaces) {
+    const colors = surfaces.buttonColors || [surfaces.accent, surfaces.accentAlt, surfaces.success];
 
-  function buildWindowButtons(provider) {
-    return WINDOW_BUTTONS[provider.buttonMode] ?? WINDOW_BUTTONS.traffic;
+    if (provider.buttonMode === "dots") {
+      return `
+  <circle cx="72" cy="60" r="6" fill="${colors[0]}"></circle>
+  <circle cx="96" cy="60" r="6" fill="${colors[1]}"></circle>
+  <circle cx="120" cy="60" r="6" fill="${colors[2]}"></circle>`;
+    }
+
+    if (provider.buttonMode === "minimal") {
+      return `
+  <rect x="52" y="52" width="24" height="16" rx="8" fill="${colors[0]}"></rect>
+  <rect x="84" y="52" width="24" height="16" rx="8" fill="${colors[1]}"></rect>
+  <rect x="116" y="52" width="24" height="16" rx="8" fill="${colors[2]}"></rect>`;
+    }
+
+    if (provider.buttonMode === "glow") {
+      return `
+  <circle cx="70" cy="60" r="8" fill="${colors[0]}"></circle>
+  <circle cx="96" cy="60" r="8" fill="${colors[1]}"></circle>
+  <circle cx="122" cy="60" r="8" fill="${colors[2]}"></circle>`;
+    }
+
+    return `
+  <circle cx="68" cy="60" r="8" fill="${colors[0]}"></circle>
+  <circle cx="94" cy="60" r="8" fill="${colors[1]}"></circle>
+  <circle cx="120" cy="60" r="8" fill="${colors[2]}"></circle>`;
   }
 
-  function buildAmberDashboard(state, palette, provider, topLangs, contributions) {
+  function buildAmberDashboard(state, palette, provider, topLangs, contributions, surfaces) {
     const statusText = getStatusText(state);
     const outerX = 28;
     const outerY = 96;
@@ -1596,9 +1743,9 @@
     const outerH = state.height - 124;
     const footerY = outerY + outerH - 54;
     const contentY = outerY + 36;
-    const accent = state.accent || "#f08a61";
-    const dim = "#9c928d";
-    const label = "#c8a898";
+    const accent = surfaces.accent;
+    const dim = surfaces.textMuted;
+    const label = surfaces.label;
 
     // Proportional columns
     const leftX = 54;
@@ -1677,10 +1824,10 @@
     const CONTRIB_GRID_Y = contribModuleTop + 24;
 
     return `
-  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="#231f1d"></rect>
-  <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerW - 1}" height="${outerH - 1}" rx="13.5" stroke="rgba(255,255,255,0.05)"></rect>
+  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
+  <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerW - 1}" height="${outerH - 1}" rx="13.5" stroke="${surfaces.panelStroke}"></rect>
 
-  <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
+  <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10" fill="${surfaces.panelFill}"></rect>
   <rect x="${leftX + 6}" y="${contentY + 14}" width="2" height="80" rx="1" fill="${accent}" opacity="0.35"></rect>
 
   ${showProfile ? `<defs>
@@ -1688,11 +1835,11 @@
       <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R}"/>
     </clipPath>
   </defs>
-  <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="${surfaces.strongLine}"/>
   <image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#profile-clip-${escapeXml(state.username || "anon")})" preserveAspectRatio="xMidYMid slice"/>
-  <rect x="${leftX + 20}" y="${DIVIDER_Y}" width="${leftW - 40}" height="1" fill="rgba(255,255,255,0.07)"/>
+  <rect x="${leftX + 20}" y="${DIVIDER_Y}" width="${leftW - 40}" height="1" fill="${surfaces.line}"/>
   <text x="${leftX + 20}" y="${ABOUT_LBL_Y}" font-family="IBM Plex Mono, monospace" font-size="10" fill="${dim}" letter-spacing="0.8">ABOUT</text>
-  ${state.username ? `<text x="${PROFILE_CX + PROFILE_R + 16}" y="${PROFILE_CY - 8}" font-family="Sora, Arial, sans-serif" font-size="18" font-weight="700" fill="#f6f2ef">${escapeXml(state.name)}</text>
+  ${state.username ? `<text x="${PROFILE_CX + PROFILE_R + 16}" y="${PROFILE_CY - 8}" font-family="Sora, Arial, sans-serif" font-size="18" font-weight="700" fill="${surfaces.textStrong}">${escapeXml(state.name)}</text>
   <text x="${PROFILE_CX + PROFILE_R + 16}" y="${PROFILE_CY + 14}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">@${escapeXml(state.username)}</text>` : ""}` : ""}
 
   <circle cx="${leftX + 24}" cy="${ROLE_Y - 6}" r="3.5" fill="${accent}" filter="url(#glow-accent)"/>
@@ -1700,34 +1847,34 @@
   ${showLPBio ? bioLines.map((line, i) => {
     const lineY = BIO_TOP_Y + i * BIO_LINE_H;
     if (lineY > contentY + leftH - 10) return "";
-    return `<text x="${leftX + 20}" y="${lineY}" font-family="IBM Plex Mono, Apple SD Gothic Neo, Malgun Gothic, monospace" font-size="12" fill="#d4cdc9">${renderBoldLine(line)}</text>`;
+    return `<text x="${leftX + 20}" y="${lineY}" font-family="IBM Plex Mono, Apple SD Gothic Neo, Malgun Gothic, monospace" font-size="12" fill="${surfaces.textBody}">${renderBoldLine(line, surfaces.textStrong)}</text>`;
   }).join("\n  ") : ""}
 
   ${showStats
     ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
-  ${buildStatBars(state.githubStats, rightX + 18, STATS_Y, rightW - 36, accent, dim, undefined, state.stats, state.barStyle, "bar-grad")}
+  ${buildStatBars(state.githubStats, rightX + 18, STATS_Y, rightW - 36, accent, dim, surfaces.softLine, state.stats, state.barStyle, "bar-grad")}
   ${showLangs
-    ? `<rect x="${rightX}" y="${rpModuleTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+    ? `<rect x="${rightX}" y="${rpModuleTop - 8}" width="${rightW}" height="1" fill="${surfaces.line}"></rect>
   <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TOP LANGS</text>
   ${shouldRenderLangIcons(state) && langsToShow
     ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, state.langIconCount ?? langsToShow.length, state.iconSize)
-    : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle, "bar-grad")}`
+    : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, surfaces.softLine, state.barStyle, "bar-grad")}`
     : ""}
   ${canShowContribs
-    ? `<rect x="${rightX}" y="${CONTRIB_DIVIDER_Y}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+    ? `<rect x="${rightX}" y="${CONTRIB_DIVIDER_Y}" width="${rightW}" height="1" fill="${surfaces.line}"></rect>
   ${buildContributionGrid(contributions, rightX + 18, CONTRIB_GRID_Y, rightW - 36, state.contribTheme, palette, { labelColor: label, targetCell: 7, minCols: 24, showFooter: false })}`
     : ""}`
     : `<text x="${rightX + 18}" y="${rpDataTop + 13}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TAGLINE</text>
-  <text x="${rightX + 18}" y="${rpDataTop + 44}" font-family="Sora, Arial, sans-serif" font-size="16" font-weight="600" fill="#f2efec">${escapeXml(truncateText(state.tagline, 52))}</text>
+  <text x="${rightX + 18}" y="${rpDataTop + 44}" font-family="Sora, Arial, sans-serif" font-size="16" font-weight="600" fill="${surfaces.textStrong}">${escapeXml(truncateText(state.tagline, 52))}</text>
   ${state.role ? `<text x="${rightX + 18}" y="${rpDataTop + 70}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.role, 36))}</text>` : ""}`}
 
   <rect x="${outerX}" y="${footerY}" width="${outerW}" height="1" fill="url(#line-grad-h)"></rect>
-  <circle cx="${outerX + 22}" cy="${footerY + 26}" r="5" fill="#7adf8d" filter="url(#glow-status)"></circle>
+  <circle cx="${outerX + 22}" cy="${footerY + 26}" r="5" fill="${surfaces.success}" filter="url(#glow-status)"></circle>
   <text x="${outerX + 36}" y="${footerY + 32}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 52))}</text>
   ${state.hideCommand ? "" : `<text x="${state.width - 54}" y="${footerY + 32}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">$ ${escapeXml(truncateText(state.command, 32))}</text>`}`;
   }
 
-  function buildObsidianWorkspace(state, palette, provider, topLangs, contributions) {
+  function buildObsidianWorkspace(state, palette, provider, topLangs, contributions, surfaces) {
     const statusText = getStatusText(state);
     const outerX = 28;
     const outerY = 96;
@@ -1759,10 +1906,9 @@
     const M_DOT_CY  = mainY + Math.round(148 * mS);
     const M_STA_TY  = mainY + Math.round(154 * mS);
 
-    const accent = state.accent || "#74f0b8";
-    const soft = "#173229";
-    const ink = "#dbfff0";
-    const dim = "#89b7a5";
+    const accent = surfaces.accent;
+    const ink = surfaces.textStrong;
+    const dim = surfaces.textMuted;
     const model = `${provider.label}/${state.theme}`;
     const contribSectionH = estimateContributionSectionHeight(
       contributions,
@@ -1773,9 +1919,9 @@
     const showContribs = contributions && responseH >= contribSectionH;
 
     return `
-  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="#0f1613"></rect>
+  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
 
-  <rect x="${leftX}" y="${leftY}" width="${leftW}" height="${leftH}" rx="10" fill="#101c17"></rect>
+  <rect x="${leftX}" y="${leftY}" width="${leftW}" height="${leftH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
   <text x="${leftX + 18}" y="${leftY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">workspace</text>
   <text x="${leftX + 18}" y="${leftY + 62}" font-family="IBM Plex Mono, monospace" font-size="17" fill="${ink}">${escapeXml(state.name)}</text>
   <text x="${leftX + 18}" y="${leftY + 84}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(
@@ -1788,19 +1934,19 @@
   <text x="${leftX + 18}" y="${leftY + 196}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">model</text>
   <text x="${leftX + 18}" y="${leftY + 218}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(model)}</text>
 
-  <rect x="${mainX}" y="${mainY}" width="${mainW}" height="${mainH}" rx="10" fill="#111f19"></rect>
+  <rect x="${mainX}" y="${mainY}" width="${mainW}" height="${mainH}" rx="10" fill="${surfaces.panelFill}"></rect>
   <text x="${mainX + 22}" y="${M_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prompt</text>
   <text x="${mainX + 22}" y="${M_TAG_Y}" font-family="Sora, Arial, sans-serif" font-size="22" font-weight="700" fill="${ink}">${escapeXml(
     truncateText(state.tagline, 36)
   )}</text>
-  <rect x="${mainX + 22}" y="${M_DIV_Y}" width="${mainW - 44}" height="1" fill="rgba(116,240,184,0.12)"></rect>
+  <rect x="${mainX + 22}" y="${M_DIV_Y}" width="${mainW - 44}" height="1" fill="${surfaces.line}"></rect>
   ${state.hideCommand ? "" : `<text x="${mainX + 22}" y="${M_CMD_Y}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${dim}">$ ${escapeXml(state.command)}</text>`}
   <circle cx="${mainX + 22}" cy="${M_DOT_CY}" r="5" fill="${accent}"></circle>
   <text x="${mainX + 36}" y="${M_STA_TY}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(
     truncateText(statusText, 48)
   )}</text>
 
-  <rect x="${mainX}" y="${responseY}" width="${mainW}" height="${responseH}" rx="10" fill="#0e1915"></rect>
+  <rect x="${mainX}" y="${responseY}" width="${mainW}" height="${responseH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
   <text x="${mainX + 22}" y="${responseY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">output</text>
   ${showContribs
     ? buildContributionGrid(contributions, mainX + 22, responseY + 36, mainW - 44, state.contribTheme, palette, { labelColor: dim })
@@ -1808,18 +1954,18 @@
     ? (topLangs
         ? (shouldRenderLangIcons(state)
             ? buildLangIcons(state.langIconsUri, mainX + 22, responseY + 34, mainW - 44, state.langIconCount ?? topLangs.length, state.iconSize)
-            : buildLangBars(topLangs, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.barStyle))
-        : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.stats, state.barStyle))
+            : buildLangBars(topLangs, mainX + 22, responseY + 34, mainW - 44, accent, dim, surfaces.softLine, state.barStyle))
+        : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainW - 44, accent, dim, surfaces.softLine, state.stats, state.barStyle))
     : `<text x="${mainX + 22}" y="${responseY + 52}" font-family="Sora, Arial, sans-serif" font-size="15" font-weight="600" fill="${ink}">${escapeXml(truncateText(state.tagline, 38))}</text>
   <circle cx="${mainX + 22}" cy="${responseY + 76}" r="5" fill="${accent}"></circle>
   <text x="${mainX + 36}" y="${responseY + 82}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(state.status, 44))}</text>`}
 
-  <rect x="${outerX}" y="${footerY}" width="${outerW}" height="1" fill="rgba(116,240,184,0.08)"></rect>
+  <rect x="${outerX}" y="${footerY}" width="${outerW}" height="1" fill="${surfaces.softLine}"></rect>
   <circle cx="${outerX + 22}" cy="${footerY + 24}" r="5" fill="${accent}"></circle>
   <text x="${outerX + 36}" y="${footerY + 30}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.status, 64))}</text>`;
   }
 
-  function buildPrismCanvas(state, palette, provider, topLangs, contributions) {
+  function buildPrismCanvas(state, palette, provider, topLangs, contributions, surfaces) {
     const statusText = getStatusText(state);
     const outerX = 28;
     const outerY = 96;
@@ -1851,10 +1997,9 @@
     const C_HANDLE_Y = cardY + Math.round(106 * cS);
     const C_TAG_Y    = cardY + Math.min(Math.round(136 * cS), cardH - 12);
 
-    const accent = state.accent || "#94a8ff";
-    const accentSoft = "#dce4ff";
-    const ink = "#1b2450";
-    const dim = "#6070a5";
+    const accent = surfaces.accent;
+    const ink = surfaces.textStrong;
+    const dim = surfaces.textMuted;
     const model = `${provider.label}/${state.theme}`;
     const contribSectionH = estimateContributionSectionHeight(
       contributions,
@@ -1865,8 +2010,8 @@
     const showContribs = contributions && lowerH >= contribSectionH && lrW >= 180;
 
     return `
-  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="rgba(239,243,255,0.9)"></rect>
-  <rect x="${cardX}" y="${cardY}" width="${cardW}" height="${cardH}" rx="10" fill="rgba(255,255,255,0.85)"></rect>
+  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
+  <rect x="${cardX}" y="${cardY}" width="${cardW}" height="${cardH}" rx="10" fill="${surfaces.panelFill}"></rect>
   <text x="${cardX + 24}" y="${C_META_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prism canvas  •  ${escapeXml(model)}</text>
   <text x="${cardX + 24}" y="${C_NAME_Y}" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="700" fill="${ink}">${escapeXml(state.name)}</text>
   <text x="${cardX + 24}" y="${C_HANDLE_Y}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">${escapeXml(state.username ? `@${state.username}` : state.role)}</text>
@@ -1874,31 +2019,31 @@
     truncateText(state.tagline, 56)
   )}</text>
 
-  <rect x="${llX}" y="${lowerY}" width="${llW}" height="${lowerH}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
+  <rect x="${llX}" y="${lowerY}" width="${llW}" height="${lowerH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
   <text x="${llX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "github stats" : "quick facts"}</text>
   ${topLangs
-    ? buildStatBars(state.githubStats, llX + 18, lowerY + 34, llW - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats, state.barStyle)
+    ? buildStatBars(state.githubStats, llX + 18, lowerY + 34, llW - 36, accent, dim, surfaces.softLine, state.stats, state.barStyle)
     : `<text x="${llX + 18}" y="${lowerY + 56}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
   <text x="${llX + 18}" y="${lowerY + 80}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(
     state.username ? `github  @${state.username}` : `pattern  ${state.pattern}`
   )}</text>`}
 
-  <rect x="${lmX}" y="${lowerY}" width="${lmW}" height="${lowerH}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
+  <rect x="${lmX}" y="${lowerY}" width="${lmW}" height="${lowerH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
   <text x="${lmX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prompt</text>
   ${state.hideCommand ? "" : `<text x="${lmX + 18}" y="${lowerY + 56}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(state.command, 18))}</text>`}
   <text x="${lmX + 18}" y="${lowerY + 80}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">theme   ${escapeXml(state.theme)}</text>
 
-  <rect x="${lrX}" y="${lowerY}" width="${lrW}" height="${lowerH}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
+  <rect x="${lrX}" y="${lowerY}" width="${lrW}" height="${lowerH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
   <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${showContribs ? "contributions" : topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
   ${showContribs
     ? buildContributionGrid(contributions, lrX + 18, lowerY + 38, lrW - 36, state.contribTheme, palette, { labelColor: dim, title: "ACTIVITY" })
     : topLangs
     ? (shouldRenderLangIcons(state)
         ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, state.langIconCount ?? topLangs.length, state.iconSize)
-        : buildLangBars(topLangs, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.barStyle))
+        : buildLangBars(topLangs, lrX + 18, lowerY + 34, lrW - 36, accent, dim, surfaces.softLine, state.barStyle))
     : state.githubStats
-      ? buildStatBars(state.githubStats, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats, state.barStyle)
-      : `<circle cx="${lrX + 26}" cy="${lowerY + 58}" r="5" fill="#7f94ff"></circle>
+      ? buildStatBars(state.githubStats, lrX + 18, lowerY + 34, lrW - 36, accent, dim, surfaces.softLine, state.stats, state.barStyle)
+      : `<circle cx="${lrX + 26}" cy="${lowerY + 58}" r="5" fill="${accent}"></circle>
   <text x="${lrX + 40}" y="${lowerY + 64}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(statusText, 20))}</text>`}`;
   }
 
@@ -1921,27 +2066,28 @@
     const rawPalette = themeMap[state.theme];
     const palette = state.accent ? { ...rawPalette, accent: state.accent } : rawPalette;
     const provider = providerMap[state.provider];
+    const surfaces = getProviderSurfaces(state.provider, palette, state.accent || palette.accent);
     const shellRadius = provider.shellRadius;
-    const topBarFill = provider.topBarFill || palette.panelSoft;
-    const topBarText = provider.topBarText || palette.dim;
+    const topBarFill = surfaces.chromeFill;
+    const topBarText = surfaces.chromeText;
 
     if (state.provider === "amber") {
       return applyMotion(`
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
   <defs>
     <linearGradient id="amber-shell" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#3e3a37"/>
-      <stop offset="100%" stop-color="#2c2a27"/>
+      <stop offset="0%" stop-color="${surfaces.shellTop}"/>
+      <stop offset="100%" stop-color="${surfaces.shellBottom}"/>
     </linearGradient>
     <linearGradient id="bar-grad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="${palette.accent}" stop-opacity="0.55"/>
       <stop offset="100%" stop-color="${palette.accent}" stop-opacity="1"/>
     </linearGradient>
     <linearGradient id="line-grad-h" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
-      <stop offset="25%" stop-color="rgba(255,255,255,0.10)"/>
-      <stop offset="75%" stop-color="rgba(255,255,255,0.10)"/>
-      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      <stop offset="0%" stop-color="${withAlpha(surfaces.textStrong, 0)}"/>
+      <stop offset="25%" stop-color="${withAlpha(surfaces.textStrong, 0.1)}"/>
+      <stop offset="75%" stop-color="${withAlpha(surfaces.textStrong, 0.1)}"/>
+      <stop offset="100%" stop-color="${withAlpha(surfaces.textStrong, 0)}"/>
     </linearGradient>
     <filter id="glow-accent" x="-60%" y="-60%" width="220%" height="220%">
       <feGaussianBlur stdDeviation="3.5" result="blur"/>
@@ -1957,34 +2103,32 @@
     </filter>
   </defs>
   <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#amber-shell)"></rect>
-  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#4a4843"></rect>
-  <circle cx="68" cy="60" r="7" fill="#ee8b62"></circle>
-  <circle cx="92" cy="60" r="7" fill="#ffc75a"></circle>
-  <circle cx="116" cy="60" r="7" fill="#6ecf59"></circle>
-  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="15" fill="#c4b9b0">About ${escapeXml(state.name)}</text>
-  ${buildAmberDashboard(state, palette, provider, effectiveTopLangs, effectiveContributions)}
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="${topBarFill}"></rect>
+  ${buildWindowButtons(provider, surfaces)}
+  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="15" fill="${topBarText}">About ${escapeXml(state.name)}</text>
+  ${buildAmberDashboard(state, palette, provider, effectiveTopLangs, effectiveContributions, surfaces)}
 </svg>`.trim(), state, palette);
     }
 
     if (state.provider === "obsidian") {
       return applyMotion(`
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
-  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#09110d"></rect>
-  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#0f1f18"></rect>
-  ${buildWindowButtons(provider)}
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="${surfaces.shellFill}"></rect>
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="${topBarFill}"></rect>
+  ${buildWindowButtons(provider, surfaces)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
-  ${buildObsidianWorkspace(state, palette, provider, effectiveTopLangs, effectiveContributions)}
+  ${buildObsidianWorkspace(state, palette, provider, effectiveTopLangs, effectiveContributions, surfaces)}
 </svg>`.trim(), state, palette);
     }
 
     if (state.provider === "prism") {
       return applyMotion(`
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
-  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#f5f7ff"></rect>
-  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#eef3ff"></rect>
-  ${buildWindowButtons(provider)}
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="${surfaces.shellFill}"></rect>
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="${topBarFill}"></rect>
+  ${buildWindowButtons(provider, surfaces)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
-  ${buildPrismCanvas(state, palette, provider, effectiveTopLangs, effectiveContributions)}
+  ${buildPrismCanvas(state, palette, provider, effectiveTopLangs, effectiveContributions, surfaces)}
 </svg>`.trim(), state, palette);
     }
 
@@ -2036,14 +2180,14 @@
 
     return applyMotion(`
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
-  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="${palette.shell}"></rect>
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="${surfaces.bodyFill}"></rect>
 
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="${topBarFill}"></rect>
-  ${buildWindowButtons(provider)}
+  ${buildWindowButtons(provider, surfaces)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
 
-  ${state.hideAvatar ? "" : `<rect x="56" y="128" width="152" height="152" rx="10" fill="${palette.panelSoft}"></rect>
-  <text x="132" y="220" text-anchor="middle" font-family="Sora, Arial, sans-serif" font-size="52" font-weight="700" fill="${palette.accent}">${escapeXml(state.avatar)}</text>`}
+  ${state.hideAvatar ? "" : `<rect x="56" y="128" width="152" height="152" rx="10" fill="${surfaces.panelFillAlt}"></rect>
+  <text x="132" y="220" text-anchor="middle" font-family="Sora, Arial, sans-serif" font-size="52" font-weight="700" fill="${surfaces.accent}">${escapeXml(state.avatar)}</text>`}
 
   <text x="${contentX}" y="${LBL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${palette.dim}">$ ${provider.label}/${state.theme}</text>
   <text x="${contentX}" y="${NAME_Y}" font-family="Sora, Arial, sans-serif" font-size="44" font-weight="700" fill="${palette.title}">${escapeXml(state.name)}</text>
