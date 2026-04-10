@@ -688,12 +688,9 @@
     const ROLE_Y   = showProfile ? contentY + 118 : contentY + 36;
     const TAG_Y    = showProfile ? contentY + 146 : contentY + 64;
     const CMD_Y    = showProfile ? contentY + 170 : contentY + 90;
-    const STAT_CY  = showProfile ? contentY + 196 : contentY + 116;
-    const STAT_TY  = showProfile ? contentY + 202 : contentY + 122;
 
     const showLPTag  = leftH >= (showProfile ? 153 : 76);
     const showLPCmd  = !state.hideCommand && leftH >= (showProfile ? 177 : 102);
-    const showLPStat = leftH >= (showProfile ? 203 : 128);
 
     const rpDataTop = rightY + 16;
     const rpDataBot = Math.max(footerY - 12, rpDataTop);
@@ -740,8 +737,6 @@
   <text x="${leftX + 32}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${accent}">${escapeXml(truncateText(state.role, 28))}</text>
   ${showLPTag ? `<text x="${leftX + 16}" y="${TAG_Y}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
   ${showLPCmd ? `<text x="${leftX + 16}" y="${CMD_Y}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">$ ${escapeXml(truncateText(state.command, 30))}</text>` : ""}
-  ${showLPStat ? `<circle cx="${leftX + 24}" cy="${STAT_CY}" r="5" fill="#7adf8d"></circle>
-  <text x="${leftX + 38}" y="${STAT_TY}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 38))}</text>` : ""}
 
   ${showStats
     ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
@@ -753,14 +748,9 @@
     ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, state.langIconCount ?? langsToShow.length, state.iconSize)
     : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle)}`
     : ""}`
-    : state.githubStats
-      ? `<circle cx="${rightX + 26}" cy="${rpDataTop + 16}" r="5" fill="#7adf8d"></circle>
-  <text x="${rightX + 40}" y="${rpDataTop + 22}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">${escapeXml(truncateText(statusText, 52))}</text>`
-      : `${state.hideCommand ? "" : `<text x="${rightX + 18}" y="${rpDataTop + 28}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">$ ${escapeXml(truncateText(state.command, 40))}</text>`}
-  <rect x="${rightX}" y="${rpDataTop + 46}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
-  <text x="${rightX + 18}" y="${rpDataTop + 66}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">status</text>
-  <circle cx="${rightX + 26}" cy="${rpDataTop + 88}" r="5" fill="#7adf8d"></circle>
-  <text x="${rightX + 40}" y="${rpDataTop + 94}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">${escapeXml(truncateText(statusText, 52))}</text>`}
+    : `<text x="${rightX + 18}" y="${rpDataTop + 13}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TAGLINE</text>
+  <text x="${rightX + 18}" y="${rpDataTop + 44}" font-family="Sora, Arial, sans-serif" font-size="16" font-weight="600" fill="#f2efec">${escapeXml(truncateText(state.tagline, 52))}</text>
+  ${state.role ? `<text x="${rightX + 18}" y="${rpDataTop + 70}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.role, 36))}</text>` : ""}`}
 
   <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.08)"></line>
   <circle cx="${outerX + 22}" cy="${footerY + 26}" r="5" fill="#7adf8d"></circle>
