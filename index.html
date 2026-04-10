@@ -57,22 +57,22 @@
             </label>
 
             <label>
-              Tagline <span style="opacity:0.5;font-size:0.85em">(right panel featured line)</span>
+              Tagline <span style="opacity:0.5;font-size:0.85em">(우측 패널 featured line)</span>
               <input id="tagline" name="tagline" placeholder="Building tiny tools with taste." />
             </label>
 
             <label>
-              Bio <span style="opacity:0.5;font-size:0.85em">(left panel · wraps up to 3 lines · falls back to tagline)</span>
-              <textarea id="bio" name="bio" rows="3" placeholder="Student studying embedded sensor data analysis and practical AI system design. From data collection to working system, end to end."></textarea>
+              Bio <span style="opacity:0.5;font-size:0.85em">(좌측 패널 · 높이에 따라 자동 줄바꿈 · 없으면 tagline으로 대체)</span>
+              <textarea id="bio" name="bio" rows="3" placeholder="안녕하세요. 저는 임베디드 센서 데이터 분석과 AI 시스템 설계를 공부하고 있어요."></textarea>
             </label>
 
             <label>
-              Status
+              Status <span style="opacity:0.5;font-size:0.85em">(footer / username 없을 때 표시)</span>
               <input id="status" name="status" placeholder="available for cool internet projects" />
             </label>
 
             <label>
-              Command
+              Command <span style="opacity:0.5;font-size:0.85em">(footer에만 표시)</span>
               <input id="command" name="command" placeholder="npx terminal-identity" />
             </label>
 
@@ -90,6 +90,7 @@
               <label>
                 Theme
                 <select id="theme" name="theme">
+                  <option value="solar">Solar Gold</option>
                   <option value="ember">Ember Shell</option>
                   <option value="aurora">Aurora Mint</option>
                   <option value="cobalt">Cobalt Night</option>
@@ -97,7 +98,6 @@
                   <option value="graphite">Graphite Mono</option>
                   <option value="matcha">Matcha Console</option>
                   <option value="sakura">Sakura Bloom</option>
-                  <option value="solar">Solar Gold</option>
                 </select>
               </label>
 
