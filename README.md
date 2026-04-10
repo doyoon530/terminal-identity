@@ -34,6 +34,40 @@ Live demo: [terminal-identity-opal.vercel.app](https://terminal-identity-opal.ve
 - `sakura`
 - `solar`
 
+### Theme previews
+
+#### `ember`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=ember&avatar=GG&pattern=grid&width=980&height=520" width="100%" alt="Ember theme preview" />
+
+#### `aurora`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=alex.dev&role=developer%20advocate&tagline=Teaching%20APIs%20without%20making%20them%20feel%20scary.&status=speaking%2C%20writing%2C%20and%20shipping%20DX%20experiments&command=npx%20explain-like-im-new&theme=aurora&avatar=AD&pattern=grid&width=980&height=520" width="100%" alt="Aurora theme preview" />
+
+#### `cobalt`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=aria&role=platform%20engineer&tagline=Reliable%20infrastructure%20with%20humane%20developer%20tooling.&status=focused%20on%20observability%2C%20scale%2C%20and%20platform%20DX&command=terraform%20apply%20confidence&theme=cobalt&avatar=AR&pattern=rings&width=980&height=520" width="100%" alt="Cobalt theme preview" />
+
+#### `velvet`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=noah&role=creative%20coder&tagline=Code%2C%20typography%2C%20and%20generative%20visuals%20in%20one%20place.&status=available%20for%20interactive%20art%20and%20frontend%20commissions&command=bun%20run%20make-something-strange&theme=velvet&avatar=NH&pattern=pulse&width=980&height=520" width="100%" alt="Velvet theme preview" />
+
+#### `graphite`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&status=building%20products%2C%20docs%2C%20and%20weird%20little%20experiments&command=pnpm%20create%20tiny-hit&theme=graphite&avatar=MS&pattern=pulse&width=980&height=520" width="100%" alt="Graphite theme preview" />
+
+#### `matcha`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=leo&role=full-stack%20maker&tagline=Turning%20napkin%20ideas%20into%20products%20people%20keep%20using.&status=currently%20exploring%20AI%2C%20commerce%2C%20and%20tiny%20SaaS%20tools&command=pnpm%20ship%20--fast&theme=matcha&avatar=LE&pattern=grid&width=980&height=520" width="100%" alt="Matcha theme preview" />
+
+#### `sakura`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=sakura&avatar=JW&pattern=rings&width=980&height=520" width="100%" alt="Sakura theme preview" />
+
+#### `solar`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=hana&role=product%20engineer&tagline=Clean%20interfaces%2C%20kind%20systems%2C%20and%20rapid%20iteration.&status=available%20for%20startups%20that%20care%20about%20craft&command=npm%20run%20build-bright&theme=solar&avatar=HA&pattern=rings&width=980&height=520" width="100%" alt="Solar theme preview" />
+
 ## Preset examples
 
 ```html
