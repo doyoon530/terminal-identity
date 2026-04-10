@@ -786,11 +786,12 @@
 
     const gap = 2;
     const maxWeeks = contributions.weeks.length;
-    const targetCell = 10;
+    const targetCell = safeNumber(options?.targetCell, 10, 6, 14);
+    const minCols = safeNumber(options?.minCols, 16, 10, 53);
     const desiredCols = Math.max(16, Math.floor((trackWidth + gap) / (targetCell + gap)));
-    const cols = Math.min(maxWeeks, desiredCols);
+    const cols = Math.min(maxWeeks, Math.max(minCols, desiredCols));
     const weeks = contributions.weeks.slice(-cols);
-    const cell = Math.max(7, Math.min(12, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
+    const cell = Math.max(5, Math.min(12, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
     const gridW = cols * cell + Math.max(0, cols - 1) * gap;
     const gridH = 7 * cell + 6 * gap;
     const colors = getContributionThemeColors(theme, palette);
@@ -798,6 +799,7 @@
     const labelColor = options?.labelColor || palette.dim;
     const totalLabel = `${formatCompactStat(contributions.total)} this year`;
     const activeLabel = `${contributions.activeDays} active days`;
+    const showFooter = options?.showFooter !== false;
 
     const cells = [];
     const connectorSegments = [];
@@ -863,7 +865,7 @@
     ${connectorSegments.join("\n    ")}
     ${cells.join("\n    ")}
   </g>
-  <text x="${x}" y="${y + gridH + 16}" font-family="IBM Plex Mono, monospace" font-size="10" fill="${labelColor}">${escapeXml(activeLabel)}</text>`;
+  ${showFooter ? `<text x="${x}" y="${y + gridH + 16}" font-family="IBM Plex Mono, monospace" font-size="10" fill="${labelColor}">${escapeXml(activeLabel)}</text>` : ""}`;
   }
 
   function normalizeState(input) {
@@ -1180,16 +1182,21 @@
     const statsEndY = showStats ? STATS_Y + statsH : rpDataTop;
 
     // Langs in right panel (below stats)
-    const rpLangsTop = statsEndY + 20;
-    const rpLangsAvail = rpDataBot - rpLangsTop - 16;
+    const rpModuleTop = statsEndY + 18;
+    const rpModuleAvail = rpDataBot - rpModuleTop - 6;
+    const hasContribs = contributions && showStats;
+    const hasLangs = topLangs && showStats;
+    const langModuleH = hasLangs ? (state.langStyle === "icons" ? ((ICON_SIZES[state.iconSize] ?? ICON_SIZES.md) + 22) : 54) : 0;
+    const contribModuleTop = rpModuleTop + (hasLangs ? langModuleH + 10 : 0);
+    const contribAvailH = rpDataBot - contribModuleTop - 2;
+    const canShowContribs = hasContribs && contribAvailH >= 56;
     const maxLangs = topLangs
-      ? Math.min(topLangs.length, Math.max(0, Math.floor(rpLangsAvail / 18)))
+      ? Math.min(topLangs.length, Math.max(0, Math.floor(Math.max(54, rpModuleAvail) / 18)))
       : 0;
-    const showLangs = topLangs && showStats && maxLangs > 0;
-    const langsToShow = showLangs ? topLangs.slice(0, maxLangs) : null;
-    const LANGS_LABEL_Y = rpLangsTop + 13;
-    const LANGS_Y = rpLangsTop + 26;
-    const canShowContribs = contributions && showStats && rpLangsAvail >= 96;
+    const showLangs = hasLangs && maxLangs > 0;
+    const langsToShow = showLangs ? topLangs.slice(0, Math.min(maxLangs, state.langStyle === "icons" ? 4 : maxLangs)) : null;
+    const LANGS_LABEL_Y = rpModuleTop + 11;
+    const LANGS_Y = rpModuleTop + 24;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="#231f1d"></rect>
@@ -1221,16 +1228,17 @@
   ${showStats
     ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
   ${buildStatBars(state.githubStats, rightX + 18, STATS_Y, rightW - 36, accent, dim, undefined, state.stats, state.barStyle, "bar-grad")}
-  ${canShowContribs
-    ? `<rect x="${rightX}" y="${rpLangsTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
-  ${buildContributionGrid(contributions, rightX + 18, rpLangsTop + 8, rightW - 36, state.contribTheme, palette, { labelColor: label })}`
-    : (showLangs || (state.langStyle === "icons" && state.langIconsUri && langsToShow && rpLangsAvail >= 28)
-    ? `<rect x="${rightX}" y="${rpLangsTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+  ${showLangs
+    ? `<rect x="${rightX}" y="${rpModuleTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
   <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TOP LANGS</text>
   ${state.langStyle === "icons" && state.langIconsUri && langsToShow
     ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, state.langIconCount ?? langsToShow.length, state.iconSize)
     : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle, "bar-grad")}`
-    : "")}`
+    : ""}
+  ${canShowContribs
+    ? `<rect x="${rightX}" y="${contribModuleTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
+  ${buildContributionGrid(contributions, rightX + 18, contribModuleTop + 8, rightW - 36, state.contribTheme, palette, { labelColor: label, targetCell: 7, minCols: 24, showFooter: false })}`
+    : ""}`
     : `<text x="${rightX + 18}" y="${rpDataTop + 13}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TAGLINE</text>
   <text x="${rightX + 18}" y="${rpDataTop + 44}" font-family="Sora, Arial, sans-serif" font-size="16" font-weight="600" fill="#f2efec">${escapeXml(truncateText(state.tagline, 52))}</text>
   ${state.role ? `<text x="${rightX + 18}" y="${rpDataTop + 70}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.role, 36))}</text>` : ""}`}
