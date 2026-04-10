@@ -48,7 +48,7 @@ async function fetchGithubStats(username) {
     });
     const topLangs = Object.entries(langCounts)
       .sort(([, a], [, b]) => b - a)
-      .slice(0, 4)
+      .slice(0, 6)
       .map(([name, count]) => ({ name, count }));
 
     return {

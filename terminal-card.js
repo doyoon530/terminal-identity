@@ -177,6 +177,11 @@
     pattern: "grid",
     width: 980,
     height: 520,
+    accent: null,
+    showLangs: "auto",
+    langCount: 4,
+    hideAvatar: false,
+    hideCommand: false,
   };
 
   const presets = [
@@ -315,6 +320,14 @@
       .replaceAll("'", "&apos;");
   }
 
+  function isValidHex(value) {
+    return typeof value === "string" && /^#[0-9a-fA-F]{3,8}$/.test(value);
+  }
+
+  function parseBool(value) {
+    return value === true || value === "true" || value === "1";
+  }
+
   function safeNumber(value, fallback, min, max) {
     const parsed = Number(value);
     if (Number.isNaN(parsed)) {
@@ -331,7 +344,7 @@
     const topLangs =
       Array.isArray(stats.topLangs) && stats.topLangs.length > 0
         ? stats.topLangs
-            .slice(0, 4)
+            .slice(0, 6)
             .filter((l) => l && typeof l.name === "string" && typeof l.count === "number")
             .map((l) => ({ name: String(l.name).slice(0, 20), count: Math.max(0, Math.floor(l.count)) }))
         : null;
@@ -425,7 +438,6 @@
     const barH = 3;
 
     return topLangs
-      .slice(0, 4)
       .map((lang, i) => {
         const filled = Math.max(2, Math.round((lang.count / maxVal) * barTrack));
         const rowY = y + i * rowH;
@@ -467,18 +479,21 @@
       width: safeNumber(state.width, defaults.width, 720, 1400),
       height: safeNumber(state.height, defaults.height, 420, 820),
       githubStats: normalizeGithubStats(state.githubStats),
+      accent: isValidHex(state.accent) ? String(state.accent) : null,
+      showLangs: ["auto", "on", "off"].includes(state.showLangs) ? state.showLangs : "auto",
+      langCount: safeNumber(state.langCount, 4, 1, 6),
+      hideAvatar: parseBool(state.hideAvatar),
+      hideCommand: parseBool(state.hideCommand),
     };
   }
 
   function serializeState(state) {
     const params = new URLSearchParams();
     Object.entries(state).forEach(([key, value]) => {
-      if (key === "provider") {
-        return;
-      }
-      if (key === "githubStats") {
-        return;
-      }
+      if (key === "provider" || key === "githubStats") return;
+      if (value === null || value === false || value === "") return;
+      if (key === "showLangs" && value === "auto") return;
+      if (key === "langCount" && value === 4) return;
       if (key === "theme") {
         params.set(
           "theme",
@@ -549,7 +564,7 @@
   <circle cx="120" cy="60" r="8" fill="#28c840"></circle>`;
   }
 
-  function buildClaudeDashboard(state, palette, provider) {
+  function buildClaudeDashboard(state, palette, provider, topLangs) {
     const statusText = getStatusText(state);
     const activityHandle = state.username ? `@${state.username}` : state.name;
     const outerX = 28;
@@ -564,7 +579,7 @@
     const rightY = 132;
     const rightWidth = state.width - rightX - 54;
     const footerY = state.height - 142;
-    const accent = "#f08a61";
+    const accent = state.accent || "#f08a61";
     const dim = "#9c928d";
     const promptY = state.height - 82;
     const cliTheme = `${provider.label}/${state.theme}`;
@@ -579,7 +594,7 @@
   <text x="${leftX + 16}" y="${leftY + 60}" font-family="IBM Plex Mono, monospace" font-size="22" fill="#f6f2ef">Welcome back, ${escapeXml(state.name)}!</text>
   <text x="${leftX + 16}" y="${leftY + 96}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 30))}</text>
   <text x="${leftX + 16}" y="${leftY + 128}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 44))}</text>
-  <text x="${leftX + 16}" y="${leftY + 162}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">$ ${escapeXml(truncateText(state.command, 30))}</text>
+  ${state.hideCommand ? "" : `<text x="${leftX + 16}" y="${leftY + 162}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">$ ${escapeXml(truncateText(state.command, 30))}</text>`}
   <circle cx="${leftX + 24}" cy="${leftY + 196}" r="5" fill="#7adf8d"></circle>
   <text x="${leftX + 38}" y="${leftY + 202}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 38))}</text>
 
@@ -593,12 +608,12 @@
   <text x="${rightX + 18}" y="${rightY + 136}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats ? "github stats" : "run"}</text>
   ${state.githubStats
     ? `${buildStatBars(state.githubStats, rightX + 18, rightY + 148, rightWidth - 36, accent, dim)}
-  ${state.githubStats.topLangs && state.height >= 600
+  ${topLangs && state.height >= 600
     ? `<rect x="${rightX}" y="${rightY + 222}" width="${rightWidth}" height="1" fill="rgba(255,255,255,0.07)"></rect>
   <text x="${rightX + 18}" y="${rightY + 236}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">top langs</text>
-  ${buildLangBars(state.githubStats.topLangs, rightX + 18, rightY + 248, rightWidth - 36, accent, dim)}`
+  ${buildLangBars(topLangs, rightX + 18, rightY + 248, rightWidth - 36, accent, dim)}`
     : ""}`
-    : `<text x="${rightX + 18}" y="${rightY + 160}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">$ ${escapeXml(truncateText(state.command, 40))}</text>
+    : `${state.hideCommand ? "" : `<text x="${rightX + 18}" y="${rightY + 160}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">$ ${escapeXml(truncateText(state.command, 40))}</text>`}
 
   <rect x="${rightX}" y="${rightY + 178}" width="${rightWidth}" height="1" fill="rgba(255,255,255,0.07)"></rect>
 
@@ -612,7 +627,7 @@
   <text x="${outerX + 50}" y="${promptY}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">Try \"edit &lt;filepath&gt; to ...\"</text>`;
   }
 
-  function buildGptWorkspace(state, palette, provider) {
+  function buildGptWorkspace(state, palette, provider, topLangs) {
     const statusText = getStatusText(state);
     const identityHandle = getIdentityHandle(state);
     const outerX = 28;
@@ -630,7 +645,7 @@
     const responseY = mainY + mainHeight + 18;
     const responseHeight = 98;
     const footerY = 422;
-    const accent = "#74f0b8";
+    const accent = state.accent || "#74f0b8";
     const soft = "#173229";
     const ink = "#dbfff0";
     const dim = "#89b7a5";
@@ -658,7 +673,7 @@
     truncateText(state.tagline, 36)
   )}</text>
   <rect x="${mainX + 22}" y="${mainY + 88}" width="${mainWidth - 44}" height="1" fill="rgba(116,240,184,0.12)"></rect>
-  <text x="${mainX + 22}" y="${mainY + 122}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${dim}">$ ${escapeXml(state.command)}</text>
+  ${state.hideCommand ? "" : `<text x="${mainX + 22}" y="${mainY + 122}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${dim}">$ ${escapeXml(state.command)}</text>`}
   <circle cx="${mainX + 22}" cy="${mainY + 152}" r="5" fill="${accent}"></circle>
   <text x="${mainX + 36}" y="${mainY + 158}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(
     truncateText(statusText, 48)
@@ -667,8 +682,8 @@
   <rect x="${mainX}" y="${responseY}" width="${mainWidth}" height="${responseHeight}" rx="10" fill="#0e1915"></rect>
   <text x="${mainX + 22}" y="${responseY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">output</text>
   ${state.githubStats
-    ? (state.githubStats.topLangs
-        ? buildLangBars(state.githubStats.topLangs, mainX + 22, responseY + 34, mainWidth - 44, accent, dim)
+    ? (topLangs
+        ? buildLangBars(topLangs, mainX + 22, responseY + 34, mainWidth - 44, accent, dim)
         : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainWidth - 44, accent, dim))
     : `<text x="${mainX + 22}" y="${responseY + 52}" font-family="Sora, Arial, sans-serif" font-size="15" font-weight="600" fill="${ink}">${escapeXml(truncateText(state.tagline, 38))}</text>
   <circle cx="${mainX + 22}" cy="${responseY + 76}" r="5" fill="${accent}"></circle>
@@ -679,7 +694,7 @@
   <text x="${outerX + 36}" y="${outerY + outerHeight - 24}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.status, 64))}</text>`;
   }
 
-  function buildGeminiCanvas(state, palette, provider) {
+  function buildGeminiCanvas(state, palette, provider, topLangs) {
     const statusText = getStatusText(state);
     const identityHandle = getIdentityHandle(state);
     const outerX = 28;
@@ -702,7 +717,7 @@
     const lowerRightY = 304;
     const lowerRightWidth = state.width - lowerRightX - 58;
     const lowerRightHeight = 110;
-    const accent = "#94a8ff";
+    const accent = state.accent || "#94a8ff";
     const accentSoft = "#dce4ff";
     const ink = "#1b2450";
     const dim = "#6070a5";
@@ -719,8 +734,8 @@
   )}</text>
 
   <rect x="${lowerLeftX}" y="${lowerLeftY}" width="${lowerLeftWidth}" height="${lowerLeftHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
-  <text x="${lowerLeftX + 18}" y="${lowerLeftY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats && state.githubStats.topLangs ? "github stats" : "quick facts"}</text>
-  ${state.githubStats && state.githubStats.topLangs
+  <text x="${lowerLeftX + 18}" y="${lowerLeftY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "github stats" : "quick facts"}</text>
+  ${topLangs
     ? buildStatBars(state.githubStats, lowerLeftX + 18, lowerLeftY + 34, lowerLeftWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
     : `<text x="${lowerLeftX + 18}" y="${lowerLeftY + 56}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
   <text x="${lowerLeftX + 18}" y="${lowerLeftY + 80}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(
@@ -729,15 +744,13 @@
 
   <rect x="${lowerMidX}" y="${lowerMidY}" width="${lowerMidWidth}" height="${lowerMidHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
   <text x="${lowerMidX + 18}" y="${lowerMidY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prompt</text>
-  <text x="${lowerMidX + 18}" y="${lowerMidY + 56}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(
-    truncateText(state.command, 18)
-  )}</text>
+  ${state.hideCommand ? "" : `<text x="${lowerMidX + 18}" y="${lowerMidY + 56}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(state.command, 18))}</text>`}
   <text x="${lowerMidX + 18}" y="${lowerMidY + 80}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">theme   ${escapeXml(state.theme)}</text>
 
   <rect x="${lowerRightX}" y="${lowerRightY}" width="${lowerRightWidth}" height="${lowerRightHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
-  <text x="${lowerRightX + 18}" y="${lowerRightY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats && state.githubStats.topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
-  ${state.githubStats && state.githubStats.topLangs
-    ? buildLangBars(state.githubStats.topLangs, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
+  <text x="${lowerRightX + 18}" y="${lowerRightY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
+  ${topLangs
+    ? buildLangBars(topLangs, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
     : state.githubStats
       ? buildStatBars(state.githubStats, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
       : `<circle cx="${lowerRightX + 26}" cy="${lowerRightY + 58}" r="5" fill="#7f94ff"></circle>
@@ -746,13 +759,18 @@
 
   function buildSvg(input) {
     const state = normalizeState(input);
-    const palette = themeMap[state.theme];
+    const rawPalette = themeMap[state.theme];
+    const palette = state.accent ? { ...rawPalette, accent: state.accent } : rawPalette;
     const provider = providerMap[state.provider];
     const bodyTop = 72;
     const shellRadius = provider.shellRadius;
     const panelX = 28;
     const topBarFill = provider.topBarFill || palette.panelSoft;
     const topBarText = provider.topBarText || palette.dim;
+    const effectiveTopLangs =
+      state.showLangs !== "off" && state.githubStats && state.githubStats.topLangs
+        ? state.githubStats.topLangs.slice(0, state.langCount)
+        : null;
 
     if (state.provider === "claude") {
       return `
@@ -762,7 +780,7 @@
   <circle cx="68" cy="60" r="7" fill="#ee8b62"></circle>
   <circle cx="92" cy="60" r="7" fill="#ffc75a"></circle>
   <circle cx="116" cy="60" r="7" fill="#6ecf59"></circle>
-  ${buildClaudeDashboard(state, palette, provider)}
+  ${buildClaudeDashboard(state, palette, provider, effectiveTopLangs)}
 </svg>`.trim();
     }
 
@@ -773,7 +791,7 @@
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#0f1f18"></rect>
   ${buildWindowButtons(provider)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
-  ${buildGptWorkspace(state, palette, provider)}
+  ${buildGptWorkspace(state, palette, provider, effectiveTopLangs)}
 </svg>`.trim();
     }
 
@@ -784,9 +802,12 @@
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#eef3ff"></rect>
   ${buildWindowButtons(provider)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
-  ${buildGeminiCanvas(state, palette, provider)}
+  ${buildGeminiCanvas(state, palette, provider, effectiveTopLangs)}
 </svg>`.trim();
     }
+
+    const contentX = state.hideAvatar ? 56 : 256;
+    const contentW = state.width - contentX - 56;
 
     return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
@@ -796,30 +817,30 @@
   ${buildWindowButtons(provider)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
 
-  <rect x="56" y="128" width="152" height="152" rx="10" fill="${palette.panelSoft}"></rect>
-  <text x="132" y="220" text-anchor="middle" font-family="Sora, Arial, sans-serif" font-size="52" font-weight="700" fill="${palette.accent}">${escapeXml(state.avatar)}</text>
+  ${state.hideAvatar ? "" : `<rect x="56" y="128" width="152" height="152" rx="10" fill="${palette.panelSoft}"></rect>
+  <text x="132" y="220" text-anchor="middle" font-family="Sora, Arial, sans-serif" font-size="52" font-weight="700" fill="${palette.accent}">${escapeXml(state.avatar)}</text>`}
 
-  <text x="256" y="144" font-family="IBM Plex Mono, monospace" font-size="12" fill="${palette.dim}">$ ${provider.label}/${state.theme}</text>
-  <text x="256" y="196" font-family="Sora, Arial, sans-serif" font-size="44" font-weight="700" fill="${palette.title}">${escapeXml(state.name)}</text>
-  <text x="256" y="236" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.accent}">${escapeXml(
+  <text x="${contentX}" y="144" font-family="IBM Plex Mono, monospace" font-size="12" fill="${palette.dim}">$ ${provider.label}/${state.theme}</text>
+  <text x="${contentX}" y="196" font-family="Sora, Arial, sans-serif" font-size="44" font-weight="700" fill="${palette.title}">${escapeXml(state.name)}</text>
+  <text x="${contentX}" y="236" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.accent}">${escapeXml(
     state.username ? `@${state.username}` : state.role
   )}</text>
-  <text x="256" y="272" font-family="Sora, Arial, sans-serif" font-size="16" fill="${palette.text}">${escapeXml(state.tagline)}</text>
+  <text x="${contentX}" y="272" font-family="Sora, Arial, sans-serif" font-size="16" fill="${palette.text}">${escapeXml(state.tagline)}</text>
 
   ${state.githubStats && state.height >= 460
-    ? buildStatBars(state.githubStats, 256, 302, state.width - 256 - 56, palette.accent, palette.dim)
-    : `<circle cx="264" cy="310" r="5" fill="${palette.success}"></circle>
-  <text x="280" y="316" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
+    ? buildStatBars(state.githubStats, contentX, 302, contentW, palette.accent, palette.dim)
+    : `<circle cx="${contentX + 8}" cy="310" r="5" fill="${palette.success}"></circle>
+  <text x="${contentX + 24}" y="316" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
 
-  ${state.githubStats && state.githubStats.topLangs && state.height >= 560
-    ? `<rect x="256" y="380" width="${state.width - 256 - 56}" height="1" fill="rgba(255,255,255,0.05)"></rect>
-  ${buildLangBars(state.githubStats.topLangs, 256, 388, state.width - 256 - 56, palette.accent, palette.dim)}`
+  ${effectiveTopLangs && state.height >= 560
+    ? `<rect x="${contentX}" y="380" width="${contentW}" height="1" fill="rgba(255,255,255,0.05)"></rect>
+  ${buildLangBars(effectiveTopLangs, contentX, 388, contentW, palette.accent, palette.dim)}`
     : ""}
 
   <rect x="28" y="${state.height - 76}" width="${state.width - 56}" height="1" fill="rgba(255,255,255,0.08)"></rect>
   <circle cx="56" cy="${state.height - 54}" r="5" fill="${palette.success}"></circle>
   <text x="72" y="${state.height - 48}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">${escapeXml(state.githubStats ? getStatusText(state) : state.status)}</text>
-  <text x="256" y="${state.height - 48}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>
+  ${state.hideCommand ? "" : `<text x="256" y="${state.height - 48}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>`}
 </svg>`.trim();
   }
 

@@ -47,6 +47,11 @@ function getState() {
     pattern: document.getElementById("pattern").value,
     width: document.getElementById("width").value,
     height: document.getElementById("height").value,
+    accent: document.getElementById("accent").value.trim(),
+    showLangs: document.getElementById("showLangs").value,
+    langCount: document.getElementById("langCount").value,
+    hideAvatar: document.getElementById("hideAvatar").checked,
+    hideCommand: document.getElementById("hideCommand").checked,
   });
 }
 
@@ -63,6 +68,11 @@ function fillForm(state) {
   document.getElementById("pattern").value = state.pattern;
   document.getElementById("width").value = state.width;
   document.getElementById("height").value = state.height;
+  document.getElementById("accent").value = state.accent || "";
+  document.getElementById("showLangs").value = state.showLangs || "auto";
+  document.getElementById("langCount").value = state.langCount || "";
+  document.getElementById("hideAvatar").checked = state.hideAvatar === "true" || state.hideAvatar === true;
+  document.getElementById("hideCommand").checked = state.hideCommand === "true" || state.hideCommand === true;
 }
 
 function loadStateFromUrl() {
@@ -80,6 +90,11 @@ function loadStateFromUrl() {
     pattern: params.get("pattern"),
     width: params.get("width"),
     height: params.get("height"),
+    accent: params.get("accent"),
+    showLangs: params.get("showLangs"),
+    langCount: params.get("langCount"),
+    hideAvatar: params.get("hideAvatar"),
+    hideCommand: params.get("hideCommand"),
   });
   fillForm(state);
 }

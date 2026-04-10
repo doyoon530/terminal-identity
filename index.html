@@ -124,6 +124,36 @@
               <input id="height" name="height" type="number" min="420" max="820" step="10" />
             </label>
 
+            <div class="option-grid">
+              <label>
+                Accent color
+                <input id="accent" name="accent" type="text" placeholder="#f08a61" maxlength="9" />
+              </label>
+              <label>
+                Lang count
+                <input id="langCount" name="langCount" type="number" min="1" max="6" step="1" placeholder="4" />
+              </label>
+            </div>
+
+            <div class="option-grid">
+              <label>
+                Top langs
+                <select id="showLangs" name="showLangs">
+                  <option value="auto">Auto</option>
+                  <option value="on">Always show</option>
+                  <option value="off">Hide</option>
+                </select>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="hideAvatar" name="hideAvatar" />
+                Hide avatar
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="hideCommand" name="hideCommand" />
+                Hide command
+              </label>
+            </div>
+
             <div class="action-row">
               <button type="button" id="presetButton">Load demo</button>
               <button type="button" id="copySvgButton" class="primary">Copy SVG</button>
