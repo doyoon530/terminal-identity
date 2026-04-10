@@ -1123,6 +1123,57 @@
     return contentTop + contentH + bottomPad;
   }
 
+  function getObsidianResponseRequiredHeight(state, topLangs, contributions, mainW) {
+    if (contributions?.weeks?.length) {
+      return estimateContributionSectionHeight(
+        contributions,
+        mainW - 44,
+        state.contribTheme,
+        { contentTop: 36, bottomPad: 8 }
+      );
+    }
+
+    if (topLangs?.length) {
+      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
+      return getLangSectionHeight(state, langCount, { contentTop: 34, bottomPad: 8 });
+    }
+
+    if (state.githubStats) {
+      return 42 + (state.stats || STAT_KEYS).length * 18;
+    }
+
+    return 88;
+  }
+
+  function getPrismLowerRequirements(state, topLangs, contributions, llW, lrW) {
+    const llRequired = topLangs?.length
+      ? 42 + (state.stats || STAT_KEYS).length * 18
+      : (state.hideCommand ? 88 : 96);
+    const lmRequired = state.hideCommand ? 88 : 96;
+
+    let lrRequired = 74;
+    if (contributions?.weeks?.length) {
+      lrRequired = estimateContributionSectionHeight(
+        contributions,
+        lrW - 36,
+        state.contribTheme,
+        { contentTop: 38, bottomPad: 8 }
+      );
+    } else if (topLangs?.length) {
+      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
+      lrRequired = getLangSectionHeight(state, langCount, { contentTop: 34, bottomPad: 8 });
+    } else if (state.githubStats) {
+      lrRequired = 42 + (state.stats || STAT_KEYS).length * 18;
+    }
+
+    return {
+      llRequired,
+      lmRequired,
+      lrRequired,
+      lowerRequired: Math.max(llRequired, lmRequired, lrRequired),
+    };
+  }
+
   function fitsAmberAutoHeight(state, topLangs, contributions) {
     const outerW = state.width - 56;
     const leftW = Math.min(380, Math.round(outerW * 0.42));
@@ -1172,60 +1223,25 @@
 
   function fitsObsidianAutoHeight(state, topLangs, contributions) {
     const outerW = state.width - 56;
-    const outerH = state.height - 124;
     const leftW = Math.min(260, Math.round(outerW * 0.27));
     const mainW = Math.max(state.width - (52 + leftW + 18) - 52, 0);
-    const availH = outerH - 86;
-    const responseH = Math.max(availH - Math.round(availH * 0.56) - 14, 60);
-    let requiredResponseH = 88;
+    const availH = state.height - 210;
+    const minMainH = 160;
+    const requiredResponseH = getObsidianResponseRequiredHeight(state, topLangs, contributions, mainW);
 
-    if (contributions?.weeks?.length) {
-      requiredResponseH = estimateContributionSectionHeight(
-        contributions,
-        mainW - 44,
-        state.contribTheme,
-        { contentTop: 36, bottomPad: 8 }
-      );
-    } else if (topLangs?.length) {
-      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
-      requiredResponseH = getLangSectionHeight(state, langCount, { contentTop: 34, bottomPad: 8 });
-    } else if (state.githubStats) {
-      requiredResponseH = 42 + (state.stats || STAT_KEYS).length * 18;
-    }
-
-    return responseH >= requiredResponseH;
+    return availH >= minMainH + 14 + requiredResponseH;
   }
 
   function fitsPrismAutoHeight(state, topLangs, contributions) {
-    const outerH = state.height - 124;
-    const lowerHCap = state.heightAuto ? 190 : 130;
-    const lowerH = Math.min(Math.round(outerH * 0.3), lowerHCap);
     const innerW = state.width - 116;
     const llW = Math.round(innerW * 0.345);
     const lmW = Math.round(innerW * 0.195);
     const lrW = innerW - llW - lmW - 28;
+    const { lowerRequired } = getPrismLowerRequirements(state, topLangs, contributions, llW, lrW);
+    const minCardH = 154;
+    const outerH = state.height - 124;
 
-    const llRequired = topLangs?.length
-      ? 42 + (state.stats || STAT_KEYS).length * 18
-      : (state.hideCommand ? 88 : 96);
-    const lmRequired = state.hideCommand ? 88 : 96;
-
-    let lrRequired = 74;
-    if (contributions?.weeks?.length) {
-      lrRequired = estimateContributionSectionHeight(
-        contributions,
-        lrW - 36,
-        state.contribTheme,
-        { contentTop: 38, bottomPad: 8 }
-      );
-    } else if (topLangs?.length) {
-      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
-      lrRequired = getLangSectionHeight(state, langCount, { contentTop: 34, bottomPad: 8 });
-    } else if (state.githubStats) {
-      lrRequired = 42 + (state.stats || STAT_KEYS).length * 18;
-    }
-
-    return lowerH >= Math.max(llRequired, lmRequired, lrRequired);
+    return outerH >= minCardH + 14 + lowerRequired;
   }
 
   function fitsClassicAutoHeight(state, topLangs, contributions) {
@@ -1915,9 +1931,14 @@
 
     // Proportional main + response heights
     const availH = outerH - 86;
-    const mainH = Math.round(availH * 0.56);
+    const responseRequiredH = getObsidianResponseRequiredHeight(state, topLangs, contributions, mainW);
+    const minMainH = 160;
+    const baseResponseH = Math.max(availH - Math.round(availH * 0.56) - 14, 60);
+    const responseH = state.heightAuto
+      ? Math.max(responseRequiredH, Math.min(baseResponseH, availH - minMainH - 14))
+      : baseResponseH;
+    const mainH = Math.max(minMainH, availH - responseH - 14);
     const responseY = mainY + mainH + 14;
-    const responseH = Math.max(availH - mainH - 14, 60);
 
     // Scale content inside main panel relative to standard 174px height
     const mS = Math.min(mainH / 174, 1.35);
@@ -1932,13 +1953,7 @@
     const ink = surfaces.textStrong;
     const dim = surfaces.textMuted;
     const model = `${provider.label}/${state.theme}`;
-    const contribSectionH = estimateContributionSectionHeight(
-      contributions,
-      mainW - 44,
-      state.contribTheme,
-      { contentTop: 36, bottomPad: 8 }
-    );
-    const showContribs = contributions && responseH >= contribSectionH;
+    const showContribs = contributions && responseH >= responseRequiredH;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
@@ -1994,19 +2009,21 @@
     const outerW = state.width - 56;
     const outerH = state.height - 124;
 
-    const cardX = 58;
-    const cardY = outerY + 36;  // y = 132
-    const cardW = state.width - 116;
-    const cardH = Math.min(Math.round(outerH * 0.40), state.heightAuto ? 240 : 190);
-
-    const lowerY = cardY + cardH + 14;
-    const lowerH = Math.min(Math.round(outerH * 0.30), state.heightAuto ? 190 : 130);
-
     // Proportional lower panel widths
     const innerW = state.width - 116;
     const llW = Math.round(innerW * 0.345);
     const lmW = Math.round(innerW * 0.195);
     const lrW = innerW - llW - lmW - 28;  // remaining (2 gaps × 14)
+
+    const cardX = 58;
+    const cardY = outerY + 36;  // y = 132
+    const cardW = state.width - 116;
+    const { lowerRequired } = getPrismLowerRequirements(state, topLangs, contributions, llW, lrW);
+    const minCardH = 154;
+    const baseLowerH = Math.min(Math.round(outerH * 0.30), state.heightAuto ? 190 : 130);
+    const lowerH = state.heightAuto ? Math.max(baseLowerH, lowerRequired) : baseLowerH;
+    const cardH = Math.max(minCardH, outerH - 50 - 14 - lowerH);
+    const lowerY = cardY + cardH + 14;
 
     const llX = 58;
     const lmX = llX + llW + 14;
@@ -2023,13 +2040,7 @@
     const ink = surfaces.textStrong;
     const dim = surfaces.textMuted;
     const model = `${provider.label}/${state.theme}`;
-    const contribSectionH = estimateContributionSectionHeight(
-      contributions,
-      lrW - 36,
-      state.contribTheme,
-      { contentTop: 38, bottomPad: 8 }
-    );
-    const showContribs = contributions && lowerH >= contribSectionH && lrW >= 180;
+    const showContribs = contributions && lowerH >= lowerRequired && lrW >= 180;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
