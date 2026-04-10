@@ -15,11 +15,11 @@
 </p>
 
 <p align="center">
-  <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=claude/ember&avatar=GG&pattern=grid&width=980&height=600"     
-  width="100%" alt="Terminal Identity demo card" /> 
+  <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=claude/ember&avatar=GG&pattern=grid&width=980&height=600"
+  width="100%" alt="Terminal Identity demo card" />
 </p>
 
-Terminal-style SVG cards for GitHub READMEs. One URL, one `<img>` tag. Pick a provider shell (`classic`, `claude`, `gpt`, `gemini`), pair it with a theme, and optionally pass a GitHub username to pull in live public stats.
+Terminal-style SVG cards for GitHub READMEs. One URL, one `<img>` tag. Pick a provider shell (`classic`, `claude`, `gpt`, `gemini`), pair it with a theme, and optionally pass a GitHub username to pull in live public stats and top languages.
 
 ---
 
@@ -33,7 +33,7 @@ Terminal-style SVG cards for GitHub READMEs. One URL, one `<img>` tag. Pick a pr
 />
 ```
 
-Add `username=your-handle` to show live GitHub stats (repos, stars, forks, followers) instead of the static status line:
+Add `username=your-handle` to show live GitHub stats and top languages:
 
 ```html
 <img
@@ -50,16 +50,25 @@ Add `username=your-handle` to show live GitHub stats (repos, stars, forks, follo
 | Param | Default | Description |
 | --- | --- | --- |
 | `name` | `ggam` | Display name |
-| `username` | — | GitHub handle — enables live public stats |
+| `username` | — | GitHub handle — enables live stats and top languages |
 | `role` | `frontend engineer` | Subtitle / role line |
 | `tagline` | — | Main sentence |
-| `status` | — | Fallback status text (used when `username` is absent or stats fail) |
+| `status` | — | Fallback status text (shown when `username` is absent or stats fail) |
 | `command` | — | Terminal command shown on the card |
 | `theme` | `ember` | Theme name, or `provider/theme` combo like `claude/sakura` |
-| `avatar` | `GG` | Initials rendered in the avatar block |
+| `avatar` | `GG` | Initials rendered in the avatar block (classic provider only) |
 | `pattern` | `grid` | Background pattern: `grid`, `rings`, or `pulse` |
-| `width` | `980` | Card width in px |
-| `height` | `520` | Card height in px |
+| `width` | `980` | Card width in px (720–1400) |
+| `height` | `520` | Card height in px (420–820) |
+| `accent` | — | Override accent color with a hex value, e.g. `%23ff7a59` |
+| `showLangs` | `auto` | Top languages display: `auto`, `on`, or `off` |
+| `langCount` | `4` | Number of top languages to show (1–6) |
+| `hideAvatar` | `false` | Set to `true` to hide the avatar block |
+| `hideCommand` | `false` | Set to `true` to hide the command line |
+| `stats` | all | Comma-separated stats to show: `repos,stars,forks,followers` |
+| `excludeLangs` | — | Comma-separated language names to exclude, e.g. `HTML,CSS` |
+
+> **Note:** `showLangs=auto` shows top languages only when a `username` is provided and GitHub returns language data. Use `on` to always attempt to show them, `off` to hide entirely.
 
 ---
 
@@ -147,7 +156,7 @@ Copy-paste starter cards for common profile types.
 />
 ```
 
-### With live GitHub stats
+### With live GitHub stats and top languages
 
 <img src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&command=npx%20terminal-identity&theme=gpt/graphite&avatar=GG&pattern=grid&width=980&height=520" width="100%" alt="Card with live GitHub stats" />
 
@@ -156,6 +165,18 @@ Copy-paste starter cards for common profile types.
   src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&command=npx%20terminal-identity&theme=gpt/graphite&avatar=GG&pattern=grid&width=980&height=520"
   width="100%"
   alt="Terminal identity card with live GitHub stats"
+/>
+```
+
+### Custom accent + filtered stats
+
+Show only stars and followers, exclude HTML/CSS from top langs:
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=claude/ember&avatar=GG&pattern=grid&width=980&height=520&accent=%23ff7a59&stats=stars%2Cfollowers&excludeLangs=HTML%2CCSS"
+  width="100%"
+  alt="Terminal identity card with custom accent"
 />
 ```
 
@@ -191,7 +212,9 @@ Copy-paste starter cards for common profile types.
 GET https://terminal-identity-opal.vercel.app/api?[params]
 ```
 
-Returns an `image/svg+xml` response. Drop it directly in any Markdown `<img>` tag. GitHub caches images — append a `&v=2` to bust the cache when you update params.
+Returns an `image/svg+xml` response. Drop it directly in any Markdown `<img>` tag. GitHub caches images — append `&v=2` to bust the cache when you update params.
+
+> **Accent color note:** URL-encode `#` as `%23` when passing the `accent` param. Example: `accent=%23ff7a59` for `#ff7a59`.
 
 ---
 
