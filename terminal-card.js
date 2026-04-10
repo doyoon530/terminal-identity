@@ -532,15 +532,17 @@
     )} repos • ${formatCompactStat(state.githubStats.followers)} followers`;
   }
 
-  function buildGraphic(ratio, bx, rowY, barTrack, accentColor, trackBg, style) {
+  function buildGraphic(ratio, bx, rowY, barTrack, accentColor, trackBg, style, gradientId) {
     const bg = trackBg || "rgba(255,255,255,0.08)";
+    const fillColor = gradientId ? `url(#${gradientId})` : accentColor;
     if (style === "dots") {
       const count = 10;
       const spacing = barTrack / count;
       const r = Math.min(spacing / 2 - 1, 3);
       const filled = Math.round(ratio * count);
+      const dotFilter = gradientId ? ` filter="url(#glow-dot)"` : "";
       return Array.from({ length: count }, (_, i) =>
-        `<circle cx="${bx + spacing * i + spacing / 2}" cy="${rowY + 7}" r="${r}" fill="${i < filled ? accentColor : bg}"></circle>`
+        `<circle cx="${bx + spacing * i + spacing / 2}" cy="${rowY + 7}" r="${r}" fill="${i < filled ? accentColor : bg}"${i < filled ? dotFilter : ""}></circle>`
       ).join("");
     }
     if (style === "blocks") {
@@ -549,18 +551,18 @@
       const blockW = (barTrack - (count - 1) * gap) / count;
       const filled = Math.round(ratio * count);
       return Array.from({ length: count }, (_, i) =>
-        `<rect x="${bx + i * (blockW + gap)}" y="${rowY + 5}" width="${blockW}" height="4" rx="1" fill="${i < filled ? accentColor : bg}"></rect>`
+        `<rect x="${bx + i * (blockW + gap)}" y="${rowY + 5}" width="${blockW}" height="4" rx="1" fill="${i < filled ? fillColor : bg}"></rect>`
       ).join("");
     }
     // bar (default)
     const filledW = Math.max(2, Math.round(ratio * barTrack));
     return [
       `<rect x="${bx}" y="${rowY + 5}" width="${barTrack}" height="3" rx="1" fill="${bg}"></rect>`,
-      `<rect x="${bx}" y="${rowY + 5}" width="${filledW}" height="3" rx="1" fill="${accentColor}"></rect>`,
+      `<rect x="${bx}" y="${rowY + 5}" width="${filledW}" height="3" rx="1" fill="${fillColor}"></rect>`,
     ].join("");
   }
 
-  function buildStatBars(stats, x, y, trackWidth, accentColor, dimColor, trackBg, keys, style) {
+  function buildStatBars(stats, x, y, trackWidth, accentColor, dimColor, trackBg, keys, style, gradientId) {
     const bg = trackBg || "rgba(255,255,255,0.08)";
     const allItems = [
       { label: "repos",     value: stats.repos },
@@ -581,14 +583,14 @@
         const ratio = item.value / maxVal;
         return [
           `<text x="${x}" y="${rowY + 12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dimColor}">${item.label}</text>`,
-          buildGraphic(ratio, x + labelW, rowY, barTrack, accentColor, bg, style),
+          buildGraphic(ratio, x + labelW, rowY, barTrack, accentColor, bg, style, gradientId),
           `<text x="${x + labelW + barTrack + 8}" y="${rowY + 12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dimColor}">${formatCompactStat(item.value)}</text>`,
         ].join("\n  ");
       })
       .join("\n  ");
   }
 
-  function buildLangBars(topLangs, x, y, trackWidth, accentColor, dimColor, trackBg, style) {
+  function buildLangBars(topLangs, x, y, trackWidth, accentColor, dimColor, trackBg, style, gradientId) {
     const bg = trackBg || "rgba(255,255,255,0.08)";
     const total = topLangs.reduce((s, l) => s + l.count, 0) || 1;
     const maxVal = Math.max(...topLangs.map((l) => l.count), 1);
@@ -604,7 +606,7 @@
         const pct = Math.round((lang.count / total) * 100);
         return [
           `<text x="${x}" y="${rowY + 12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dimColor}">${escapeXml(truncateText(lang.name, 12))}</text>`,
-          buildGraphic(ratio, x + labelW, rowY, barTrack, accentColor, bg, style),
+          buildGraphic(ratio, x + labelW, rowY, barTrack, accentColor, bg, style, gradientId),
           `<text x="${x + labelW + barTrack + 8}" y="${rowY + 12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dimColor}">${pct}%</text>`,
         ].join("\n  ");
       })
@@ -844,7 +846,7 @@
   ${state.username ? `<text x="${PROFILE_CX + PROFILE_R + 16}" y="${PROFILE_CY - 8}" font-family="Sora, Arial, sans-serif" font-size="18" font-weight="700" fill="#f6f2ef">${escapeXml(state.name)}</text>
   <text x="${PROFILE_CX + PROFILE_R + 16}" y="${PROFILE_CY + 14}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">@${escapeXml(state.username)}</text>` : ""}` : ""}
 
-  <circle cx="${leftX + 24}" cy="${ROLE_Y - 6}" r="3.5" fill="${accent}"/>
+  <circle cx="${leftX + 24}" cy="${ROLE_Y - 6}" r="3.5" fill="${accent}" filter="url(#glow-accent)"/>
   <text x="${leftX + 34}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 26))}</text>
   ${showLPBio ? bioLines.map((line, i) => {
     const lineY = BIO_TOP_Y + i * BIO_LINE_H;
@@ -854,20 +856,20 @@
 
   ${showStats
     ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
-  ${buildStatBars(state.githubStats, rightX + 18, STATS_Y, rightW - 36, accent, dim, undefined, state.stats, state.barStyle)}
+  ${buildStatBars(state.githubStats, rightX + 18, STATS_Y, rightW - 36, accent, dim, undefined, state.stats, state.barStyle, "bar-grad")}
   ${showLangs || (state.langStyle === "icons" && state.langIconsUri && langsToShow && rpLangsAvail >= 28)
     ? `<rect x="${rightX}" y="${rpLangsTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
   <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TOP LANGS</text>
   ${state.langStyle === "icons" && state.langIconsUri && langsToShow
     ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, state.langIconCount ?? langsToShow.length, state.iconSize)
-    : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle)}`
+    : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle, "bar-grad")}`
     : ""}`
     : `<text x="${rightX + 18}" y="${rpDataTop + 13}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TAGLINE</text>
   <text x="${rightX + 18}" y="${rpDataTop + 44}" font-family="Sora, Arial, sans-serif" font-size="16" font-weight="600" fill="#f2efec">${escapeXml(truncateText(state.tagline, 52))}</text>
   ${state.role ? `<text x="${rightX + 18}" y="${rpDataTop + 70}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.role, 36))}</text>` : ""}`}
 
-  <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.08)"></line>
-  <circle cx="${outerX + 22}" cy="${footerY + 26}" r="5" fill="#7adf8d"></circle>
+  <rect x="${outerX}" y="${footerY}" width="${outerW}" height="1" fill="url(#line-grad-h)"></rect>
+  <circle cx="${outerX + 22}" cy="${footerY + 26}" r="5" fill="#7adf8d" filter="url(#glow-status)"></circle>
   <text x="${outerX + 36}" y="${footerY + 32}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 52))}</text>
   ${state.hideCommand ? "" : `<text x="${state.width - 54}" y="${footerY + 32}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">$ ${escapeXml(truncateText(state.command, 32))}</text>`}`;
   }
@@ -1054,6 +1056,28 @@
       <stop offset="0%" stop-color="#3e3a37"/>
       <stop offset="100%" stop-color="#2c2a27"/>
     </linearGradient>
+    <linearGradient id="bar-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${palette.accent}" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="${palette.accent}" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="line-grad-h" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+      <stop offset="25%" stop-color="rgba(255,255,255,0.10)"/>
+      <stop offset="75%" stop-color="rgba(255,255,255,0.10)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+    <filter id="glow-accent" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-status" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-dot" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
   <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#amber-shell)"></rect>
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#4a4843"></rect>
