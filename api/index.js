@@ -67,7 +67,7 @@ module.exports = async function handler(req, res) {
       const iconKeys = effectiveLangs.map((l) => LANG_ICON_MAP[l.name]).filter(Boolean);
       if (iconKeys.length > 0) {
         const uri = await fetchLangIconsDataUri(iconKeys);
-        if (uri) nextState = { ...nextState, langIconsUri: uri };
+        if (uri) nextState = { ...nextState, langIconsUri: uri, langIconCount: iconKeys.length };
       }
     }
 

@@ -566,6 +566,7 @@
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
       hideProfile: parseBool(state.hideProfile),
+      langIconCount: typeof state.langIconCount === "number" ? state.langIconCount : null,
     };
   }
 
@@ -581,6 +582,7 @@
       if (key === "iconSize" && value === "md") return;
       if (key === "langIconsUri") return;
       if (key === "profileUri") return;
+      if (key === "langIconCount") return;
       if (key === "stats") {
         if (value.length < 4) params.set("stats", value.join(","));
         return;
@@ -746,7 +748,7 @@
     ? `<rect x="${rightX}" y="${rpLangsTop - 8}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
   <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TOP LANGS</text>
   ${state.langStyle === "icons" && state.langIconsUri && langsToShow
-    ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, langsToShow.length, state.iconSize)
+    ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, state.langIconCount ?? langsToShow.length, state.iconSize)
     : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle)}`
     : ""}`
     : state.githubStats
@@ -835,7 +837,7 @@
   ${state.githubStats
     ? (topLangs
         ? (state.langStyle === "icons" && state.langIconsUri
-            ? buildLangIcons(state.langIconsUri, mainX + 22, responseY + 34, mainW - 44, topLangs.length, state.iconSize)
+            ? buildLangIcons(state.langIconsUri, mainX + 22, responseY + 34, mainW - 44, state.langIconCount ?? topLangs.length, state.iconSize)
             : buildLangBars(topLangs, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.barStyle))
         : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.stats, state.barStyle))
     : `<text x="${mainX + 22}" y="${responseY + 52}" font-family="Sora, Arial, sans-serif" font-size="15" font-weight="600" fill="${ink}">${escapeXml(truncateText(state.tagline, 38))}</text>
@@ -913,7 +915,7 @@
   <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
   ${topLangs
     ? (state.langStyle === "icons" && state.langIconsUri
-        ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, topLangs.length, state.iconSize)
+        ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, state.langIconCount ?? topLangs.length, state.iconSize)
         : buildLangBars(topLangs, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.barStyle))
     : state.githubStats
       ? buildStatBars(state.githubStats, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats, state.barStyle)
@@ -1033,7 +1035,7 @@
   ${showStats && (showLangs || (state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs))
     ? `<rect x="${contentX}" y="${LANGS_TOP - 2}" width="${contentW}" height="1" fill="rgba(255,255,255,0.05)"></rect>
   ${state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs
-    ? buildLangIcons(state.langIconsUri, contentX, LANGS_TOP, contentW, effectiveTopLangs.length, state.iconSize)
+    ? buildLangIcons(state.langIconsUri, contentX, LANGS_TOP, contentW, state.langIconCount ?? effectiveTopLangs.length, state.iconSize)
     : buildLangBars(langsToShow, contentX, LANGS_TOP, contentW, palette.accent, palette.dim, undefined, state.barStyle)}`
     : ""}
 

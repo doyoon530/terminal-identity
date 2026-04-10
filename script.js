@@ -183,7 +183,7 @@ async function render() {
       .slice(0, state.langCount);
     const iconKeys = effectiveLangs.map((l) => LANG_ICON_MAP[l.name]).filter(Boolean);
     if (iconKeys.length > 0) {
-      nextState = { ...nextState, langIconsUri: `https://skillicons.dev/icons?i=${iconKeys.join(",")}` };
+      nextState = { ...nextState, langIconsUri: `https://skillicons.dev/icons?i=${iconKeys.join(",")}`, langIconCount: iconKeys.length };
     }
   }
 
