@@ -54,7 +54,8 @@ Add `username=your-handle` to show live GitHub stats and top languages:
 | `name` | `doyoon530` | Display name |
 | `username` | — | GitHub handle — enables live stats and top languages |
 | `role` | `frontend engineer` | Subtitle / role line |
-| `tagline` | — | Main sentence |
+| `tagline` | — | Main sentence (featured in right panel) |
+| `bio` | — | Multi-line bio for left panel — wraps up to 3 lines; falls back to `tagline` if absent |
 | `status` | — | Fallback status text (shown when `username` is absent or stats fail) |
 | `command` | — | Terminal command shown on the card |
 | `theme` | `ember` | Theme name, or `provider/theme` combo like `amber/sakura` |

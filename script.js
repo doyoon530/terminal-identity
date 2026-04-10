@@ -59,6 +59,7 @@ function getState() {
     hideProfile: document.getElementById("hideProfile").checked,
     stats: ["repos", "stars", "forks", "followers"].filter((s) => document.getElementById(`stat-${s}`).checked).join(","),
     excludeLangs: document.getElementById("excludeLangs").value.trim(),
+    bio: document.getElementById("bio").value.trim(),
   });
 }
 
@@ -91,6 +92,7 @@ function fillForm(state) {
   document.getElementById("excludeLangs").value = Array.isArray(state.excludeLangs)
     ? state.excludeLangs.join(", ")
     : (state.excludeLangs || "");
+  document.getElementById("bio").value = state.bio || "";
 }
 
 function loadStateFromUrl() {
@@ -119,6 +121,7 @@ function loadStateFromUrl() {
     hideProfile: params.get("hideProfile"),
     stats: params.get("stats"),
     excludeLangs: params.get("excludeLangs"),
+    bio: params.get("bio"),
   });
   fillForm(state);
 }

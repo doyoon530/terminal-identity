@@ -213,6 +213,7 @@
     hideCommand: false,
     stats: STAT_KEYS,
     excludeLangs: [],
+    bio: "",
   };
 
   const presets = [
@@ -418,6 +419,25 @@
     return String(value);
   }
 
+  function wrapText(text, maxChars, maxLines) {
+    if (!text) return [];
+    const words = String(text).split(/\s+/).filter(Boolean);
+    const lines = [];
+    let current = "";
+    for (const word of words) {
+      if (lines.length >= maxLines) break;
+      const candidate = current ? `${current} ${word}` : word;
+      if (candidate.length <= maxChars) {
+        current = candidate;
+      } else {
+        if (current) lines.push(current);
+        current = word.slice(0, maxChars);
+      }
+    }
+    if (current && lines.length < maxLines) lines.push(current);
+    return lines;
+  }
+
   function truncateText(value, limit) {
     const text = String(value || "");
     if (text.length <= limit) {
@@ -567,6 +587,7 @@
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
       hideProfile: parseBool(state.hideProfile),
       langIconCount: typeof state.langIconCount === "number" ? state.langIconCount : null,
+      bio: String(state.bio || "").slice(0, 200),
     };
   }
 
@@ -684,11 +705,17 @@
     const DIVIDER_Y   = PROFILE_CY + PROFILE_R + 14;
     const ABOUT_LBL_Y = DIVIDER_Y + 14;
 
-    // Dynamic Y positions for left panel content
-    const ROLE_Y = showProfile ? ABOUT_LBL_Y + 24 : contentY + 44;
-    const TAG_Y  = showProfile ? ROLE_Y + 32      : ROLE_Y + 30;
+    // Bio text wrapping (bio overrides tagline in left panel)
+    const bioSource = state.bio || state.tagline;
+    const BIO_LINE_H = 17;
+    const BIO_MAX_LINES = 3;
+    const bioLines = wrapText(bioSource, 38, BIO_MAX_LINES);
 
-    const showLPTag = leftH >= (ROLE_Y - contentY + 38);
+    // Dynamic Y positions for left panel content
+    const ROLE_Y    = showProfile ? ABOUT_LBL_Y + 24 : contentY + 44;
+    const BIO_TOP_Y = ROLE_Y + 26;
+
+    const showLPBio = bioLines.length > 0 && leftH >= (ROLE_Y - contentY + BIO_LINE_H + 10);
 
     const rpDataTop = rightY + 16;
     const rpDataBot = Math.max(footerY - 12, rpDataTop);
@@ -733,7 +760,11 @@
 
   <circle cx="${leftX + 24}" cy="${ROLE_Y - 6}" r="3.5" fill="${accent}"/>
   <text x="${leftX + 34}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 26))}</text>
-  ${showLPTag ? `<text x="${leftX + 20}" y="${TAG_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="#d4cdc9">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
+  ${showLPBio ? bioLines.map((line, i) => {
+    const lineY = BIO_TOP_Y + i * BIO_LINE_H;
+    if (lineY > contentY + leftH - 10) return "";
+    return `<text x="${leftX + 20}" y="${lineY}" font-family="IBM Plex Mono, monospace" font-size="12" fill="#d4cdc9">${escapeXml(line)}</text>`;
+  }).join("\n  ") : ""}
 
   ${showStats
     ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
