@@ -121,10 +121,6 @@
       topBarFill: null,
       topBarText: null,
       buttonMode: "traffic",
-      frameTone: null,
-      badgeFill: "rgba(255,255,255,0.06)",
-      badgeText: null,
-      shellOverlay: null,
     },
     amber: {
       label: "amber",
@@ -133,10 +129,6 @@
       topBarFill: "#f2e7da",
       topBarText: "#614730",
       buttonMode: "dots",
-      frameTone: "rgba(178, 143, 108, 0.16)",
-      badgeFill: "rgba(123, 90, 61, 0.16)",
-      badgeText: "#8c6949",
-      shellOverlay: "rgba(255, 245, 232, 0.04)",
     },
     obsidian: {
       label: "obsidian",
@@ -145,10 +137,6 @@
       topBarFill: "#0f1d18",
       topBarText: "#bff4d8",
       buttonMode: "minimal",
-      frameTone: "rgba(94, 234, 166, 0.14)",
-      badgeFill: "rgba(94, 234, 166, 0.12)",
-      badgeText: "#9de9c6",
-      shellOverlay: "rgba(16, 185, 129, 0.04)",
     },
     prism: {
       label: "prism",
@@ -157,10 +145,6 @@
       topBarFill: "#ecf2ff",
       topBarText: "#57678e",
       buttonMode: "glow",
-      frameTone: "rgba(135, 158, 255, 0.18)",
-      badgeFill: "rgba(122, 147, 255, 0.12)",
-      badgeText: "#b7c6ff",
-      shellOverlay: "rgba(122, 147, 255, 0.05)",
     },
   };
 
@@ -246,7 +230,7 @@
         tagline: "Shipping useful things before lunch.",
         status: "building products, docs, and weird little experiments",
         command: "pnpm create tiny-hit",
-        provider: "gpt",
+        provider: "obsidian",
         theme: "graphite",
         avatar: "MS",
         pattern: "pulse",
@@ -263,7 +247,7 @@
         tagline: "Design systems with motion, type, and restraint.",
         status: "open to product design and frontend collaborations",
         command: "npm run polish-ui",
-        provider: "claude",
+        provider: "amber",
         theme: "sakura",
         avatar: "JW",
         pattern: "rings",
@@ -280,7 +264,7 @@
         tagline: "Teaching APIs without making them feel scary.",
         status: "speaking, writing, and shipping DX experiments",
         command: "npx explain-like-im-new",
-        provider: "gemini",
+        provider: "prism",
         theme: "aurora",
         avatar: "AD",
         pattern: "grid",
@@ -297,7 +281,7 @@
         tagline: "Code, typography, and generative visuals in one place.",
         status: "available for interactive art and frontend commissions",
         command: "bun run make-something-strange",
-        provider: "claude",
+        provider: "amber",
         theme: "velvet",
         avatar: "NH",
         pattern: "pulse",
@@ -314,7 +298,7 @@
         tagline: "Reliable infrastructure with humane developer tooling.",
         status: "focused on observability, scale, and platform DX",
         command: "terraform apply confidence",
-        provider: "gpt",
+        provider: "obsidian",
         theme: "cobalt",
         avatar: "AR",
         pattern: "rings",
@@ -331,7 +315,7 @@
         tagline: "Turning napkin ideas into products people keep using.",
         status: "currently exploring AI, commerce, and tiny SaaS tools",
         command: "pnpm ship --fast",
-        provider: "gemini",
+        provider: "prism",
         theme: "matcha",
         avatar: "LE",
         pattern: "grid",
@@ -348,7 +332,7 @@
         tagline: "Clean interfaces, kind systems, and rapid iteration.",
         status: "available for startups that care about craft",
         command: "npm run build-bright",
-        provider: "claude",
+        provider: "amber",
         theme: "solar",
         avatar: "HA",
         pattern: "rings",
@@ -451,14 +435,6 @@
     return `${formatCompactStat(state.githubStats.stars)} stars • ${formatCompactStat(
       state.githubStats.repos
     )} repos • ${formatCompactStat(state.githubStats.followers)} followers`;
-  }
-
-  function getIdentityHandle(state) {
-    if (state.username) {
-      return `@${state.username}`;
-    }
-
-    return state.role;
   }
 
   function buildGraphic(ratio, bx, rowY, barTrack, accentColor, trackBg, style) {
@@ -647,35 +623,30 @@
     return dots.join("");
   }
 
-  function buildWindowButtons(provider) {
-    if (provider.buttonMode === "dots") {
-      return `
+  const WINDOW_BUTTONS = {
+    dots: `
   <circle cx="72" cy="60" r="6" fill="#c59c72"></circle>
   <circle cx="96" cy="60" r="6" fill="#ddc1a1"></circle>
-  <circle cx="120" cy="60" r="6" fill="#f4e4d1"></circle>`;
-    }
-
-    if (provider.buttonMode === "minimal") {
-      return `
+  <circle cx="120" cy="60" r="6" fill="#f4e4d1"></circle>`,
+    minimal: `
   <rect x="52" y="52" width="24" height="16" rx="8" fill="#13392f"></rect>
   <rect x="84" y="52" width="24" height="16" rx="8" fill="#185041"></rect>
-  <rect x="116" y="52" width="24" height="16" rx="8" fill="#1f6855"></rect>`;
-    }
-
-    if (provider.buttonMode === "glow") {
-      return `
+  <rect x="116" y="52" width="24" height="16" rx="8" fill="#1f6855"></rect>`,
+    glow: `
   <circle cx="70" cy="60" r="8" fill="#8aa5ff"></circle>
   <circle cx="96" cy="60" r="8" fill="#afc2ff"></circle>
-  <circle cx="122" cy="60" r="8" fill="#d8e2ff"></circle>`;
-    }
-
-    return `
+  <circle cx="122" cy="60" r="8" fill="#d8e2ff"></circle>`,
+    traffic: `
   <circle cx="68" cy="60" r="8" fill="#ff5f57"></circle>
   <circle cx="94" cy="60" r="8" fill="#febc2e"></circle>
-  <circle cx="120" cy="60" r="8" fill="#28c840"></circle>`;
+  <circle cx="120" cy="60" r="8" fill="#28c840"></circle>`,
+  };
+
+  function buildWindowButtons(provider) {
+    return WINDOW_BUTTONS[provider.buttonMode] ?? WINDOW_BUTTONS.traffic;
   }
 
-  function buildClaudeDashboard(state, palette, provider, topLangs) {
+  function buildAmberDashboard(state, palette, provider, topLangs) {
     const statusText = getStatusText(state);
     const activityHandle = state.username ? `@${state.username}` : state.name;
     const outerX = 28;
@@ -768,14 +739,13 @@
   <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.1)"></line>`;
   }
 
-  function buildGptWorkspace(state, palette, provider, topLangs) {
+  function buildObsidianWorkspace(state, palette, provider, topLangs) {
     const statusText = getStatusText(state);
-    const identityHandle = getIdentityHandle(state);
     const outerX = 28;
     const outerY = 96;
     const outerW = state.width - 56;
     const outerH = state.height - 124;
-    const footerY = outerY + outerH - 54;  // FIX: was hardcoded 422!
+    const footerY = outerY + outerH - 54;
 
     const leftX = 52;
     const leftY = 128;
@@ -852,9 +822,8 @@
   <text x="${outerX + 36}" y="${footerY + 30}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.status, 64))}</text>`;
   }
 
-  function buildGeminiCanvas(state, palette, provider, topLangs) {
+  function buildPrismCanvas(state, palette, provider, topLangs) {
     const statusText = getStatusText(state);
-    const identityHandle = getIdentityHandle(state);
     const outerX = 28;
     const outerY = 96;
     const outerW = state.width - 56;
@@ -896,7 +865,7 @@
   <rect x="${cardX}" y="${cardY}" width="${cardW}" height="${cardH}" rx="10" fill="rgba(255,255,255,0.85)"></rect>
   <text x="${cardX + 24}" y="${C_META_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prism canvas  •  ${escapeXml(model)}</text>
   <text x="${cardX + 24}" y="${C_NAME_Y}" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="700" fill="${ink}">${escapeXml(state.name)}</text>
-  <text x="${cardX + 24}" y="${C_HANDLE_Y}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">${escapeXml(identityHandle)}</text>
+  <text x="${cardX + 24}" y="${C_HANDLE_Y}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">${escapeXml(state.username ? `@${state.username}` : state.role)}</text>
   <text x="${cardX + 24}" y="${C_TAG_Y}" font-family="Sora, Arial, sans-serif" font-size="15" fill="${dim}">${escapeXml(
     truncateText(state.tagline, 56)
   )}</text>
@@ -952,7 +921,7 @@
   <circle cx="68" cy="60" r="7" fill="#ee8b62"></circle>
   <circle cx="92" cy="60" r="7" fill="#ffc75a"></circle>
   <circle cx="116" cy="60" r="7" fill="#6ecf59"></circle>
-  ${buildClaudeDashboard(state, palette, provider, effectiveTopLangs)}
+  ${buildAmberDashboard(state, palette, provider, effectiveTopLangs)}
 </svg>`.trim();
     }
 
@@ -963,7 +932,7 @@
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#0f1f18"></rect>
   ${buildWindowButtons(provider)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
-  ${buildGptWorkspace(state, palette, provider, effectiveTopLangs)}
+  ${buildObsidianWorkspace(state, palette, provider, effectiveTopLangs)}
 </svg>`.trim();
     }
 
@@ -974,7 +943,7 @@
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#eef3ff"></rect>
   ${buildWindowButtons(provider)}
   <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
-  ${buildGeminiCanvas(state, palette, provider, effectiveTopLangs)}
+  ${buildPrismCanvas(state, palette, provider, effectiveTopLangs)}
 </svg>`.trim();
     }
 
