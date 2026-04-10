@@ -195,7 +195,7 @@
 
   const defaults = {
     name: "doyoon530",
-    username: "",
+    username: "doyoon530",
     role: "frontend engineer",
     tagline: "Building tiny tools with taste.",
     status: "available for cool internet projects",
@@ -428,7 +428,7 @@
                    (code >= 0xAC00 && code <= 0xD7AF) ||
                    (code >= 0xF900 && code <= 0xFAFF) ||
                    (code >= 0xFF00 && code <= 0xFFEF);
-    return isWide ? 13 : 7.2;
+    return isWide ? 12 : 7.2;
   }
 
   function wrapText(text, maxPx, maxLines) {
