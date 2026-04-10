@@ -743,8 +743,22 @@
     return state.showContribs === "on" || !!state.username;
   }
 
-  function isEmojiContributionTheme(theme) {
+  function usesContributionGlyphs(theme) {
     return theme === "moon" || theme === "star";
+  }
+
+  function buildStarPoints(cx, cy, outerR, innerR) {
+    const points = [];
+    const start = -Math.PI / 2;
+    const step = Math.PI / 5;
+
+    for (let i = 0; i < 10; i += 1) {
+      const radius = i % 2 === 0 ? outerR : innerR;
+      const angle = start + step * i;
+      points.push(`${(cx + Math.cos(angle) * radius).toFixed(2)},${(cy + Math.sin(angle) * radius).toFixed(2)}`);
+    }
+
+    return points.join(" ");
   }
 
   function getContributionThemeColors(theme, palette) {
@@ -772,6 +786,9 @@
           "rgba(255, 219, 120, 0.26)",
           "rgba(255, 196, 92, 0.34)",
         ],
+        starFillLevels: ["transparent", "#91abff", "#d7e2ff", "#ffe18c", "#ffc35d"],
+        starCoreLevels: ["transparent", "#f7fbff", "#ffffff", "#fff8d1", "#fff4df"],
+        starStrokeLevels: ["transparent", "rgba(235,241,255,0.26)", "rgba(242,246,255,0.38)", "rgba(255,245,199,0.44)", "rgba(255,231,169,0.52)"],
       };
     }
 
@@ -815,14 +832,14 @@
 
     const gap = 2;
     const maxWeeks = contributions.weeks.length;
-    const emojiTheme = isEmojiContributionTheme(theme);
-    const minVisibleCols = emojiTheme ? 10 : 16;
-    const targetCell = safeNumber(options?.targetCell, emojiTheme ? 12 : 10, 6, 14);
+    const glyphTheme = usesContributionGlyphs(theme);
+    const minVisibleCols = glyphTheme ? 10 : 16;
+    const targetCell = safeNumber(options?.targetCell, glyphTheme ? 12 : 10, 6, 14);
     const minCols = safeNumber(options?.minCols, minVisibleCols, 10, 53);
     const desiredCols = Math.max(minVisibleCols, Math.floor((trackWidth + gap) / (targetCell + gap)));
     const cols = Math.min(maxWeeks, Math.max(minCols, desiredCols));
     const weeks = contributions.weeks.slice(-cols);
-    const cell = emojiTheme
+    const cell = glyphTheme
       ? Math.max(8, Math.min(14, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))))
       : Math.max(5, Math.min(12, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
     const gridW = cols * cell + Math.max(0, cols - 1) * gap;
@@ -855,18 +872,27 @@
         }
 
         if (theme === "star") {
-          const opacityMap = [0, 0.28, 0.5, 0.74, 1];
-          const sizeMap = [0, 0.78, 0.88, 0.98, 1.08];
-          const starOpacity = opacityMap[level] ?? 0;
-          const starScale = sizeMap[level] ?? 1;
-          const starSize = Math.max(10, Math.min(16, (cell + 2) * starScale));
           const glowColor = colors.glowLevels?.[level] || colors.glow;
           const glowOpacity = [0, 0.18, 0.28, 0.38, 0.52][level] ?? 0.22;
+          const outerR = Math.max(2.6, cell * (0.22 + level * 0.03));
+          const innerR = outerR * 0.46;
+          const coreOuterR = outerR * 0.56;
+          const coreInnerR = innerR * 0.56;
+          const starFill = colors.starFillLevels?.[level] || colors.accent;
+          const starCore = colors.starCoreLevels?.[level] || "#ffffff";
+          const starStroke = colors.starStrokeLevels?.[level] || "transparent";
           cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.26))}" fill="${level === 0 ? "#111111" : (colors.levels[level] || colors.base)}"></rect>`);
           if (level > 0) {
-            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(2.2, cell * 0.34)}" fill="${glowColor}" opacity="${glowOpacity}"></circle>`);
-            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(1.3, cell * 0.18)}" fill="${glowColor}" opacity="${Math.min(0.9, glowOpacity + 0.16)}"></circle>`);
-            cells.push(`<text x="${cx}" y="${cy + 0.5}" text-anchor="middle" dominant-baseline="middle" opacity="${starOpacity}" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif" font-size="${starSize}">⭐</text>`);
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(2.2, cell * 0.36)}" fill="${glowColor}" opacity="${glowOpacity}"></circle>`);
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(1.4, cell * 0.2)}" fill="${glowColor}" opacity="${Math.min(0.92, glowOpacity + 0.18)}"></circle>`);
+            cells.push(`<polygon points="${buildStarPoints(cx, cy, outerR, innerR)}" fill="${starFill}" stroke="${starStroke}" stroke-width="${Math.max(0.5, cell * 0.05)}"></polygon>`);
+            cells.push(`<polygon points="${buildStarPoints(cx, cy, coreOuterR, coreInnerR)}" fill="${starCore}" opacity="${0.42 + level * 0.12}"></polygon>`);
+            if (level >= 3) {
+              const sparkX = cx + outerR * 0.95;
+              const sparkY = cy - outerR * 0.95;
+              const sparkR = Math.max(1.1, cell * 0.12);
+              cells.push(`<path d="M ${sparkX} ${sparkY - sparkR} L ${sparkX} ${sparkY + sparkR} M ${sparkX - sparkR} ${sparkY} L ${sparkX + sparkR} ${sparkY}" stroke="${starCore}" stroke-width="${Math.max(0.5, cell * 0.05)}" stroke-linecap="round" opacity="${0.55 + level * 0.08}"></path>`);
+            }
           }
           return;
         }

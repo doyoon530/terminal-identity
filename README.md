@@ -343,7 +343,7 @@ Returns an `image/svg+xml` response. Drop it directly in any Markdown `<img>` ta
 
 Animated cards use the same endpoint. Add `motion=pulse`, `motion=scan`, or `motion=boot` to return an animated SVG instead of a static one.
 
-Contribution cards use the same endpoint too. Add `showContribs=on` and a `contribTheme` like `moon`, `star`, `moss`, or `firefly` to render a compact GitHub activity block inside the card. `moon` maps activity from `🌑` to `🌕`, and `star` uses a dark square for inactive cells with brighter `⭐` marks as activity rises.
+Contribution cards use the same endpoint too. Add `showContribs=on` and a `contribTheme` like `moon`, `star`, `moss`, or `firefly` to render a compact GitHub activity block inside the card. `moon` maps activity from `🌑` to `🌕`, and `star` draws a custom SVG star with brighter fills and warmer glow as activity rises.
 
 > **Accent color:** URL-encode `#` as `%23` when passing the `accent` param. Example: `accent=%23ff7a59` for `#ff7a59`.
 
