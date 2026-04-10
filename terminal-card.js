@@ -431,47 +431,76 @@
     return isWide ? 12 : 7.2;
   }
 
+  function measureTextPx(text) {
+    return [...String(text || "")].reduce((width, char) => width + charPxWidth(char), 0);
+  }
+
+  function tokenizeRichWords(text) {
+    const source = String(text || "");
+    const tokens = [];
+    const boldRe = /\*\*(.+?)\*\*/g;
+    let last = 0;
+    let match;
+
+    const pushSegmentWords = (segment, bold) => {
+      String(segment)
+        .split(/\s+/)
+        .filter(Boolean)
+        .forEach((word) => {
+          tokens.push({ text: word, bold });
+        });
+    };
+
+    while ((match = boldRe.exec(source)) !== null) {
+      if (match.index > last) {
+        pushSegmentWords(source.slice(last, match.index), false);
+      }
+      pushSegmentWords(match[1], true);
+      last = match.index + match[0].length;
+    }
+
+    if (last < source.length) {
+      pushSegmentWords(source.slice(last), false);
+    }
+
+    return tokens;
+  }
+
+  function encodeRichLine(tokens) {
+    return tokens
+      .map((token) => (token.bold ? `**${token.text}**` : token.text))
+      .join(" ");
+  }
+
   function wrapText(text, maxPx, maxLines) {
     if (!text) return [];
-    // Keep **...** spans (including spaces inside) as one unsplittable unit
-    const words = [];
-    const tokRe = /\*\*[\s\S]*?\*\*|\S+/g;
-    let tok;
-    while ((tok = tokRe.exec(String(text))) !== null) words.push(tok[0]);
+    const words = tokenizeRichWords(text);
     const lines = [];
-    let current = "";
+    let current = [];
     let currentPx = 0;
     const spacePx = 7.2;
 
     const flush = () => {
-      if (current && lines.length < maxLines) lines.push(current);
-      current = "";
+      if (current.length && lines.length < maxLines) lines.push(encodeRichLine(current));
+      current = [];
       currentPx = 0;
     };
 
     for (const word of words) {
       if (lines.length >= maxLines) break;
-      const displayWord = word.replace(/\*\*/g, "");
-      const chars = [...displayWord];
-      const wordPx = chars.reduce((w, c) => w + charPxWidth(c), 0);
+      const chars = [...word.text];
+      const wordPx = measureTextPx(word.text);
 
       // Word itself too wide for one line: hard-break character by character
       if (wordPx > maxPx) {
-        if (word.includes("**")) {
-          // Don't hard-break bold-marked words — push as-is
-          flush();
-          if (lines.length < maxLines) lines.push(word);
-          current = ""; currentPx = 0;
-          continue;
-        }
-        if (current) flush();
+        if (current.length) flush();
         let chunk = "";
         let chunkPx = 0;
         for (const c of chars) {
           if (lines.length >= maxLines) break;
           const cpx = charPxWidth(c);
           if (chunkPx + cpx > maxPx) {
-            if (chunk) lines.push(chunk);
+            if (chunk) lines.push(encodeRichLine([{ text: chunk, bold: word.bold }]));
             chunk = c;
             chunkPx = cpx;
           } else {
@@ -479,18 +508,18 @@
             chunkPx += cpx;
           }
         }
-        current = chunk;
+        current = chunk ? [{ text: chunk, bold: word.bold }] : [];
         currentPx = chunkPx;
         continue;
       }
 
-      const candidatePx = current ? currentPx + spacePx + wordPx : wordPx;
+      const candidatePx = current.length ? currentPx + spacePx + wordPx : wordPx;
       if (candidatePx <= maxPx) {
-        current = current ? `${current} ${word}` : word;
+        current.push(word);
         currentPx = candidatePx;
       } else {
         flush();
-        current = word;
+        current = [word];
         currentPx = wordPx;
       }
     }
