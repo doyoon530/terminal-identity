@@ -1,5 +1,9 @@
 # Terminal Identity
 
+<p align="center">
+  <img src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=ember&avatar=GG&pattern=grid&width=980&height=520" width="100%" alt="Terminal Identity demo card" />
+</p>
+
 Terminal Identity generates beautiful terminal-style SVG profile cards from simple URL params, so you can drop a distinctive hero card into your GitHub README in seconds.
 
 Live demo: [terminal-identity-opal.vercel.app](https://terminal-identity-opal.vercel.app)
