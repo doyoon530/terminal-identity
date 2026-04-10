@@ -214,6 +214,8 @@
     hideCommand: false,
     motion: "off",
     contribTheme: "moss",
+    contribRange: "1y",
+    contribMode: "compact",
     stats: STAT_KEYS,
     excludeLangs: [],
     bio: "",
@@ -902,6 +904,21 @@
     return state.showContribs === "on" || !!state.username;
   }
 
+  function getContributionRangeLimit(range) {
+    if (range === "12w") return 12;
+    if (range === "16w") return 16;
+    return 53;
+  }
+
+  function getContributionWeeks(contributions, range) {
+    if (!contributions?.weeks?.length) return [];
+    return contributions.weeks.slice(-getContributionRangeLimit(range));
+  }
+
+  function isContributionFocus(state, contributions) {
+    return state?.contribMode === "focus" && !!contributions?.weeks?.length;
+  }
+
   function usesLargeContributionMarks(theme) {
     return theme === "moon" || theme === "star" || theme === "orbit" || theme === "signal" || theme === "citylight";
   }
@@ -1062,10 +1079,11 @@
 
     const enlargedMarkTheme = usesLargeContributionMarks(theme);
     const minVisibleCols = enlargedMarkTheme ? 10 : 16;
-    const targetCell = safeNumber(options?.targetCell, enlargedMarkTheme ? 12 : 10, 6, 14);
+    const focusMode = options?.mode === "focus";
+    const targetCell = safeNumber(options?.targetCell, enlargedMarkTheme ? (focusMode ? 13 : 12) : (focusMode ? 12 : 10), 6, 16);
     const minCols = safeNumber(options?.minCols, minVisibleCols, 10, 53);
-    const minCell = safeNumber(options?.minCell, enlargedMarkTheme ? 8 : 5, 4, 16);
-    const maxCell = safeNumber(options?.maxCell, enlargedMarkTheme ? 14 : 12, minCell, 20);
+    const minCell = safeNumber(options?.minCell, enlargedMarkTheme ? (focusMode ? 9 : 8) : (focusMode ? 6 : 5), 4, 16);
+    const maxCell = safeNumber(options?.maxCell, enlargedMarkTheme ? (focusMode ? 16 : 14) : (focusMode ? 14 : 12), minCell, 20);
     const desiredCols = Math.max(minVisibleCols, Math.floor((trackWidth + gap) / (targetCell + gap)));
     const cols = Math.min(maxWeeks, Math.max(minCols, desiredCols));
     const cell = Math.max(
@@ -1080,9 +1098,11 @@
 
   function estimateContributionSectionHeight(contributions, trackWidth, theme, options) {
     if (!contributions?.weeks?.length || trackWidth <= 0) return 0;
+    const weeks = getContributionWeeks(contributions, options?.range);
+    if (!weeks.length) return 0;
 
     const { gridH } = getContributionGridGeometry(
-      contributions.weeks.length,
+      weeks.length,
       trackWidth,
       theme,
       options
@@ -1123,13 +1143,21 @@
     return contentTop + contentH + bottomPad;
   }
 
+  function getContributionOptions(state, overrides) {
+    return {
+      range: state.contribRange,
+      mode: state.contribMode,
+      ...(overrides || {}),
+    };
+  }
+
   function getObsidianResponseRequiredHeight(state, topLangs, contributions, mainW) {
     if (contributions?.weeks?.length) {
       return estimateContributionSectionHeight(
         contributions,
         mainW - 44,
         state.contribTheme,
-        { contentTop: 36, bottomPad: 8 }
+        getContributionOptions(state, { contentTop: 36, bottomPad: 8 })
       );
     }
 
@@ -1157,7 +1185,7 @@
         contributions,
         lrW - 36,
         state.contribTheme,
-        { contentTop: 38, bottomPad: 8 }
+        getContributionOptions(state, { contentTop: 38, bottomPad: 8 })
       );
     } else if (topLangs?.length) {
       const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
@@ -1192,8 +1220,9 @@
 
     const statsH = (state.stats || STAT_KEYS).length * 18;
     let rightRequired = 42 + statsH;
+    const focusContribs = isContributionFocus(state, contributions);
 
-    if (topLangs?.length) {
+    if (topLangs?.length && !focusContribs) {
       const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 4 });
       rightRequired += getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
     }
@@ -1208,13 +1237,13 @@
         contentTop: 20,
         bottomPad: 2,
       };
-      if (topLangs?.length) rightRequired += 14;
+      if (topLangs?.length && !focusContribs) rightRequired += 14;
       const rightW = Math.max(state.width - 126 - leftW, 0);
       rightRequired += estimateContributionSectionHeight(
         contributions,
         rightW - 36,
         state.contribTheme,
-        amberContribOptions
+        getContributionOptions(state, amberContribOptions)
       );
     }
 
@@ -1252,15 +1281,16 @@
     const contentW = state.width - contentX - pad - 28;
     const dataH = state.height - 392;
     let requiredDataH = (state.stats || STAT_KEYS).length * 18;
+    const focusContribs = isContributionFocus(state, contributions);
 
     if (contributions?.weeks?.length) {
       requiredDataH += 10 + estimateContributionSectionHeight(
         contributions,
         contentW,
         state.contribTheme,
-        { contentTop: 8, bottomPad: 4 }
+        getContributionOptions(state, { contentTop: 8, bottomPad: 4 })
       );
-    } else if (topLangs?.length) {
+    } else if (topLangs?.length && !focusContribs) {
       const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
       requiredDataH += 10 + getLangSectionHeight(state, langCount, {
         contentTop: state.langStyle === "icons" ? 0 : 0,
@@ -1294,14 +1324,16 @@
 
   function buildContributionGrid(contributions, x, y, trackWidth, theme, palette, options) {
     if (!contributions?.weeks?.length) return "";
+    const weeksForRange = getContributionWeeks(contributions, options?.range);
+    if (!weeksForRange.length) return "";
 
     const { cols, cell, gridH, gap } = getContributionGridGeometry(
-      contributions.weeks.length,
+      weeksForRange.length,
       trackWidth,
       theme,
       options
     );
-    const weeks = contributions.weeks.slice(-cols);
+    const weeks = weeksForRange.slice(-cols);
     const colors = getContributionThemeColors(theme, palette);
     const title = options?.title || "CONTRIBUTIONS";
     const labelColor = options?.labelColor || palette.dim;
@@ -1540,6 +1572,8 @@
       iconSize: ["sm", "md", "lg"].includes(state.iconSize) ? state.iconSize : "md",
       motion: ["off", "pulse", "scan", "boot"].includes(state.motion) ? state.motion : "off",
       contribTheme: ["moon", "star", "orbit", "signal", "citylight", "petal", "moss", "firefly", "constellation"].includes(state.contribTheme) ? state.contribTheme : defaults.contribTheme,
+      contribRange: ["12w", "16w", "1y"].includes(state.contribRange) ? state.contribRange : defaults.contribRange,
+      contribMode: ["compact", "focus"].includes(state.contribMode) ? state.contribMode : defaults.contribMode,
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
       hideProfile: parseBool(state.hideProfile),
@@ -1560,6 +1594,8 @@
       }
       if (key === "showLangs" && value === "auto") return;
       if (key === "showContribs" && value === defaults.showContribs) return;
+      if (key === "contribRange" && value === defaults.contribRange) return;
+      if (key === "contribMode" && value === defaults.contribMode) return;
       if (key === "langCount" && value === 4) return;
       if (key === "barStyle" && value === "bar") return;
       if (key === "langStyle" && value === "bar") return;
@@ -1820,6 +1856,7 @@
     const moduleGap = 14;
     const hasContribs = contributions && showStats;
     const hasLangs = topLangs && showStats;
+    const focusContribs = isContributionFocus(state, contributions);
     const rpModuleAvail = rpDataBot - rpModuleTop;
     const maxBarLangs = topLangs
       ? Math.min(topLangs.length, Math.max(0, Math.floor(Math.max(0, rpModuleAvail - 30) / 18)))
@@ -1828,7 +1865,7 @@
       ? getLangDisplayCount(state, topLangs, { maxIcons: 4 })
       : maxBarLangs;
     const langModuleH = getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
-    const showLangs = hasLangs && langCount > 0 && rpModuleAvail >= langModuleH;
+    const showLangs = !focusContribs && hasLangs && langCount > 0 && rpModuleAvail >= langModuleH;
     const langsToShow = showLangs ? topLangs.slice(0, langCount) : null;
     const langContentH = !showLangs
       ? 0
@@ -1842,11 +1879,12 @@
     const contribModuleTop = rpModuleTop + (showLangs ? langModuleTotalH + moduleGap : 0);
     const contribAvailH = rpDataBot - contribModuleTop - 4;
     const amberContribOptions = {
+      ...getContributionOptions(state),
       labelColor: label,
-      targetCell: 6,
-      minCols: 32,
-      minCell: 5,
-      maxCell: 7,
+      targetCell: state.contribMode === "focus" ? 8 : 6,
+      minCols: state.contribMode === "focus" ? 16 : 32,
+      minCell: state.contribMode === "focus" ? 7 : 5,
+      maxCell: state.contribMode === "focus" ? 11 : 7,
       showFooter: false,
       contentTop: 20,
       bottomPad: 2,
@@ -1986,7 +2024,7 @@
   <rect x="${mainX}" y="${responseY}" width="${mainW}" height="${responseH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
   <text x="${mainX + 22}" y="${responseY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">output</text>
   ${showContribs
-    ? buildContributionGrid(contributions, mainX + 22, responseY + 36, mainW - 44, state.contribTheme, palette, { labelColor: dim })
+    ? buildContributionGrid(contributions, mainX + 22, responseY + 36, mainW - 44, state.contribTheme, palette, getContributionOptions(state, { labelColor: dim }))
     : state.githubStats
     ? (topLangs
         ? (shouldRenderLangIcons(state)
@@ -2069,7 +2107,7 @@
   <rect x="${lrX}" y="${lowerY}" width="${lrW}" height="${lowerH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
   <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${showContribs ? "contributions" : topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
   ${showContribs
-    ? buildContributionGrid(contributions, lrX + 18, lowerY + 38, lrW - 36, state.contribTheme, palette, { labelColor: dim, title: "ACTIVITY" })
+    ? buildContributionGrid(contributions, lrX + 18, lowerY + 38, lrW - 36, state.contribTheme, palette, getContributionOptions(state, { labelColor: dim, title: "ACTIVITY" }))
     : topLangs
     ? (shouldRenderLangIcons(state)
         ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, state.langIconCount ?? topLangs.length, state.iconSize)
@@ -2193,13 +2231,14 @@
     // Langs: fill remaining space after stats
     const LANGS_TOP = showStats ? DATA_TOP + statsH + 10 : DATA_TOP;
     const langsAvailH = DATA_BOT - LANGS_TOP;
+    const focusContribs = isContributionFocus(state, effectiveContributions);
     const maxLangs = effectiveTopLangs
       ? Math.min(effectiveTopLangs.length, Math.max(0, Math.floor(langsAvailH / 18)))
       : 0;
     const iconLangCount = getLangDisplayCount(state, effectiveTopLangs, { maxIcons: 6 });
-    const showLangs = shouldRenderLangIcons(state)
+    const showLangs = !focusContribs && (shouldRenderLangIcons(state)
       ? !!effectiveTopLangs && langsAvailH >= getLangSectionHeight(state, iconLangCount, { contentTop: 0, bottomPad: 8 })
-      : maxLangs > 0;
+      : maxLangs > 0);
     const langsToShow = showLangs
       ? (shouldRenderLangIcons(state) ? effectiveTopLangs.slice(0, iconLangCount) : effectiveTopLangs.slice(0, maxLangs))
       : null;
@@ -2207,7 +2246,7 @@
       effectiveContributions,
       contentW,
       state.contribTheme,
-      { contentTop: 8, bottomPad: 4 }
+      getContributionOptions(state, { contentTop: 8, bottomPad: 4 })
     );
     const showContribs = effectiveContributions && showStats && langsAvailH >= contribSectionH;
 
@@ -2234,12 +2273,12 @@
     : `<circle cx="${contentX + 8}" cy="${DATA_TOP + 8}" r="5" fill="${palette.success}"></circle>
   <text x="${contentX + 24}" y="${DATA_TOP + 14}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
 
-  ${showStats && (showContribs || showLangs || (shouldRenderLangIcons(state) && effectiveTopLangs))
+  ${showStats && (showContribs || showLangs)
     ? `<rect x="${contentX}" y="${LANGS_TOP - 2}" width="${contentW}" height="1" fill="rgba(255,255,255,0.05)"></rect>
   ${showContribs
-    ? buildContributionGrid(effectiveContributions, contentX, LANGS_TOP + 8, contentW, state.contribTheme, palette, { labelColor: palette.dim })
-    : shouldRenderLangIcons(state) && effectiveTopLangs
-    ? buildLangIcons(state.langIconsUri, contentX, LANGS_TOP, contentW, state.langIconCount ?? effectiveTopLangs.length, state.iconSize)
+    ? buildContributionGrid(effectiveContributions, contentX, LANGS_TOP + 8, contentW, state.contribTheme, palette, getContributionOptions(state, { labelColor: palette.dim }))
+    : shouldRenderLangIcons(state) && langsToShow
+    ? buildLangIcons(state.langIconsUri, contentX, LANGS_TOP, contentW, state.langIconCount ?? langsToShow.length, state.iconSize)
     : buildLangBars(langsToShow, contentX, LANGS_TOP, contentW, palette.accent, palette.dim, undefined, state.barStyle)}`
     : ""}
 

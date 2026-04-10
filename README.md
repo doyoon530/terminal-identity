@@ -26,7 +26,7 @@
 
 <p align="center">
   <a href="https://terminal-identity-opal.vercel.app">
-    <img src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=Frontend+Engineer&tagline=Building+tiny+tools+with+taste.&status=available+for+cool+internet+projects&command=npx+terminal-identity&theme=amber%2Fsakura&avatar=GG&pattern=grid&width=900&showContribs=on&contribTheme=orbit&showLangs=on&langCount=4&langStyle=icons&iconSize=sm&barStyle=blocks&bio=-%20%F0%9F%92%A1%20**Focus%3A**%20Specialized%20in%20**React%2C%20TypeScript%2C%20and%20Next.js**%20ecosystem.%0A-%20%F0%9F%9B%A0%EF%B8%8F%20**Current%20Activity%3A**%20Refining%20**Server-side%20Rendering%20(SSR)**%20patterns%20and%20building%20a%20custom%20**Design%20System**.&v=30"
+    <img src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=Frontend+Engineer&tagline=Building+tiny+tools+with+taste.&status=available+for+cool+internet+projects&command=npx+terminal-identity&theme=amber%2Fsakura&avatar=GG&pattern=grid&width=900&showContribs=on&contribTheme=orbit&contribRange=16w&contribMode=focus&showLangs=on&langCount=4&langStyle=icons&iconSize=sm&barStyle=blocks&bio=-%20%F0%9F%92%A1%20**Focus%3A**%20Specialized%20in%20**React%2C%20TypeScript%2C%20and%20Next.js**%20ecosystem.%0A-%20%F0%9F%9B%A0%EF%B8%8F%20**Current%20Activity%3A**%20Refining%20**Server-side%20Rendering%20(SSR)**%20patterns%20and%20building%20a%20custom%20**Design%20System**.&v=31"
     width="100%" alt="Terminal Identity demo card" />
   </a>
 </p>
@@ -180,6 +180,8 @@ Want a contribution block too:
 | `motion` | `off` | Animated SVG overlay: `off`, `pulse`, `scan`, or `boot` |
 | `showContribs` | `off` | Contribution grid display: `off`, `on`, or `auto` |
 | `contribTheme` | `moss` | Contribution concept theme: `moon`, `star`, `orbit`, `signal`, `citylight`, `moss`, `petal`, `firefly`, or `constellation` |
+| `contribRange` | `1y` | Contribution window: `12w`, `16w`, or `1y` |
+| `contribMode` | `compact` | Contribution layout mode: `compact` or `focus` |
 | `showLangs` | `auto` | Top languages display: `auto`, `on`, or `off` |
 | `langCount` | `4` | Number of top languages to show (1–6) |
 | `langStyle` | `bar` | Language display style: `bar` or `icons` |
@@ -192,6 +194,8 @@ Want a contribution block too:
 | `excludeLangs` | — | Comma-separated language names to exclude, e.g. `HTML,CSS` |
 
 > **`showLangs=auto`** shows top languages only when a `username` is provided and GitHub returns language data. Use `on` to always attempt to show them, `off` to hide entirely.
+
+> **Contribution sizing:** `contribRange=12w` or `16w` makes the contribution block much larger than `1y`, and `contribMode=focus` gives that block layout priority over languages when space is tight.
 
 > **Icons:** `langStyle=icons` fetches icons from [skillicons.dev](https://skillicons.dev) at render time. Supported languages: JavaScript, TypeScript, Python, Rust, Go, Java, Kotlin, Swift, Ruby, PHP, C, C++, C#, HTML, CSS, SCSS, Dart, Lua, Scala, Elixir, Haskell, Shell, R, Perl, Zig, OCaml, Dockerfile, Vue, Svelte, and more.
 
@@ -379,7 +383,7 @@ Returns an `image/svg+xml` response. Drop it directly in any Markdown `<img>` ta
 
 Animated cards use the same endpoint. Add `motion=pulse`, `motion=scan`, or `motion=boot` to return an animated SVG instead of a static one.
 
-Contribution cards use the same endpoint too. Add `showContribs=on` and a `contribTheme` like `moon`, `star`, `orbit`, `signal`, `citylight`, `moss`, or `firefly` to render a compact GitHub activity block inside the card. `moon` draws custom SVG moon phases, `star` uses a custom glowing star, `orbit` draws a tiny planet system, `signal` renders radar-like arcs, and `citylight` turns activity into lit windows.
+Contribution cards use the same endpoint too. Add `showContribs=on`, a `contribTheme`, and optionally `contribRange=12w|16w|1y` plus `contribMode=compact|focus` to control how large the activity block feels inside the card. `moon` draws custom SVG moon phases, `star` uses a custom glowing star, `orbit` draws a tiny planet system, `signal` renders radar-like arcs, and `citylight` turns activity into lit windows.
 
 > **Accent color:** URL-encode `#` as `%23` when passing the `accent` param. Example: `accent=%23ff7a59` for `#ff7a59`.
 

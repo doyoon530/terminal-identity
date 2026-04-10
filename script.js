@@ -52,6 +52,8 @@ function getState() {
     motion: document.getElementById("motion").value,
     showContribs: document.getElementById("showContribs").value,
     contribTheme: document.getElementById("contribTheme").value,
+    contribRange: document.getElementById("contribRange").value,
+    contribMode: document.getElementById("contribMode").value,
     barStyle: document.getElementById("barStyle").value,
     langStyle: document.getElementById("langStyle").value,
     iconSize: document.getElementById("iconSize").value,
@@ -83,6 +85,8 @@ function fillForm(state) {
   document.getElementById("motion").value = state.motion || "off";
   document.getElementById("showContribs").value = state.showContribs || "off";
   document.getElementById("contribTheme").value = state.contribTheme || "moss";
+  document.getElementById("contribRange").value = state.contribRange || "1y";
+  document.getElementById("contribMode").value = state.contribMode || "compact";
   document.getElementById("barStyle").value = state.barStyle || "bar";
   document.getElementById("langStyle").value = state.langStyle || "bar";
   document.getElementById("iconSize").value = state.iconSize || "md";
@@ -120,6 +124,8 @@ function loadStateFromUrl() {
     motion: params.get("motion"),
     showContribs: params.get("showContribs"),
     contribTheme: params.get("contribTheme"),
+    contribRange: params.get("contribRange"),
+    contribMode: params.get("contribMode"),
     barStyle: params.get("barStyle"),
     langStyle: params.get("langStyle"),
     iconSize: params.get("iconSize"),
