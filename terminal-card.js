@@ -391,7 +391,7 @@
     const topLangs =
       Array.isArray(stats.topLangs) && stats.topLangs.length > 0
         ? stats.topLangs
-            .slice(0, 6)
+            .slice(0, 12)
             .filter((l) => l && typeof l.name === "string" && typeof l.count === "number")
             .map((l) => ({ name: String(l.name).slice(0, 20), count: Math.max(0, Math.floor(l.count)) }))
         : null;
