@@ -859,59 +859,69 @@
     const bounds = getMotionBounds(state);
     const status = getMotionStatusAnchor(state);
     const accent = palette.accentAlt || palette.accent;
+    const motionId = `motion-${state.provider}-${state.theme}-${state.motion}-${state.width}-${state.height}`;
 
     if (state.motion === "pulse") {
       return `
+  <defs>
+    <filter id="${motionId}-pulse-glow" x="-300%" y="-300%" width="700%" height="700%">
+      <feGaussianBlur stdDeviation="5"></feGaussianBlur>
+    </filter>
+  </defs>
   <g aria-hidden="true" pointer-events="none">
+    <circle cx="${status.x}" cy="${status.y}" r="12" fill="${accent}" opacity="0.08" filter="url(#${motionId}-pulse-glow)">
+      <animate attributeName="r" values="10;14;10" dur="2.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.04;0.12;0.04" dur="2.8s" repeatCount="indefinite"/>
+    </circle>
     <circle cx="${status.x}" cy="${status.y}" r="5" fill="${palette.success}">
-      <animate attributeName="opacity" values="1;0.68;1" dur="1.6s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="${status.x}" cy="${status.y}" r="8" fill="none" stroke="${accent}" stroke-width="2" opacity="0.65">
-      <animate attributeName="r" values="8;20;8" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.65;0;0.65" dur="1.6s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="${status.x}" cy="${status.y}" r="8" fill="none" stroke="${accent}" stroke-width="1.2" opacity="0">
-      <animate attributeName="r" values="8;26;8" dur="1.6s" begin="0.24s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.55;0;0" dur="1.6s" begin="0.24s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.82;1" dur="2.8s" repeatCount="indefinite"/>
     </circle>
   </g>`;
     }
 
     if (state.motion === "scan") {
-      const scanX = bounds.x + 14;
-      const scanWidth = bounds.width - 28;
-      const scanTop = bounds.y + 34;
-      const scanBottom = bounds.y + bounds.height - 28;
+      const sheenWidth = Math.max(120, Math.round(bounds.width * 0.34));
+      const sweepStart = bounds.x - sheenWidth - 60;
+      const sweepEnd = bounds.x + bounds.width + 60;
+      const centerX = bounds.x + bounds.width / 2;
+      const centerY = bounds.y + bounds.height / 2;
       return `
-  <g aria-hidden="true" pointer-events="none">
-    <rect x="${scanX}" y="${scanTop}" width="${scanWidth}" height="2" fill="${accent}" opacity="0.62">
-      <animate attributeName="y" values="${scanTop};${scanBottom};${scanTop}" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.18;0.72;0.18" dur="3s" repeatCount="indefinite"/>
-    </rect>
-    <rect x="${scanX}" y="${scanTop - 10}" width="${scanWidth}" height="26" fill="${accent}" opacity="0.06">
-      <animate attributeName="y" values="${scanTop - 10};${scanBottom - 10};${scanTop - 10}" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.02;0.08;0.02" dur="3s" repeatCount="indefinite"/>
+  <defs>
+    <clipPath id="${motionId}-scan-clip">
+      <rect x="${bounds.x}" y="${bounds.y}" width="${bounds.width}" height="${bounds.height}" rx="14"></rect>
+    </clipPath>
+    <linearGradient id="${motionId}-scan-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="${accent}" stop-opacity="0"></stop>
+      <stop offset="44%" stop-color="${accent}" stop-opacity="0"></stop>
+      <stop offset="50%" stop-color="${accent}" stop-opacity="0.22"></stop>
+      <stop offset="56%" stop-color="${accent}" stop-opacity="0"></stop>
+      <stop offset="100%" stop-color="${accent}" stop-opacity="0"></stop>
+    </linearGradient>
+  </defs>
+  <g aria-hidden="true" pointer-events="none" clip-path="url(#${motionId}-scan-clip)">
+    <rect x="${sweepStart}" y="${bounds.y - 44}" width="${sheenWidth}" height="${bounds.height + 88}" fill="url(#${motionId}-scan-grad)" opacity="0" transform="rotate(-12 ${centerX} ${centerY})">
+      <animate attributeName="x" values="${sweepStart};${sweepEnd};${sweepEnd}" keyTimes="0;0.58;1" dur="4.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.24;0.24;0" keyTimes="0;0.18;0.52;1" dur="4.8s" repeatCount="indefinite"/>
     </rect>
   </g>`;
     }
 
     if (state.motion === "boot") {
-      const shellFill = palette.shell;
-      const labelX = bounds.x + 18;
-      const labelY = bounds.y + 24;
+      const railWidth = Math.min(164, Math.round(bounds.width * 0.2));
+      const railX = bounds.x + bounds.width - railWidth - 26;
+      const railY = bounds.y + 22;
+      const segmentWidth = Math.max(28, Math.round(railWidth * 0.26));
       return `
   <g aria-hidden="true" pointer-events="none">
-    <rect x="${bounds.x}" y="${bounds.y}" width="${bounds.width}" height="${bounds.height}" rx="14" fill="${shellFill}" opacity="0.96">
-      <animate attributeName="width" values="${bounds.width};${bounds.width};0;0" keyTimes="0;0.22;0.46;1" dur="2.8s" repeatCount="indefinite"/>
-      <animate attributeName="x" values="${bounds.x};${bounds.x};${bounds.x + bounds.width};${bounds.x + bounds.width}" keyTimes="0;0.22;0.46;1" dur="2.8s" repeatCount="indefinite"/>
+    <rect x="${railX}" y="${railY}" width="${railWidth}" height="1.5" rx="0.75" fill="rgba(255,255,255,0.08)"></rect>
+    <rect x="${railX}" y="${railY - 0.25}" width="${segmentWidth}" height="2" rx="1" fill="${accent}" opacity="0">
+      <animate attributeName="x" values="${railX};${railX + railWidth - segmentWidth};${railX + railWidth - segmentWidth}" keyTimes="0;0.56;1" dur="3.4s" repeatCount="indefinite"/>
+      <animate attributeName="width" values="0;${segmentWidth};${segmentWidth};0" keyTimes="0;0.16;0.56;1" dur="3.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.85;0.72;0" keyTimes="0;0.16;0.56;1" dur="3.4s" repeatCount="indefinite"/>
     </rect>
-    <rect x="${bounds.x - 120}" y="${bounds.y + 18}" width="120" height="2" fill="${accent}" opacity="0.92">
-      <animate attributeName="x" values="${bounds.x - 120};${bounds.x + bounds.width};${bounds.x + bounds.width}" keyTimes="0;0.46;1" dur="2.8s" repeatCount="indefinite"/>
-    </rect>
-    <text x="${labelX}" y="${labelY}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${accent}" opacity="0">
-      syncing interface
-      <animate attributeName="opacity" values="0;0.9;0;0" keyTimes="0;0.12;0.34;1" dur="2.8s" repeatCount="indefinite"/>
-    </text>
+    <circle cx="${railX + railWidth + 10}" cy="${railY + 0.75}" r="1.8" fill="${accent}" opacity="0">
+      <animate attributeName="opacity" values="0;0.95;0.95;0;0" keyTimes="0;0.16;0.56;0.72;1" dur="3.4s" repeatCount="indefinite"/>
+    </circle>
   </g>`;
     }
 
