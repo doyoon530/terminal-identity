@@ -602,7 +602,7 @@
     const outerY = 96;
     const outerW = state.width - 56;
     const outerH = state.height - 124;
-    const footerY = state.height - 142;
+    const footerY = outerY + outerH - 54;
     const contentY = outerY + 36;
     const accent = state.accent || "#f08a61";
     const dim = "#9c928d";
