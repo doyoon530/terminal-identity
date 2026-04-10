@@ -40,12 +40,24 @@ async function fetchGithubStats(username) {
     const stars = repoList.reduce((total, repo) => total + Number(repo.stargazers_count || 0), 0);
     const forks = repoList.reduce((total, repo) => total + Number(repo.forks_count || 0), 0);
 
+    const langCounts = {};
+    repoList.forEach((repo) => {
+      if (repo.language) {
+        langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
+      }
+    });
+    const topLangs = Object.entries(langCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 4)
+      .map(([name, count]) => ({ name, count }));
+
     return {
       username: normalized,
       repos: Number(user.public_repos || repoList.length || 0),
       followers: Number(user.followers || 0),
       stars,
       forks,
+      topLangs: topLangs.length > 0 ? topLangs : null,
     };
   } catch (_error) {
     return null;
