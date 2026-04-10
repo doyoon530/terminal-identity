@@ -408,7 +408,7 @@
             total: safeNumber(stats.contributions.total, 0, 0, 100000000),
             activeDays: safeNumber(stats.contributions.activeDays, 0, 0, 366),
             weeks: stats.contributions.weeks
-              .slice(-16)
+              .slice(-53)
               .map((week) => ({
                 start: String(week.start || "").slice(0, 10),
                 days: Array.isArray(week.days)
@@ -784,10 +784,13 @@
   function buildContributionGrid(contributions, x, y, trackWidth, theme, palette, options) {
     if (!contributions?.weeks?.length) return "";
 
-    const weeks = contributions.weeks.slice(-16);
-    const cols = weeks.length;
-    const gap = 3;
-    const cell = Math.max(7, Math.min(11, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
+    const gap = 2;
+    const maxWeeks = contributions.weeks.length;
+    const targetCell = 10;
+    const desiredCols = Math.max(16, Math.floor((trackWidth + gap) / (targetCell + gap)));
+    const cols = Math.min(maxWeeks, desiredCols);
+    const weeks = contributions.weeks.slice(-cols);
+    const cell = Math.max(7, Math.min(12, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
     const gridW = cols * cell + Math.max(0, cols - 1) * gap;
     const gridH = 7 * cell + 6 * gap;
     const colors = getContributionThemeColors(theme, palette);
@@ -855,7 +858,7 @@
 
     return `
   <text x="${x}" y="${y - 14}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${labelColor}" letter-spacing="0.5">${title}</text>
-  <text x="${x + gridW}" y="${y - 14}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="${labelColor}">${escapeXml(totalLabel)}</text>
+  <text x="${x + trackWidth}" y="${y - 14}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="${labelColor}">${escapeXml(totalLabel)}</text>
   <g>
     ${connectorSegments.join("\n    ")}
     ${cells.join("\n    ")}

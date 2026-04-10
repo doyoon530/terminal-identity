@@ -75,17 +75,17 @@ function parseContributionCalendar(html) {
   });
 
   const weekKeys = [...weekMap.keys()].sort();
-  const lastWeeks = weekKeys.slice(-16).map((key) => ({
+  const allWeeks = weekKeys.map((key) => ({
     start: key,
     days: weekMap.get(key),
   }));
 
-  return {
-    total,
-    activeDays: sorted.filter((day) => day.level > 0).length,
-    weeks: lastWeeks,
-  };
-}
+    return {
+      total,
+      activeDays: sorted.filter((day) => day.level > 0).length,
+      weeks: allWeeks,
+    };
+  }
 
 async function fetchGithubContributions(username) {
   const normalized = normalizeUsername(username);
