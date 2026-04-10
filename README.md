@@ -150,7 +150,7 @@ Want a contribution block too:
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=520&showContribs=on&contribTheme=moss"
+  src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=520&showContribs=on&contribTheme=garden"
   width="100%"
   alt="Terminal identity card with contribution grid"
 />
@@ -179,7 +179,7 @@ Want a contribution block too:
 | `accent` | — | Override accent color with a hex value, e.g. `%23ff7a59` |
 | `motion` | `off` | Animated SVG overlay: `off`, `pulse`, `scan`, or `boot` |
 | `showContribs` | `off` | Contribution grid display: `off`, `on`, or `auto` |
-| `contribTheme` | `moss` | Contribution concept theme: `moss`, `petal`, `firefly`, or `constellation` |
+| `contribTheme` | `moss` | Contribution concept theme: `garden`, `moss`, `petal`, `firefly`, or `constellation` |
 | `showLangs` | `auto` | Top languages display: `auto`, `on`, or `off` |
 | `langCount` | `4` | Number of top languages to show (1–6) |
 | `langStyle` | `bar` | Language display style: `bar` or `icons` |
@@ -343,7 +343,7 @@ Returns an `image/svg+xml` response. Drop it directly in any Markdown `<img>` ta
 
 Animated cards use the same endpoint. Add `motion=pulse`, `motion=scan`, or `motion=boot` to return an animated SVG instead of a static one.
 
-Contribution cards use the same endpoint too. Add `showContribs=on` and a `contribTheme` like `moss` or `firefly` to render a compact GitHub activity garden inside the card.
+Contribution cards use the same endpoint too. Add `showContribs=on` and a `contribTheme` like `garden`, `moss`, or `firefly` to render a compact GitHub activity garden inside the card. `garden` uses emoji blooms that grow from `🌱` to `🌸`.
 
 > **Accent color:** URL-encode `#` as `%23` when passing the `accent` param. Example: `accent=%23ff7a59` for `#ff7a59`.
 

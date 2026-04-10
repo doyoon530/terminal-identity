@@ -743,8 +743,21 @@
     return state.showContribs === "on" || !!state.username;
   }
 
+  function isEmojiContributionTheme(theme) {
+    return theme === "garden";
+  }
+
   function getContributionThemeColors(theme, palette) {
     const accent = palette.accentAlt || palette.accent;
+
+    if (theme === "garden") {
+      return {
+        base: "rgba(87,68,47,0.20)",
+        levels: ["rgba(87,68,47,0.20)", "rgba(120,190,96,0.18)", "rgba(120,190,96,0.22)", "rgba(255,172,132,0.16)", "rgba(255,182,193,0.14)"],
+        accent: "#ffb0c7",
+        glow: "rgba(255,176,199,0.18)",
+      };
+    }
 
     if (theme === "petal") {
       return {
@@ -786,12 +799,16 @@
 
     const gap = 2;
     const maxWeeks = contributions.weeks.length;
-    const targetCell = safeNumber(options?.targetCell, 10, 6, 14);
-    const minCols = safeNumber(options?.minCols, 16, 10, 53);
-    const desiredCols = Math.max(16, Math.floor((trackWidth + gap) / (targetCell + gap)));
+    const emojiTheme = isEmojiContributionTheme(theme);
+    const minVisibleCols = emojiTheme ? 10 : 16;
+    const targetCell = safeNumber(options?.targetCell, emojiTheme ? 12 : 10, 6, 14);
+    const minCols = safeNumber(options?.minCols, minVisibleCols, 10, 53);
+    const desiredCols = Math.max(minVisibleCols, Math.floor((trackWidth + gap) / (targetCell + gap)));
     const cols = Math.min(maxWeeks, Math.max(minCols, desiredCols));
     const weeks = contributions.weeks.slice(-cols);
-    const cell = Math.max(5, Math.min(12, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
+    const cell = emojiTheme
+      ? Math.max(8, Math.min(14, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))))
+      : Math.max(5, Math.min(12, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
     const gridW = cols * cell + Math.max(0, cols - 1) * gap;
     const gridH = 7 * cell + 6 * gap;
     const colors = getContributionThemeColors(theme, palette);
@@ -811,6 +828,17 @@
         const level = day?.level || 0;
         const cx = px + cell / 2;
         const cy = py + cell / 2;
+
+        if (theme === "garden") {
+          const emojiMap = ["", "🌱", "🌿", "🌷", "🌸"];
+          const emoji = emojiMap[level] || "";
+          const emojiSize = Math.max(10, Math.min(16, cell + 2));
+          cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(3, Math.floor(cell * 0.34))}" fill="${colors.levels[level] || colors.base}"></rect>`);
+          if (emoji) {
+            cells.push(`<text x="${cx}" y="${cy + 0.5}" text-anchor="middle" dominant-baseline="middle" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif" font-size="${emojiSize}">${emoji}</text>`);
+          }
+          return;
+        }
 
         if (theme === "petal") {
           cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.36))}" fill="${colors.base}"></rect>`);
@@ -907,7 +935,7 @@
       langStyle: ["bar", "icons"].includes(state.langStyle) ? state.langStyle : "bar",
       iconSize: ["sm", "md", "lg"].includes(state.iconSize) ? state.iconSize : "md",
       motion: ["off", "pulse", "scan", "boot"].includes(state.motion) ? state.motion : "off",
-      contribTheme: ["petal", "moss", "firefly", "constellation"].includes(state.contribTheme) ? state.contribTheme : defaults.contribTheme,
+      contribTheme: ["garden", "petal", "moss", "firefly", "constellation"].includes(state.contribTheme) ? state.contribTheme : defaults.contribTheme,
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
       hideProfile: parseBool(state.hideProfile),
