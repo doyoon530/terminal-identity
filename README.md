@@ -23,6 +23,7 @@ Live demo: [terminal-identity-opal.vercel.app](https://terminal-identity-opal.ve
 - Includes a polished live playground for copying API URLs and README markup
 - Ships with a preset gallery for fast remixing
 - Supports top-level provider shells like `claude/sakura`, `gpt/velvet`, and `gemini/aurora`
+- Can pull live GitHub stats with `username=doyoon530`
 
 ## Provider styles
 
@@ -102,6 +103,14 @@ Inputs: `provider=claude`, `theme=solar`, `name=hana`, `role=product engineer`, 
 <img src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&theme=claude/ember&avatar=GG&pattern=grid" width="100%" alt="Terminal identity card" />
 ```
 
+### Live GitHub status
+
+```md
+# Hi there
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&command=npx%20terminal-identity&theme=gpt/graphite&avatar=GG&pattern=grid" width="100%" alt="Terminal identity card with live GitHub stats" />
+```
+
 ### Profile intro
 
 ```md
@@ -139,6 +148,8 @@ I build expressive, careful interfaces and design systems.
 ```text
 /api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=claude/sakura&avatar=GG&pattern=grid&width=980&height=520
 ```
+
+If you pass `username`, the card will try to replace the manual status line with live public GitHub stats like stars, repos, and followers.
 
 Use it in a README like this:
 

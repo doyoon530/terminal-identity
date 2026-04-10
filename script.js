@@ -18,6 +18,7 @@ const copySvgButton = document.getElementById("copySvgButton");
 const copyMarkdownButton = document.getElementById("copyMarkdownButton");
 const copyShareButton = document.getElementById("copyShareButton");
 const downloadButton = document.getElementById("downloadButton");
+let renderToken = 0;
 
 function copyTextWithFallback(value, target) {
   if (navigator.clipboard?.writeText) {
@@ -35,6 +36,7 @@ function copyTextWithFallback(value, target) {
 function getState() {
   return normalizeState({
     name: document.getElementById("name").value.trim(),
+    username: document.getElementById("username").value.trim(),
     role: document.getElementById("role").value.trim(),
     tagline: document.getElementById("tagline").value.trim(),
     status: document.getElementById("status").value.trim(),
@@ -50,6 +52,7 @@ function getState() {
 
 function fillForm(state) {
   document.getElementById("name").value = state.name;
+  document.getElementById("username").value = state.username || "";
   document.getElementById("role").value = state.role;
   document.getElementById("tagline").value = state.tagline;
   document.getElementById("status").value = state.status;
@@ -66,6 +69,7 @@ function loadStateFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const state = normalizeState({
     name: params.get("name"),
+    username: params.get("username"),
     role: params.get("role"),
     tagline: params.get("tagline"),
     status: params.get("status"),
@@ -97,9 +101,41 @@ function updateShareUrl(state) {
   window.history.replaceState({}, "", nextUrl);
 }
 
-function render() {
+async function fetchGithubStats(username) {
+  if (!username || !window.location.origin.startsWith("http")) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`/api/github?username=${encodeURIComponent(username)}`);
+    if (!response.ok) {
+      return null;
+    }
+
+    return response.json();
+  } catch (_error) {
+    return null;
+  }
+}
+
+async function render() {
+  const currentToken = ++renderToken;
   const state = getState();
-  const svg = buildSvg(state);
+  let nextState = state;
+  const githubStats = await fetchGithubStats(state.username);
+
+  if (currentToken !== renderToken) {
+    return;
+  }
+
+  if (githubStats) {
+    nextState = {
+      ...state,
+      githubStats,
+    };
+  }
+
+  const svg = buildSvg(nextState);
   const apiUrl = buildApiUrl(state, getApiBaseUrl());
 
   svgMount.innerHTML = svg;
@@ -143,11 +179,15 @@ function renderPresetGallery() {
 
 function setDefaults() {
   fillForm(defaults);
-  render();
+  void render();
 }
 
-form.addEventListener("input", render);
-form.addEventListener("change", render);
+form.addEventListener("input", () => {
+  void render();
+});
+form.addEventListener("change", () => {
+  void render();
+});
 presetButton.addEventListener("click", setDefaults);
 
 copySvgButton.addEventListener("click", async () => {
@@ -186,4 +226,4 @@ downloadButton.addEventListener("click", () => {
 
 loadStateFromUrl();
 renderPresetGallery();
-render();
+void render();

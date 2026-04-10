@@ -166,6 +166,7 @@
 
   const defaults = {
     name: "ggam",
+    username: "",
     role: "frontend engineer",
     tagline: "Building tiny tools with taste.",
     status: "available for cool internet projects",
@@ -322,6 +323,50 @@
     return Math.min(Math.max(parsed, min), max);
   }
 
+  function normalizeGithubStats(stats) {
+    if (!stats || typeof stats !== "object") {
+      return null;
+    }
+
+    return {
+      username: String(stats.username || "").slice(0, 39),
+      repos: safeNumber(stats.repos, 0, 0, 100000),
+      followers: safeNumber(stats.followers, 0, 0, 100000000),
+      stars: safeNumber(stats.stars, 0, 0, 100000000),
+      forks: safeNumber(stats.forks, 0, 0, 100000000),
+    };
+  }
+
+  function formatCompactStat(value) {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(value >= 10000000 ? 0 : 1)}M`;
+    }
+
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}k`;
+    }
+
+    return String(value);
+  }
+
+  function getStatusText(state) {
+    if (!state.githubStats) {
+      return state.status;
+    }
+
+    return `${formatCompactStat(state.githubStats.stars)} stars • ${formatCompactStat(
+      state.githubStats.repos
+    )} repos • ${formatCompactStat(state.githubStats.followers)} followers`;
+  }
+
+  function getIdentityHandle(state) {
+    if (state.username) {
+      return `@${state.username}`;
+    }
+
+    return state.role;
+  }
+
   function normalizeState(input) {
     const state = input || {};
     const rawTheme = String(state.theme || defaults.theme);
@@ -337,6 +382,7 @@
 
     return {
       name: String(state.name || defaults.name).slice(0, 36),
+      username: String(state.username || defaults.username).replace(/^@+/, "").slice(0, 39),
       role: String(state.role || defaults.role).slice(0, 48),
       tagline: String(state.tagline || defaults.tagline).slice(0, 100),
       status: String(state.status || defaults.status).slice(0, 72),
@@ -347,6 +393,7 @@
       pattern,
       width: safeNumber(state.width, defaults.width, 720, 1400),
       height: safeNumber(state.height, defaults.height, 420, 820),
+      githubStats: normalizeGithubStats(state.githubStats),
     };
   }
 
@@ -354,6 +401,9 @@
     const params = new URLSearchParams();
     Object.entries(state).forEach(([key, value]) => {
       if (key === "provider") {
+        return;
+      }
+      if (key === "githubStats") {
         return;
       }
       if (key === "theme") {
@@ -427,6 +477,8 @@
   }
 
   function buildClaudeDashboard(state, palette, provider) {
+    const statusText = getStatusText(state);
+    const identityHandle = getIdentityHandle(state);
     const outerX = 28;
     const outerY = 96;
     const outerWidth = state.width - 56;
@@ -451,7 +503,7 @@
     const iconY = leftY + 94;
     const cliTheme = `${provider.label}/${state.theme}`;
     const activityItems = [
-      `1m ago   Updated ${state.name}`,
+      `1m ago   Synced ${identityHandle}`,
       `8m ago   Reviewed ${state.role}`,
       `2d ago   ${state.command.slice(0, 28)}`,
     ];
@@ -483,7 +535,7 @@
   <rect x="${iconX + 16}" y="${iconY + 34}" width="6" height="18" fill="${accent}"></rect>
   <rect x="${iconX + 62}" y="${iconY + 34}" width="6" height="18" fill="${accent}"></rect>
 
-  <text x="${leftX + 96}" y="${leftY + 164}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${dim}">${escapeXml(state.role)}  •  ${escapeXml(cliTheme)}</text>
+  <text x="${leftX + 96}" y="${leftY + 164}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${dim}">${escapeXml(identityHandle)}  •  ${escapeXml(cliTheme)}</text>
   <text x="${leftX + 72}" y="${leftY + 198}" font-family="IBM Plex Mono, monospace" font-size="17" fill="${dim}">${escapeXml(state.tagline)}</text>
   <text x="${leftX + 72}" y="${leftY + 230}" font-family="IBM Plex Mono, monospace" font-size="17" fill="${dim}">${escapeXml(state.command)}</text>
 
@@ -510,7 +562,7 @@
   <text x="${rightX + 18}" y="${statusY + 22}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${accent}">Status</text>
   <circle cx="${rightX + 26}" cy="${statusY + 38}" r="7" fill="#7adf8d"></circle>
   <text x="${rightX + 42}" y="${statusY + 44}" font-family="IBM Plex Mono, monospace" font-size="16" fill="#f2efec">${escapeXml(
-    state.status
+    statusText
   )}</text>
 
   <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.18)"></line>
@@ -520,6 +572,8 @@
   }
 
   function buildGptWorkspace(state, palette, provider) {
+    const statusText = getStatusText(state);
+    const identityHandle = getIdentityHandle(state);
     const outerX = 28;
     const outerY = 96;
     const outerWidth = state.width - 56;
@@ -550,6 +604,7 @@
   <text x="${leftX + 18}" y="${leftY + 28}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${accent}">workspace</text>
   <rect x="${leftX + 18}" y="${leftY + 48}" width="${leftWidth - 36}" height="56" rx="14" fill="${soft}"></rect>
   <text x="${leftX + 34}" y="${leftY + 82}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(state.name)}</text>
+  <text x="${leftX + 34}" y="${leftY + 102}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(identityHandle)}</text>
   <text x="${leftX + 34}" y="${leftY + 164}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">role</text>
   <text x="${leftX + 34}" y="${leftY + 190}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(state.role)}</text>
   <text x="${leftX + 34}" y="${leftY + 234}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">model</text>
@@ -558,7 +613,7 @@
   <rect x="${leftX + 18}" y="${leftY + 320}" width="${leftWidth - 36}" height="58" rx="16" fill="${soft}"></rect>
   <circle cx="${leftX + 40}" cy="${leftY + 349}" r="7" fill="${accent}"></circle>
   <text x="${leftX + 56}" y="${leftY + 355}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(
-    state.status.slice(0, 24)
+    statusText.slice(0, 30)
   )}</text>
 
   <rect x="${mainX}" y="${mainY}" width="${mainWidth}" height="${mainHeight}" rx="18" fill="#111f19"></rect>
@@ -567,10 +622,10 @@
   <text x="${mainX + 22}" y="${mainY + 72}" font-family="Sora, Arial, sans-serif" font-size="28" font-weight="700" fill="${ink}">${escapeXml(state.tagline)}</text>
   <rect x="${mainX + 22}" y="${mainY + 104}" width="${mainWidth - 44}" height="1" fill="rgba(116,240,184,0.14)"></rect>
   <text x="${mainX + 22}" y="${mainY + 144}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">$ ${escapeXml(state.command)}</text>
-  <rect x="${mainX + 22}" y="${mainY + 160}" width="${Math.max(180, Math.min(mainWidth - 44, state.status.length * 8 + 72))}" height="30" rx="15" fill="rgba(116,240,184,0.08)"></rect>
+  <rect x="${mainX + 22}" y="${mainY + 160}" width="${Math.max(180, Math.min(mainWidth - 44, statusText.length * 8 + 72))}" height="30" rx="15" fill="rgba(116,240,184,0.08)"></rect>
   <circle cx="${mainX + 40}" cy="${mainY + 175}" r="5" fill="${accent}"></circle>
   <text x="${mainX + 54}" y="${mainY + 180}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(
-    state.status
+    statusText
   )}</text>
 
   <rect x="${mainX}" y="${responseY}" width="${mainWidth}" height="${responseHeight}" rx="18" fill="#0e1915"></rect>
@@ -585,6 +640,8 @@
   }
 
   function buildGeminiCanvas(state, palette, provider) {
+    const statusText = getStatusText(state);
+    const identityHandle = getIdentityHandle(state);
     const outerX = 28;
     const outerY = 96;
     const outerWidth = state.width - 56;
@@ -622,14 +679,16 @@
   <rect x="${cardX + 0.5}" y="${cardY + 0.5}" width="${cardWidth - 1}" height="${cardHeight - 1}" rx="25.5" stroke="rgba(133,158,255,0.18)"></rect>
   <text x="${cardX + 28}" y="${cardY + 36}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${accent}">gemini canvas</text>
   <text x="${cardX + 28}" y="${cardY + 80}" font-family="Sora, Arial, sans-serif" font-size="36" font-weight="700" fill="${ink}">${escapeXml(state.name)}</text>
-  <text x="${cardX + 28}" y="${cardY + 114}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${dim}">${escapeXml(state.role)}  •  ${escapeXml(model)}</text>
+  <text x="${cardX + 28}" y="${cardY + 114}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${dim}">${escapeXml(identityHandle)}  •  ${escapeXml(model)}</text>
   <text x="${cardX + 28}" y="${cardY + 142}" font-family="Sora, Arial, sans-serif" font-size="18" fill="${dim}">${escapeXml(state.tagline)}</text>
 
   <rect x="${lowerLeftX}" y="${lowerLeftY}" width="${lowerLeftWidth}" height="${lowerLeftHeight}" rx="22" fill="rgba(255,255,255,0.78)"></rect>
   <rect x="${lowerLeftX + 0.5}" y="${lowerLeftY + 0.5}" width="${lowerLeftWidth - 1}" height="${lowerLeftHeight - 1}" rx="21.5" stroke="rgba(133,158,255,0.16)"></rect>
   <text x="${lowerLeftX + 20}" y="${lowerLeftY + 32}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">quick facts</text>
   <text x="${lowerLeftX + 20}" y="${lowerLeftY + 64}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
-  <text x="${lowerLeftX + 20}" y="${lowerLeftY + 90}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">pattern  ${escapeXml(state.pattern)}</text>
+  <text x="${lowerLeftX + 20}" y="${lowerLeftY + 90}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(
+    state.username ? `github  @${state.username}` : `pattern  ${state.pattern}`
+  )}</text>
 
   <rect x="${lowerMidX}" y="${lowerMidY}" width="${lowerMidWidth}" height="${lowerMidHeight}" rx="22" fill="rgba(250,252,255,0.78)"></rect>
   <rect x="${lowerMidX + 0.5}" y="${lowerMidY + 0.5}" width="${lowerMidWidth - 1}" height="${lowerMidHeight - 1}" rx="21.5" stroke="rgba(133,158,255,0.16)"></rect>
@@ -644,7 +703,7 @@
   <text x="${lowerRightX + 20}" y="${lowerRightY + 32}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">status</text>
   <circle cx="${lowerRightX + 28}" cy="${lowerRightY + 63}" r="7" fill="#7f94ff"></circle>
   <text x="${lowerRightX + 44}" y="${lowerRightY + 69}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${ink}">${escapeXml(
-    state.status
+    statusText
   )}</text>
 
   <text x="${outerX + 24}" y="${state.height - 24}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">A brighter, canvas-like interpretation of ${escapeXml(model)}</text>`;
@@ -761,12 +820,16 @@
 
   <text x="280" y="178" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.accent}">$ ${provider.label}/${state.theme}</text>
   <text x="280" y="226" font-family="Sora, Arial, sans-serif" font-size="48" font-weight="700" fill="${palette.title}">${escapeXml(state.name)}</text>
-  <text x="280" y="266" font-family="IBM Plex Mono, monospace" font-size="24" fill="${palette.accentAlt}">${escapeXml(state.role)}</text>
+  <text x="280" y="266" font-family="IBM Plex Mono, monospace" font-size="24" fill="${palette.accentAlt}">${escapeXml(
+    state.username ? `@${state.username}` : state.role
+  )}</text>
   <text x="280" y="314" font-family="Sora, Arial, sans-serif" font-size="24" fill="${palette.text}">${escapeXml(state.tagline)}</text>
 
-  <rect x="280" y="350" width="${Math.max(340, Math.min(560, state.status.length * 8 + 96))}" height="46" rx="23" fill="rgba(255,255,255,0.06)"></rect>
+  <rect x="280" y="350" width="${Math.max(340, Math.min(560, getStatusText(state).length * 8 + 96))}" height="46" rx="23" fill="rgba(255,255,255,0.06)"></rect>
   <circle cx="306" cy="373" r="7" fill="${palette.success}"></circle>
-  <text x="324" y="380" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.text}">${escapeXml(state.status)}</text>
+  <text x="324" y="380" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.text}">${escapeXml(
+    getStatusText(state)
+  )}</text>
 
   <text x="68" y="${state.height - 102}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>
   <text x="68" y="${state.height - 66}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.dim}"># README-ready SVG card generated on demand</text>
@@ -790,5 +853,6 @@
     serializeState,
     buildSvg,
     buildApiUrl,
+    getStatusText,
   };
 });
