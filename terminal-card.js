@@ -419,7 +419,20 @@
     return String(value);
   }
 
-  function wrapText(text, maxChars, maxLines) {
+  function displayWidth(str) {
+    // CJK characters (Hangul, Chinese, Japanese, fullwidth) count as 2 units
+    return [...String(str)].reduce((w, c) => {
+      const code = c.charCodeAt(0);
+      const isWide = (code >= 0x1100 && code <= 0x11FF) ||
+                     (code >= 0x2E80 && code <= 0x9FFF) ||
+                     (code >= 0xAC00 && code <= 0xD7AF) ||
+                     (code >= 0xF900 && code <= 0xFAFF) ||
+                     (code >= 0xFF00 && code <= 0xFFEF);
+      return w + (isWide ? 2 : 1);
+    }, 0);
+  }
+
+  function wrapText(text, maxWidth, maxLines) {
     if (!text) return [];
     const words = String(text).split(/\s+/).filter(Boolean);
     const lines = [];
@@ -427,11 +440,11 @@
     for (const word of words) {
       if (lines.length >= maxLines) break;
       const candidate = current ? `${current} ${word}` : word;
-      if (candidate.length <= maxChars) {
+      if (displayWidth(candidate) <= maxWidth) {
         current = candidate;
       } else {
         if (current) lines.push(current);
-        current = word.slice(0, maxChars);
+        current = word;
       }
     }
     if (current && lines.length < maxLines) lines.push(current);
@@ -763,7 +776,7 @@
   ${showLPBio ? bioLines.map((line, i) => {
     const lineY = BIO_TOP_Y + i * BIO_LINE_H;
     if (lineY > contentY + leftH - 10) return "";
-    return `<text x="${leftX + 20}" y="${lineY}" font-family="IBM Plex Mono, monospace" font-size="12" fill="#d4cdc9">${escapeXml(line)}</text>`;
+    return `<text x="${leftX + 20}" y="${lineY}" font-family="IBM Plex Mono, Apple SD Gothic Neo, Malgun Gothic, monospace" font-size="12" fill="#d4cdc9">${escapeXml(line)}</text>`;
   }).join("\n  ") : ""}
 
   ${showStats
