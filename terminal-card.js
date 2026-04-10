@@ -600,7 +600,7 @@
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
       hideProfile: parseBool(state.hideProfile),
       langIconCount: typeof state.langIconCount === "number" ? state.langIconCount : null,
-      bio: String(state.bio || "").slice(0, 200),
+      bio: String(state.bio || "").slice(0, 400),
     };
   }
 
@@ -721,8 +721,8 @@
     // Bio text wrapping (bio overrides tagline in left panel)
     const bioSource = state.bio || state.tagline;
     const BIO_LINE_H = 17;
-    const BIO_MAX_LINES = 3;
-    const bioLines = wrapText(bioSource, 38, BIO_MAX_LINES);
+    const bioMaxLines = Math.max(1, Math.floor((leftH - (ROLE_Y - contentY) - 26 - 10) / BIO_LINE_H));
+    const bioLines = wrapText(bioSource, 38, bioMaxLines);
 
     // Dynamic Y positions for left panel content
     const ROLE_Y    = showProfile ? ABOUT_LBL_Y + 24 : contentY + 44;
