@@ -765,6 +765,13 @@
         levels: ["rgba(0,0,0,0.38)", "rgba(18,22,34,0.56)", "rgba(20,24,40,0.62)", "rgba(24,28,46,0.72)", "rgba(28,34,56,0.82)"],
         accent: "#ffd86b",
         glow: "rgba(255,216,107,0.18)",
+        glowLevels: [
+          "rgba(0,0,0,0)",
+          "rgba(142, 171, 255, 0.18)",
+          "rgba(183, 196, 255, 0.22)",
+          "rgba(255, 219, 120, 0.26)",
+          "rgba(255, 196, 92, 0.34)",
+        ],
       };
     }
 
@@ -853,9 +860,12 @@
           const starOpacity = opacityMap[level] ?? 0;
           const starScale = sizeMap[level] ?? 1;
           const starSize = Math.max(10, Math.min(16, (cell + 2) * starScale));
+          const glowColor = colors.glowLevels?.[level] || colors.glow;
+          const glowOpacity = [0, 0.18, 0.28, 0.38, 0.52][level] ?? 0.22;
           cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(2, Math.floor(cell * 0.26))}" fill="${level === 0 ? "#111111" : (colors.levels[level] || colors.base)}"></rect>`);
           if (level > 0) {
-            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(1.8, cell * 0.28)}" fill="${colors.glow}" opacity="${0.12 + level * 0.08}"></circle>`);
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(2.2, cell * 0.34)}" fill="${glowColor}" opacity="${glowOpacity}"></circle>`);
+            cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(1.3, cell * 0.18)}" fill="${glowColor}" opacity="${Math.min(0.9, glowOpacity + 0.16)}"></circle>`);
             cells.push(`<text x="${cx}" y="${cy + 0.5}" text-anchor="middle" dominant-baseline="middle" opacity="${starOpacity}" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif" font-size="${starSize}">⭐</text>`);
           }
           return;
