@@ -756,7 +756,10 @@
   <circle cx="${rightX + 26}" cy="${rpDataTop + 88}" r="5" fill="#7adf8d"></circle>
   <text x="${rightX + 40}" y="${rpDataTop + 94}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">${escapeXml(truncateText(statusText, 52))}</text>`}
 
-  <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.1)"></line>`;
+  <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.08)"></line>
+  <circle cx="${outerX + 22}" cy="${footerY + 26}" r="5" fill="#7adf8d"></circle>
+  <text x="${outerX + 36}" y="${footerY + 32}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 52))}</text>
+  ${state.hideCommand ? "" : `<text x="${state.width - 54}" y="${footerY + 32}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">$ ${escapeXml(truncateText(state.command, 32))}</text>`}`;
   }
 
   function buildObsidianWorkspace(state, palette, provider, topLangs) {
