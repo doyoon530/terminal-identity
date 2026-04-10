@@ -438,9 +438,11 @@
     const rightX = 404;
     const rightY = 132;
     const rightWidth = state.width - rightX - 54;
-    const topRightHeight = 116;
+    const topRightHeight = 104;
     const bottomRightY = rightY + topRightHeight;
-    const bottomRightHeight = leftHeight - topRightHeight;
+    const bottomRightHeight = 58;
+    const statusY = bottomRightY + bottomRightHeight + 12;
+    const statusHeight = leftHeight - topRightHeight - bottomRightHeight - 12;
     const footerY = state.height - 142;
     const accent = "#f08a61";
     const dim = "#9c928d";
@@ -451,14 +453,12 @@
     const activityItems = [
       `1m ago   Updated ${state.name}`,
       `8m ago   Reviewed ${state.role}`,
-      `2d ago   ${state.status.slice(0, 28)}`,
-      `1w ago   ${state.command.slice(0, 28)}`,
+      `2d ago   ${state.command.slice(0, 28)}`,
     ];
     const whatsNewItems = [
       `/${state.theme} to load this palette`,
       `/${provider.label} shell enabled`,
       `${state.pattern} pattern active`,
-      `... /help for more`,
     ];
 
     return `
@@ -468,6 +468,7 @@
   <rect x="${leftX}" y="${leftY}" width="${leftWidth}" height="${leftHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
   <rect x="${rightX}" y="${rightY}" width="${rightWidth}" height="${topRightHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
   <rect x="${rightX}" y="${bottomRightY}" width="${rightWidth}" height="${bottomRightHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
+  <rect x="${rightX}" y="${statusY}" width="${rightWidth}" height="${statusHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
 
   <text x="${leftX + 16}" y="${leftY - 14}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">-------- Claude Code  v2.0.0  -------------------------</text>
 
@@ -490,7 +491,7 @@
   ${activityItems
     .map(
       (item, index) =>
-        `<text x="${rightX + 18}" y="${rightY + 60 + index * 28}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${
+        `<text x="${rightX + 18}" y="${rightY + 54 + index * 24}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${
           index === activityItems.length - 1 ? dim : "#f2efec"
         }">${escapeXml(item)}</text>`
     )
@@ -500,11 +501,17 @@
   ${whatsNewItems
     .map(
       (item, index) =>
-        `<text x="${rightX + 18}" y="${bottomRightY + 58 + index * 24}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${
+        `<text x="${rightX + 18}" y="${bottomRightY + 46 + index * 20}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${
           index === whatsNewItems.length - 1 ? dim : "#f2efec"
         }">${escapeXml(item)}</text>`
     )
     .join("\n")}
+
+  <text x="${rightX + 18}" y="${statusY + 22}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${accent}">Status</text>
+  <circle cx="${rightX + 26}" cy="${statusY + 38}" r="7" fill="#7adf8d"></circle>
+  <text x="${rightX + 42}" y="${statusY + 44}" font-family="IBM Plex Mono, monospace" font-size="16" fill="#f2efec">${escapeXml(
+    state.status
+  )}</text>
 
   <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.18)"></line>
   <text x="${outerX + 12}" y="${promptY}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${dim}">&gt;</text>
@@ -548,7 +555,11 @@
   <text x="${leftX + 34}" y="${leftY + 234}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">model</text>
   <text x="${leftX + 34}" y="${leftY + 260}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(model)}</text>
   <text x="${leftX + 34}" y="${leftY + 304}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">status</text>
-  <text x="${leftX + 34}" y="${leftY + 330}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(state.status.slice(0, 26))}</text>
+  <rect x="${leftX + 18}" y="${leftY + 320}" width="${leftWidth - 36}" height="58" rx="16" fill="${soft}"></rect>
+  <circle cx="${leftX + 40}" cy="${leftY + 349}" r="7" fill="${accent}"></circle>
+  <text x="${leftX + 56}" y="${leftY + 355}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(
+    state.status.slice(0, 24)
+  )}</text>
 
   <rect x="${mainX}" y="${mainY}" width="${mainWidth}" height="${mainHeight}" rx="18" fill="#111f19"></rect>
   <rect x="${mainX + 0.5}" y="${mainY + 0.5}" width="${mainWidth - 1}" height="${mainHeight - 1}" rx="17.5" stroke="rgba(116,240,184,0.1)"></rect>
@@ -556,7 +567,11 @@
   <text x="${mainX + 22}" y="${mainY + 72}" font-family="Sora, Arial, sans-serif" font-size="28" font-weight="700" fill="${ink}">${escapeXml(state.tagline)}</text>
   <rect x="${mainX + 22}" y="${mainY + 104}" width="${mainWidth - 44}" height="1" fill="rgba(116,240,184,0.14)"></rect>
   <text x="${mainX + 22}" y="${mainY + 144}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">$ ${escapeXml(state.command)}</text>
-  <text x="${mainX + 22}" y="${mainY + 176}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">active tools: canvas, search, draft</text>
+  <rect x="${mainX + 22}" y="${mainY + 160}" width="${Math.max(180, Math.min(mainWidth - 44, state.status.length * 8 + 72))}" height="30" rx="15" fill="rgba(116,240,184,0.08)"></rect>
+  <circle cx="${mainX + 40}" cy="${mainY + 175}" r="5" fill="${accent}"></circle>
+  <text x="${mainX + 54}" y="${mainY + 180}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(
+    state.status
+  )}</text>
 
   <rect x="${mainX}" y="${responseY}" width="${mainWidth}" height="${responseHeight}" rx="18" fill="#0e1915"></rect>
   <rect x="${mainX + 0.5}" y="${responseY + 0.5}" width="${mainWidth - 1}" height="${responseHeight - 1}" rx="17.5" stroke="rgba(116,240,184,0.08)"></rect>
@@ -582,9 +597,13 @@
     const lowerLeftY = 304;
     const lowerLeftWidth = 318;
     const lowerLeftHeight = 112;
-    const lowerRightX = 396;
+    const lowerMidX = 396;
+    const lowerMidY = 304;
+    const lowerMidWidth = 208;
+    const lowerMidHeight = 112;
+    const lowerRightX = lowerMidX + lowerMidWidth + 18;
     const lowerRightY = 304;
-    const lowerRightWidth = state.width - 454;
+    const lowerRightWidth = state.width - lowerRightX - 58;
     const lowerRightHeight = 112;
     const accent = "#94a8ff";
     const accentSoft = "#dce4ff";
@@ -612,11 +631,21 @@
   <text x="${lowerLeftX + 20}" y="${lowerLeftY + 64}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
   <text x="${lowerLeftX + 20}" y="${lowerLeftY + 90}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">pattern  ${escapeXml(state.pattern)}</text>
 
-  <rect x="${lowerRightX}" y="${lowerRightY}" width="${lowerRightWidth}" height="${lowerRightHeight}" rx="22" fill="rgba(250,252,255,0.78)"></rect>
+  <rect x="${lowerMidX}" y="${lowerMidY}" width="${lowerMidWidth}" height="${lowerMidHeight}" rx="22" fill="rgba(250,252,255,0.78)"></rect>
+  <rect x="${lowerMidX + 0.5}" y="${lowerMidY + 0.5}" width="${lowerMidWidth - 1}" height="${lowerMidHeight - 1}" rx="21.5" stroke="rgba(133,158,255,0.16)"></rect>
+  <text x="${lowerMidX + 20}" y="${lowerMidY + 32}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">prompt</text>
+  <text x="${lowerMidX + 20}" y="${lowerMidY + 64}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${ink}">${escapeXml(state.command)}</text>
+  <text x="${lowerMidX + 20}" y="${lowerMidY + 90}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">theme   ${escapeXml(
+    state.theme
+  )}</text>
+
+  <rect x="${lowerRightX}" y="${lowerRightY}" width="${lowerRightWidth}" height="${lowerRightHeight}" rx="22" fill="rgba(255,255,255,0.82)"></rect>
   <rect x="${lowerRightX + 0.5}" y="${lowerRightY + 0.5}" width="${lowerRightWidth - 1}" height="${lowerRightHeight - 1}" rx="21.5" stroke="rgba(133,158,255,0.16)"></rect>
-  <text x="${lowerRightX + 20}" y="${lowerRightY + 32}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">prompt</text>
-  <text x="${lowerRightX + 20}" y="${lowerRightY + 64}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${ink}">${escapeXml(state.command)}</text>
-  <text x="${lowerRightX + 20}" y="${lowerRightY + 90}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">${escapeXml(state.status)}</text>
+  <text x="${lowerRightX + 20}" y="${lowerRightY + 32}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">status</text>
+  <circle cx="${lowerRightX + 28}" cy="${lowerRightY + 63}" r="7" fill="#7f94ff"></circle>
+  <text x="${lowerRightX + 44}" y="${lowerRightY + 69}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${ink}">${escapeXml(
+    state.status
+  )}</text>
 
   <text x="${outerX + 24}" y="${state.height - 24}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">A brighter, canvas-like interpretation of ${escapeXml(model)}</text>`;
   }
