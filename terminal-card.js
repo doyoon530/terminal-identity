@@ -555,14 +555,16 @@
 
   <rect x="${rightX}" y="${rightY + 116}" width="${rightWidth}" height="1" fill="rgba(255,255,255,0.07)"></rect>
 
-  <text x="${rightX + 18}" y="${rightY + 136}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">run</text>
-  <text x="${rightX + 18}" y="${rightY + 160}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">$ ${escapeXml(truncateText(state.command, 40))}</text>
+  <text x="${rightX + 18}" y="${rightY + 136}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats ? "github stats" : "run"}</text>
+  ${state.githubStats
+    ? buildStatBars(state.githubStats, rightX + 18, rightY + 148, rightWidth - 36, accent, dim)
+    : `<text x="${rightX + 18}" y="${rightY + 160}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">$ ${escapeXml(truncateText(state.command, 40))}</text>
 
   <rect x="${rightX}" y="${rightY + 178}" width="${rightWidth}" height="1" fill="rgba(255,255,255,0.07)"></rect>
 
   <text x="${rightX + 18}" y="${rightY + 198}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">status</text>
   <circle cx="${rightX + 26}" cy="${rightY + 220}" r="5" fill="#7adf8d"></circle>
-  <text x="${rightX + 40}" y="${rightY + 226}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">${escapeXml(truncateText(statusText, 52))}</text>
+  <text x="${rightX + 40}" y="${rightY + 226}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#f2efec">${escapeXml(truncateText(statusText, 52))}</text>`}
 
   <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.1)"></line>
   <text x="${outerX + 16}" y="${promptY}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">&gt;</text>
