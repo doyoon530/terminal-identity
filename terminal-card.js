@@ -503,8 +503,10 @@
     return units;
   }
 
-  function wrapText(text, maxPx, maxLines) {
+  function wrapText(text, maxPx, maxLines, options) {
     if (!text) return [];
+    const slackPx = Math.max(0, Number(options?.slackPx) || 0);
+    const limitPx = maxPx + slackPx;
     const units = groupRichTokens(tokenizeRichWords(text));
     const lines = [];
     let current = [];
@@ -518,7 +520,7 @@
       if (lines.length >= maxLines) break;
       const unitPx = measureRichLine(unit);
 
-      if (unitPx > maxPx) {
+      if (unitPx > limitPx) {
         if (current.length) flush();
         const plainText = unit.map((token) => token.text).join(" ");
         const chars = [...plainText];
@@ -528,7 +530,7 @@
         for (const c of chars) {
           if (lines.length >= maxLines) break;
           const cpx = charPxWidth(c);
-          if (chunkPx + cpx > maxPx) {
+          if (chunkPx + cpx > limitPx) {
             if (chunkText) lines.push(encodeRichLine([{ text: chunkText, bold: false }]));
             chunk = [c];
             chunkText = c;
@@ -545,14 +547,14 @@
 
       const candidate = current.length ? [...current, ...unit] : unit;
       const candidatePx = measureRichLine(candidate);
-      if (candidatePx <= maxPx) {
+      if (candidatePx <= limitPx) {
         current = candidate;
       } else {
         if (current.length && unit.length > 1) {
           let splitIndex = 0;
           for (let index = 1; index <= unit.length; index += 1) {
             const prefixCandidate = [...current, ...unit.slice(0, index)];
-            if (measureRichLine(prefixCandidate) <= maxPx) {
+            if (measureRichLine(prefixCandidate) <= limitPx) {
               splitIndex = index;
             } else {
               break;
@@ -874,14 +876,14 @@
     const bioSource = state.bio || state.tagline;
     const BIO_LINE_H = 17;
     const bioMaxLines = Math.max(1, Math.floor((leftH - (ROLE_Y - contentY) - 26 - 10) / BIO_LINE_H));
-    const BIO_TEXT_W = leftW - 22;  // panel width minus padding, lets copy use more of the card width
+    const BIO_TEXT_W = leftW - 18;  // panel width minus padding, lets copy use more of the card width
     const bioLines = (() => {
       const segments = String(bioSource || "").split(/\r?\n/);
       const result = [];
       for (const seg of segments) {
         if (result.length >= bioMaxLines) break;
         if (!seg.trim()) continue;
-        const wrapped = wrapText(seg, BIO_TEXT_W, bioMaxLines - result.length);
+        const wrapped = wrapText(seg, BIO_TEXT_W, bioMaxLines - result.length, { slackPx: 26 });
         result.push(...wrapped);
       }
       return result;
