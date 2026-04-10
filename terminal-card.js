@@ -512,6 +512,115 @@
   <text x="${outerX + 48}" y="${promptY}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${dim}">Try \"edit &lt;filepath&gt; to ...\"</text>`;
   }
 
+  function buildGptWorkspace(state, palette, provider) {
+    const outerX = 28;
+    const outerY = 96;
+    const outerWidth = state.width - 56;
+    const outerHeight = state.height - 124;
+    const leftX = 52;
+    const leftY = 128;
+    const leftWidth = 240;
+    const leftHeight = outerHeight - 64;
+    const mainX = 316;
+    const mainY = 128;
+    const mainWidth = state.width - mainX - 52;
+    const mainHeight = 194;
+    const responseY = mainY + mainHeight + 18;
+    const responseHeight = 120;
+    const footerY = state.height - 112;
+    const accent = "#74f0b8";
+    const soft = "#173229";
+    const ink = "#dbfff0";
+    const dim = "#89b7a5";
+    const model = `${provider.label}/${state.theme}`;
+
+    return `
+  <rect x="${outerX}" y="${outerY}" width="${outerWidth}" height="${outerHeight}" rx="18" fill="#0f1613"></rect>
+  <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerWidth - 1}" height="${outerHeight - 1}" rx="17.5" stroke="rgba(116,240,184,0.12)"></rect>
+
+  <rect x="${leftX}" y="${leftY}" width="${leftWidth}" height="${leftHeight}" rx="18" fill="#101c17"></rect>
+  <rect x="${leftX + 0.5}" y="${leftY + 0.5}" width="${leftWidth - 1}" height="${leftHeight - 1}" rx="17.5" stroke="rgba(116,240,184,0.08)"></rect>
+  <text x="${leftX + 18}" y="${leftY + 28}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${accent}">workspace</text>
+  <rect x="${leftX + 18}" y="${leftY + 48}" width="${leftWidth - 36}" height="56" rx="14" fill="${soft}"></rect>
+  <text x="${leftX + 34}" y="${leftY + 82}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(state.name)}</text>
+  <text x="${leftX + 34}" y="${leftY + 164}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">role</text>
+  <text x="${leftX + 34}" y="${leftY + 190}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(state.role)}</text>
+  <text x="${leftX + 34}" y="${leftY + 234}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">model</text>
+  <text x="${leftX + 34}" y="${leftY + 260}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(model)}</text>
+  <text x="${leftX + 34}" y="${leftY + 304}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">status</text>
+  <text x="${leftX + 34}" y="${leftY + 330}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">${escapeXml(state.status.slice(0, 26))}</text>
+
+  <rect x="${mainX}" y="${mainY}" width="${mainWidth}" height="${mainHeight}" rx="18" fill="#111f19"></rect>
+  <rect x="${mainX + 0.5}" y="${mainY + 0.5}" width="${mainWidth - 1}" height="${mainHeight - 1}" rx="17.5" stroke="rgba(116,240,184,0.1)"></rect>
+  <text x="${mainX + 22}" y="${mainY + 30}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${accent}">prompt</text>
+  <text x="${mainX + 22}" y="${mainY + 72}" font-family="Sora, Arial, sans-serif" font-size="28" font-weight="700" fill="${ink}">${escapeXml(state.tagline)}</text>
+  <rect x="${mainX + 22}" y="${mainY + 104}" width="${mainWidth - 44}" height="1" fill="rgba(116,240,184,0.14)"></rect>
+  <text x="${mainX + 22}" y="${mainY + 144}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">$ ${escapeXml(state.command)}</text>
+  <text x="${mainX + 22}" y="${mainY + 176}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">active tools: canvas, search, draft</text>
+
+  <rect x="${mainX}" y="${responseY}" width="${mainWidth}" height="${responseHeight}" rx="18" fill="#0e1915"></rect>
+  <rect x="${mainX + 0.5}" y="${responseY + 0.5}" width="${mainWidth - 1}" height="${responseHeight - 1}" rx="17.5" stroke="rgba(116,240,184,0.08)"></rect>
+  <text x="${mainX + 22}" y="${responseY + 30}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${accent}">response</text>
+  <text x="${mainX + 22}" y="${responseY + 66}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">Generated a README-ready identity card.</text>
+  <text x="${mainX + 22}" y="${responseY + 94}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">Copy the API URL, paste into your profile, ship it.</text>
+
+  <rect x="${outerX + 18}" y="${footerY}" width="${outerWidth - 36}" height="54" rx="16" fill="#0d1411"></rect>
+  <rect x="${outerX + 18.5}" y="${footerY + 0.5}" width="${outerWidth - 37}" height="53" rx="15.5" stroke="rgba(116,240,184,0.08)"></rect>
+  <text x="${outerX + 36}" y="${footerY + 33}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">Ask GPT to refine ${escapeXml(state.theme)} or switch to /gpt/${escapeXml(state.theme)}</text>`;
+  }
+
+  function buildGeminiCanvas(state, palette, provider) {
+    const outerX = 28;
+    const outerY = 96;
+    const outerWidth = state.width - 56;
+    const outerHeight = state.height - 124;
+    const cardX = 58;
+    const cardY = 132;
+    const cardWidth = state.width - 116;
+    const cardHeight = 150;
+    const lowerLeftX = 58;
+    const lowerLeftY = 304;
+    const lowerLeftWidth = 318;
+    const lowerLeftHeight = 112;
+    const lowerRightX = 396;
+    const lowerRightY = 304;
+    const lowerRightWidth = state.width - 454;
+    const lowerRightHeight = 112;
+    const accent = "#94a8ff";
+    const accentSoft = "#dce4ff";
+    const ink = "#1b2450";
+    const dim = "#6070a5";
+    const model = `${provider.label}/${state.theme}`;
+
+    return `
+  <rect x="${outerX}" y="${outerY}" width="${outerWidth}" height="${outerHeight}" rx="28" fill="rgba(239,243,255,0.82)"></rect>
+  <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerWidth - 1}" height="${outerHeight - 1}" rx="27.5" stroke="rgba(133,158,255,0.22)"></rect>
+  <circle cx="${state.width - 126}" cy="150" r="70" fill="rgba(166,183,255,0.28)"></circle>
+  <circle cx="${state.width - 92}" cy="188" r="28" fill="rgba(210,220,255,0.8)"></circle>
+  <circle cx="112" cy="${state.height - 96}" r="36" fill="rgba(216,225,255,0.9)"></circle>
+
+  <rect x="${cardX}" y="${cardY}" width="${cardWidth}" height="${cardHeight}" rx="26" fill="rgba(255,255,255,0.8)"></rect>
+  <rect x="${cardX + 0.5}" y="${cardY + 0.5}" width="${cardWidth - 1}" height="${cardHeight - 1}" rx="25.5" stroke="rgba(133,158,255,0.18)"></rect>
+  <text x="${cardX + 28}" y="${cardY + 36}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${accent}">gemini canvas</text>
+  <text x="${cardX + 28}" y="${cardY + 80}" font-family="Sora, Arial, sans-serif" font-size="36" font-weight="700" fill="${ink}">${escapeXml(state.name)}</text>
+  <text x="${cardX + 28}" y="${cardY + 114}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${dim}">${escapeXml(state.role)}  •  ${escapeXml(model)}</text>
+  <text x="${cardX + 28}" y="${cardY + 142}" font-family="Sora, Arial, sans-serif" font-size="18" fill="${dim}">${escapeXml(state.tagline)}</text>
+
+  <rect x="${lowerLeftX}" y="${lowerLeftY}" width="${lowerLeftWidth}" height="${lowerLeftHeight}" rx="22" fill="rgba(255,255,255,0.78)"></rect>
+  <rect x="${lowerLeftX + 0.5}" y="${lowerLeftY + 0.5}" width="${lowerLeftWidth - 1}" height="${lowerLeftHeight - 1}" rx="21.5" stroke="rgba(133,158,255,0.16)"></rect>
+  <text x="${lowerLeftX + 20}" y="${lowerLeftY + 32}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">quick facts</text>
+  <text x="${lowerLeftX + 20}" y="${lowerLeftY + 64}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
+  <text x="${lowerLeftX + 20}" y="${lowerLeftY + 90}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${ink}">pattern  ${escapeXml(state.pattern)}</text>
+
+  <rect x="${lowerRightX}" y="${lowerRightY}" width="${lowerRightWidth}" height="${lowerRightHeight}" rx="22" fill="rgba(250,252,255,0.78)"></rect>
+  <rect x="${lowerRightX + 0.5}" y="${lowerRightY + 0.5}" width="${lowerRightWidth - 1}" height="${lowerRightHeight - 1}" rx="21.5" stroke="rgba(133,158,255,0.16)"></rect>
+  <text x="${lowerRightX + 20}" y="${lowerRightY + 32}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">prompt</text>
+  <text x="${lowerRightX + 20}" y="${lowerRightY + 64}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${ink}">${escapeXml(state.command)}</text>
+  <text x="${lowerRightX + 20}" y="${lowerRightY + 90}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">${escapeXml(state.status)}</text>
+
+  <text x="${outerX + 24}" y="${state.height - 24}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${dim}">A brighter, canvas-like interpretation of ${escapeXml(model)}</text>`;
+  }
+
   function buildSvg(input) {
     const state = normalizeState(input);
     const palette = themeMap[state.theme];
@@ -543,6 +652,42 @@
   <circle cx="94" cy="60" r="8" fill="#ffc75a"></circle>
   <circle cx="120" cy="60" r="8" fill="#6ecf59"></circle>
   ${buildClaudeDashboard(state, palette, provider)}
+</svg>`.trim();
+    }
+
+    if (state.provider === "gpt") {
+      return `
+<svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
+  <defs>
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="${state.width}" y2="${state.height}" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#09110d"></stop>
+      <stop offset="1" stop-color="#0f1713"></stop>
+    </linearGradient>
+  </defs>
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#bgGradient)"></rect>
+  <rect x="0.5" y="0.5" width="${state.width - 1}" height="${state.height - 1}" rx="${shellRadius - 0.5}" stroke="${frameStroke}"></rect>
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="16" fill="#0f1f18"></rect>
+  ${buildWindowButtons(provider)}
+  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="18" fill="${topBarText}">${provider.windowTitle}</text>
+  ${buildGptWorkspace(state, palette, provider)}
+</svg>`.trim();
+    }
+
+    if (state.provider === "gemini") {
+      return `
+<svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
+  <defs>
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="${state.width}" y2="${state.height}" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f5f7ff"></stop>
+      <stop offset="1" stop-color="#e4eaff"></stop>
+    </linearGradient>
+  </defs>
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#bgGradient)"></rect>
+  <rect x="0.5" y="0.5" width="${state.width - 1}" height="${state.height - 1}" rx="${shellRadius - 0.5}" stroke="${frameStroke}"></rect>
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="18" fill="#eef3ff"></rect>
+  ${buildWindowButtons(provider)}
+  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="18" fill="${topBarText}">${provider.windowTitle}</text>
+  ${buildGeminiCanvas(state, palette, provider)}
 </svg>`.trim();
     }
 
