@@ -422,13 +422,15 @@
   // Approximate pixel width per character at 12px
   // IBM Plex Mono ASCII: ~7.2px, Korean/CJK fallback font: ~13px
   function charPxWidth(char) {
-    const code = char.charCodeAt(0);
+    const code = char.codePointAt(0) || 0;
     const isWide = (code >= 0x1100 && code <= 0x11FF) ||
                    (code >= 0x2E80 && code <= 0x9FFF) ||
                    (code >= 0xAC00 && code <= 0xD7AF) ||
                    (code >= 0xF900 && code <= 0xFAFF) ||
                    (code >= 0xFF00 && code <= 0xFFEF);
-    return isWide ? 12 : 7.2;
+    const isEmoji = code >= 0x1F300;
+    if (isEmoji) return 11.2;
+    return isWide ? 10.4 : 6.4;
   }
 
   function measureTextPx(text) {
@@ -472,55 +474,108 @@
       .join(" ");
   }
 
+  function measureRichLine(tokens) {
+    return tokens.reduce(
+      (width, token, index) => width + (index ? charPxWidth(" ") : 0) + measureTextPx(token.text),
+      0
+    );
+  }
+
+  function groupRichTokens(tokens) {
+    const joiners = new Set(["+", "•", "&", "|", "×"]);
+    const units = [];
+
+    for (let index = 0; index < tokens.length; index += 1) {
+      const unit = [tokens[index]];
+
+      while (
+        index + 2 < tokens.length &&
+        joiners.has(tokens[index + 1].text) &&
+        tokens[index + 2]
+      ) {
+        unit.push(tokens[index + 1], tokens[index + 2]);
+        index += 2;
+      }
+
+      units.push(unit);
+    }
+
+    return units;
+  }
+
   function wrapText(text, maxPx, maxLines) {
     if (!text) return [];
-    const words = tokenizeRichWords(text);
+    const units = groupRichTokens(tokenizeRichWords(text));
     const lines = [];
     let current = [];
-    let currentPx = 0;
-    const spacePx = 7.2;
 
     const flush = () => {
       if (current.length && lines.length < maxLines) lines.push(encodeRichLine(current));
       current = [];
-      currentPx = 0;
     };
 
-    for (const word of words) {
+    for (const unit of units) {
       if (lines.length >= maxLines) break;
-      const chars = [...word.text];
-      const wordPx = measureTextPx(word.text);
+      const unitPx = measureRichLine(unit);
 
-      // Word itself too wide for one line: hard-break character by character
-      if (wordPx > maxPx) {
+      if (unitPx > maxPx) {
         if (current.length) flush();
-        let chunk = "";
+        const plainText = unit.map((token) => token.text).join(" ");
+        const chars = [...plainText];
+        let chunk = [];
+        let chunkText = "";
         let chunkPx = 0;
         for (const c of chars) {
           if (lines.length >= maxLines) break;
           const cpx = charPxWidth(c);
           if (chunkPx + cpx > maxPx) {
-            if (chunk) lines.push(encodeRichLine([{ text: chunk, bold: word.bold }]));
-            chunk = c;
+            if (chunkText) lines.push(encodeRichLine([{ text: chunkText, bold: false }]));
+            chunk = [c];
+            chunkText = c;
             chunkPx = cpx;
           } else {
-            chunk += c;
+            chunk.push(c);
+            chunkText += c;
             chunkPx += cpx;
           }
         }
-        current = chunk ? [{ text: chunk, bold: word.bold }] : [];
-        currentPx = chunkPx;
+        current = chunkText ? [{ text: chunkText, bold: false }] : [];
         continue;
       }
 
-      const candidatePx = current.length ? currentPx + spacePx + wordPx : wordPx;
+      const candidate = current.length ? [...current, ...unit] : unit;
+      const candidatePx = measureRichLine(candidate);
       if (candidatePx <= maxPx) {
-        current.push(word);
-        currentPx = candidatePx;
+        current = candidate;
       } else {
+        if (current.length && unit.length > 1) {
+          let splitIndex = 0;
+          for (let index = 1; index <= unit.length; index += 1) {
+            const prefixCandidate = [...current, ...unit.slice(0, index)];
+            if (measureRichLine(prefixCandidate) <= maxPx) {
+              splitIndex = index;
+            } else {
+              break;
+            }
+          }
+
+          if (splitIndex > 1) {
+            const lastToken = unit[splitIndex - 1];
+            if (["+", "•", "&", "|", "×"].includes(lastToken?.text)) {
+              splitIndex -= 1;
+            }
+          }
+
+          if (splitIndex > 0) {
+            current = [...current, ...unit.slice(0, splitIndex)];
+            flush();
+            current = [...unit.slice(splitIndex)];
+            continue;
+          }
+        }
+
         flush();
-        current = [word];
-        currentPx = wordPx;
+        current = [...unit];
       }
     }
     flush();
@@ -819,7 +874,7 @@
     const bioSource = state.bio || state.tagline;
     const BIO_LINE_H = 17;
     const bioMaxLines = Math.max(1, Math.floor((leftH - (ROLE_Y - contentY) - 26 - 10) / BIO_LINE_H));
-    const BIO_TEXT_W = leftW - 40;  // panel width minus left+right padding
+    const BIO_TEXT_W = leftW - 22;  // panel width minus padding, lets copy use more of the card width
     const bioLines = (() => {
       const segments = String(bioSource || "").split(/\r?\n/);
       const result = [];
