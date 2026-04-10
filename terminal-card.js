@@ -438,20 +438,51 @@
     let current = "";
     let currentPx = 0;
     const spacePx = 7.2;
+
+    const flush = () => {
+      if (current && lines.length < maxLines) lines.push(current);
+      current = "";
+      currentPx = 0;
+    };
+
     for (const word of words) {
       if (lines.length >= maxLines) break;
-      const wordPx = [...word].reduce((w, c) => w + charPxWidth(c), 0);
+      const chars = [...word];
+      const wordPx = chars.reduce((w, c) => w + charPxWidth(c), 0);
+
+      // Word itself too wide for one line: hard-break character by character
+      if (wordPx > maxPx) {
+        if (current) flush();
+        let chunk = "";
+        let chunkPx = 0;
+        for (const c of chars) {
+          if (lines.length >= maxLines) break;
+          const cpx = charPxWidth(c);
+          if (chunkPx + cpx > maxPx) {
+            if (chunk) lines.push(chunk);
+            chunk = c;
+            chunkPx = cpx;
+          } else {
+            chunk += c;
+            chunkPx += cpx;
+          }
+        }
+        current = chunk;
+        currentPx = chunkPx;
+        continue;
+      }
+
       const candidatePx = current ? currentPx + spacePx + wordPx : wordPx;
       if (candidatePx <= maxPx) {
         current = current ? `${current} ${word}` : word;
         currentPx = candidatePx;
       } else {
-        if (current) lines.push(current);
+        flush();
         current = word;
         currentPx = wordPx;
       }
     }
-    if (current && lines.length < maxLines) lines.push(current);
+    flush();
     return lines;
   }
 
@@ -1092,9 +1123,10 @@
 
   function buildApiUrl(input, baseUrl) {
     const state = normalizeState(input);
-    // Decode CJK/Hangul percent-sequences back to readable characters
+    // Decode all non-ASCII percent-sequences (2-byte, 3-byte, 4-byte UTF-8)
+    // so Korean, →, ·, … etc. appear readable in the URL
     const qs = serializeState(state).toString().replace(
-      /(?:%[EF][0-9A-Fa-f]%[89A-Fa-f][0-9A-Fa-f]%[89A-Fa-f][0-9A-Fa-f])+/g,
+      /(?:%[C-D][0-9A-Fa-f]%[89A-Fa-f][0-9A-Fa-f]|%[EF][0-9A-Fa-f](?:%[89A-Fa-f][0-9A-Fa-f]){2}|%F[0-7](?:%[89A-Fa-f][0-9A-Fa-f]){3})+/g,
       m => { try { return decodeURIComponent(m); } catch { return m; } }
     );
     return `${baseUrl}?${qs}`;
