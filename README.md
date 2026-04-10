@@ -3,7 +3,11 @@
 <p align="center">
   <a href="https://terminal-identity-opal.vercel.app">Live playground</a>
   ·
-  <a href="#quick-start">Quick start</a>
+  <a href="#paste-this-into-your-readme">Paste this</a>
+  ·
+  <a href="#popular-styles">Popular styles</a>
+  ·
+  <a href="#why-people-use-it">Why use it</a>
   ·
   <a href="#params">Params</a>
   ·
@@ -22,12 +26,73 @@
 
 <p align="center">
   <a href="https://terminal-identity-opal.vercel.app">
-    <img src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=Frontend+Engineer&tagline=Building+tiny+tools+with+taste.&status=available+for+cool+internet+projects&command=npx+terminal-identity&theme=amber%2Fsolar&avatar=GG&pattern=grid&width=900&height=540&langCount=7&langStyle=icons&iconSize=lg&bio=-%20%F0%9F%92%A1%20**Focus%3A**%20Specialized%20in%20**React%2C%20TypeScript%2C%20and%20Next.js**%20ecosystem.%0A-%20%F0%9F%8E%A8%20**Philosophy%3A**%20I%20believe%20great%20UX%20is%20built%20on%20the%20foundation%20of%20robust%20engineering.%0A-%20%F0%9F%9B%A0%EF%B8%8F%20**Current%20Activity%3A**%20Refining%20**Server-side%20Rendering%20(SSR)**%20patterns%20and%20building%20a%20custom%20**Design%20System**.%0A-%20%F0%9F%8C%B1%20**Learning%3A**%20Deep%20diving%20into%20Web%20Accessibility%20(a11y)%20and%20Performance%20Optimization.&v=16"
+    <img src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=Frontend+Engineer&tagline=Building+tiny+tools+with+taste.&status=available+for+cool+internet+projects&command=npx+terminal-identity&theme=amber%2Fsolar&avatar=GG&pattern=grid&width=900&height=420&v=20"
     width="100%" alt="Terminal Identity demo card" />
   </a>
 </p>
 
-**Terminal-style SVG identity cards for GitHub READMEs.** One URL, one `<img>` tag — no tokens, no setup, no build step. Pick a provider shell, pair it with a theme, and optionally pass a GitHub username to pull in live public stats and top languages.
+<p align="center"><strong>Make your GitHub README feel like a polished product page.</strong></p>
+
+<p align="center">Terminal Identity generates stylish SVG hero cards from a single image URL. Paste one <code>&lt;img&gt;</code> tag into your README, choose a shell + theme, and optionally pull live public GitHub stats.</p>
+
+---
+
+## Paste this into your README
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=420"
+  width="100%"
+  alt="Terminal identity card"
+/>
+```
+
+Add `username=your-handle` to pull live public GitHub stats and top languages.
+
+> Try it in the **[live playground](https://terminal-identity-opal.vercel.app)** and copy the image URL or markdown directly.
+
+---
+
+## Popular styles
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <a href="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=760&height=420&v=20">
+        <img src="https://terminal-identity-opal.vercel.app/api?name=ggam&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&theme=amber/solar&avatar=GG&pattern=grid&width=760&height=420&v=20" alt="Minimal hero card" />
+      </a>
+      <strong>Minimal Hero</strong><br />
+      Clean landing-header vibe for profile READMEs.<br />
+      <code>amber/solar</code>
+    </td>
+    <td width="33%" valign="top">
+      <a href="https://terminal-identity-opal.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=amber/sakura&avatar=JW&pattern=rings&width=760&height=420&v=20">
+        <img src="https://terminal-identity-opal.vercel.app/api?name=jiwon&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=amber/sakura&avatar=JW&pattern=rings&width=760&height=420&v=20" alt="Design engineer card" />
+      </a>
+      <strong>Design Engineer</strong><br />
+      Softer editorial shell for product and design profiles.<br />
+      <code>amber/sakura</code>
+    </td>
+    <td width="33%" valign="top">
+      <a href="https://terminal-identity-opal.vercel.app/api?name=mina.sh&username=doyoon530&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&command=pnpm%20create%20tiny-hit&theme=obsidian/graphite&avatar=MS&pattern=pulse&width=760&height=420&v=20">
+        <img src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&username=doyoon530&role=indie%20hacker&tagline=Shipping%20useful%20things%20before%20lunch.&command=pnpm%20create%20tiny-hit&theme=obsidian/graphite&avatar=MS&pattern=pulse&width=760&height=420&v=20" alt="Builder card" />
+      </a>
+      <strong>Builder Mode</strong><br />
+      Dark workspace shell with stats for indie hackers and maintainers.<br />
+      <code>obsidian/graphite</code>
+    </td>
+  </tr>
+</table>
+
+---
+
+## Why people use it
+
+- **One URL, real result** — no screenshots, no manual SVG editing, no build step
+- **Actually stylish** — provider shells feel more like product UI than generic badges
+- **Live public data** — add `username` to show repos, stars, followers, and top languages
+- **Good defaults** — most people only need `name`, `role`, `theme`, and maybe `username`
+- **Deep enough when you want it** — accent color, graph style, filtered stats, language icons, custom bio
 
 ---
 
