@@ -526,10 +526,10 @@
   <rect x="${outerX}" y="${outerY}" width="${outerWidth}" height="${outerHeight}" rx="14" fill="#231f1d"></rect>
   <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerWidth - 1}" height="${outerHeight - 1}" rx="13.5" stroke="rgba(255,255,255,0.05)"></rect>
 
-  <rect x="${leftX}" y="${leftY}" width="${leftWidth}" height="${leftHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
-  <rect x="${rightX}" y="${rightY}" width="${rightWidth}" height="${topRightHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
-  <rect x="${rightX}" y="${bottomRightY}" width="${rightWidth}" height="${bottomRightHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
-  <rect x="${rightX}" y="${statusY}" width="${rightWidth}" height="${statusHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
+  <rect x="${leftX}" y="${leftY}" width="${leftWidth}" height="${leftHeight}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
+  <rect x="${rightX}" y="${rightY}" width="${rightWidth}" height="${topRightHeight}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
+  <rect x="${rightX}" y="${bottomRightY}" width="${rightWidth}" height="${bottomRightHeight}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
+  <rect x="${rightX}" y="${statusY}" width="${rightWidth}" height="${statusHeight}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
 
   <text x="${leftX + 16}" y="${leftY - 14}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">-------- Claude Code  v2.0.0  -------------------------</text>
 
@@ -690,10 +690,6 @@
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerWidth}" height="${outerHeight}" rx="28" fill="rgba(239,243,255,0.82)"></rect>
   <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerWidth - 1}" height="${outerHeight - 1}" rx="27.5" stroke="rgba(133,158,255,0.22)"></rect>
-  <circle cx="${state.width - 126}" cy="150" r="70" fill="rgba(166,183,255,0.28)"></circle>
-  <circle cx="${state.width - 92}" cy="188" r="28" fill="rgba(210,220,255,0.8)"></circle>
-  <circle cx="112" cy="${state.height - 96}" r="36" fill="rgba(216,225,255,0.9)"></circle>
-
   <rect x="${cardX}" y="${cardY}" width="${cardWidth}" height="${cardHeight}" rx="26" fill="rgba(255,255,255,0.8)"></rect>
   <rect x="${cardX + 0.5}" y="${cardY + 0.5}" width="${cardWidth - 1}" height="${cardHeight - 1}" rx="25.5" stroke="rgba(133,158,255,0.18)"></rect>
   <text x="${cardX + 28}" y="${cardY + 36}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${accent}">gemini canvas</text>
@@ -741,29 +737,17 @@
     const bodyTop = 72;
     const shellRadius = provider.shellRadius;
     const panelX = 28;
-    const panelY = 96;
-    const panelWidth = state.width - 56;
-    const panelHeight = state.height - 124;
     const topBarFill = provider.topBarFill || palette.panelSoft;
     const topBarText = provider.topBarText || palette.dim;
-    const badgeText = provider.badgeText || palette.accentAlt;
-    const frameStroke = provider.frameTone || palette.line;
 
     if (state.provider === "claude") {
       return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
-  <defs>
-    <linearGradient id="bgGradient" x1="0" y1="0" x2="${state.width}" y2="${state.height}" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#373532"></stop>
-      <stop offset="1" stop-color="#312f2c"></stop>
-    </linearGradient>
-  </defs>
-  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#bgGradient)"></rect>
-  <rect x="0.5" y="0.5" width="${state.width - 1}" height="${state.height - 1}" rx="${shellRadius - 0.5}" stroke="${frameStroke}"></rect>
-  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="16" fill="#4a4843"></rect>
-  <circle cx="68" cy="60" r="8" fill="#ee8b62"></circle>
-  <circle cx="94" cy="60" r="8" fill="#ffc75a"></circle>
-  <circle cx="120" cy="60" r="8" fill="#6ecf59"></circle>
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#373532"></rect>
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#4a4843"></rect>
+  <circle cx="68" cy="60" r="7" fill="#ee8b62"></circle>
+  <circle cx="92" cy="60" r="7" fill="#ffc75a"></circle>
+  <circle cx="116" cy="60" r="7" fill="#6ecf59"></circle>
   ${buildClaudeDashboard(state, palette, provider)}
 </svg>`.trim();
     }
@@ -771,17 +755,10 @@
     if (state.provider === "gpt") {
       return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
-  <defs>
-    <linearGradient id="bgGradient" x1="0" y1="0" x2="${state.width}" y2="${state.height}" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#09110d"></stop>
-      <stop offset="1" stop-color="#0f1713"></stop>
-    </linearGradient>
-  </defs>
-  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#bgGradient)"></rect>
-  <rect x="0.5" y="0.5" width="${state.width - 1}" height="${state.height - 1}" rx="${shellRadius - 0.5}" stroke="${frameStroke}"></rect>
-  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="16" fill="#0f1f18"></rect>
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#09110d"></rect>
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#0f1f18"></rect>
   ${buildWindowButtons(provider)}
-  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="18" fill="${topBarText}">${provider.windowTitle}</text>
+  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
   ${buildGptWorkspace(state, palette, provider)}
 </svg>`.trim();
     }
@@ -789,78 +766,38 @@
     if (state.provider === "gemini") {
       return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
-  <defs>
-    <linearGradient id="bgGradient" x1="0" y1="0" x2="${state.width}" y2="${state.height}" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#f5f7ff"></stop>
-      <stop offset="1" stop-color="#e4eaff"></stop>
-    </linearGradient>
-  </defs>
-  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#bgGradient)"></rect>
-  <rect x="0.5" y="0.5" width="${state.width - 1}" height="${state.height - 1}" rx="${shellRadius - 0.5}" stroke="${frameStroke}"></rect>
-  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="18" fill="#eef3ff"></rect>
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#f5f7ff"></rect>
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#eef3ff"></rect>
   ${buildWindowButtons(provider)}
-  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="18" fill="${topBarText}">${provider.windowTitle}</text>
+  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
   ${buildGeminiCanvas(state, palette, provider)}
 </svg>`.trim();
     }
 
     return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
-  <defs>
-    <linearGradient id="bgGradient" x1="0" y1="0" x2="${state.width}" y2="${state.height}" gradientUnits="userSpaceOnUse">
-      <stop stop-color="${palette.shell}"></stop>
-      <stop offset="1" stop-color="${palette.panel}"></stop>
-    </linearGradient>
-    <linearGradient id="avatarGradient" x1="100" y1="160" x2="280" y2="320" gradientUnits="userSpaceOnUse">
-      <stop stop-color="${palette.accent}"></stop>
-      <stop offset="1" stop-color="${palette.accentAlt}"></stop>
-    </linearGradient>
-    <filter id="shellGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="${palette.glow}"></feDropShadow>
-    </filter>
-  </defs>
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="${palette.shell}"></rect>
 
-  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#bgGradient)"></rect>
-  <rect x="0.5" y="0.5" width="${state.width - 1}" height="${state.height - 1}" rx="${shellRadius - 0.5}" stroke="${frameStroke}"></rect>
-  ${
-    provider.shellOverlay
-      ? `<rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="${provider.shellOverlay}"></rect>`
-      : ""
-  }
-
-  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="18" fill="${topBarFill}" filter="url(#shellGlow)"></rect>
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="${topBarFill}"></rect>
   ${buildWindowButtons(provider)}
-  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="18" fill="${topBarText}">${provider.windowTitle}</text>
+  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
 
-  <rect x="${panelX}" y="${panelY}" width="${panelWidth}" height="${panelHeight}" rx="24" fill="${palette.panelSoft}"></rect>
-  <rect x="${panelX + 0.5}" y="${panelY + 0.5}" width="${panelWidth - 1}" height="${panelHeight - 1}" rx="23.5" stroke="${frameStroke}"></rect>
+  <rect x="68" y="152" width="148" height="148" rx="10" fill="${palette.panelSoft}"></rect>
+  <text x="142" y="244" text-anchor="middle" font-family="Sora, Arial, sans-serif" font-size="50" font-weight="700" fill="${palette.accent}">${escapeXml(state.avatar)}</text>
 
-  <g opacity="0.95">
-    ${buildPattern(state.pattern, state.width, state.height, palette)}
-  </g>
-
-  <rect x="68" y="152" width="168" height="168" rx="34" fill="url(#avatarGradient)"></rect>
-  <rect x="68.5" y="152.5" width="167" height="167" rx="33.5" stroke="rgba(255,255,255,0.16)"></rect>
-  <text x="152" y="252" text-anchor="middle" font-family="Sora, Arial, sans-serif" font-size="56" font-weight="700" fill="${palette.title}">${escapeXml(state.avatar)}</text>
-
-  <text x="280" y="178" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.accent}">$ ${provider.label}/${state.theme}</text>
-  <text x="280" y="226" font-family="Sora, Arial, sans-serif" font-size="48" font-weight="700" fill="${palette.title}">${escapeXml(state.name)}</text>
-  <text x="280" y="266" font-family="IBM Plex Mono, monospace" font-size="24" fill="${palette.accentAlt}">${escapeXml(
+  <text x="260" y="182" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">$ ${provider.label}/${state.theme}</text>
+  <text x="260" y="232" font-family="Sora, Arial, sans-serif" font-size="46" font-weight="700" fill="${palette.title}">${escapeXml(state.name)}</text>
+  <text x="260" y="272" font-family="IBM Plex Mono, monospace" font-size="20" fill="${palette.accent}">${escapeXml(
     state.username ? `@${state.username}` : state.role
   )}</text>
-  <text x="280" y="314" font-family="Sora, Arial, sans-serif" font-size="24" fill="${palette.text}">${escapeXml(state.tagline)}</text>
+  <text x="260" y="312" font-family="Sora, Arial, sans-serif" font-size="19" fill="${palette.text}">${escapeXml(state.tagline)}</text>
 
-  <rect x="280" y="350" width="${Math.max(340, Math.min(560, getStatusText(state).length * 8 + 96))}" height="46" rx="23" fill="rgba(255,255,255,0.06)"></rect>
-  <circle cx="306" cy="373" r="7" fill="${palette.success}"></circle>
-  <text x="324" y="380" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.text}">${escapeXml(
+  <circle cx="268" cy="358" r="5" fill="${palette.success}"></circle>
+  <text x="284" y="364" font-family="IBM Plex Mono, monospace" font-size="15" fill="${palette.dim}">${escapeXml(
     getStatusText(state)
   )}</text>
 
-  <text x="68" y="${state.height - 102}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>
-  <text x="68" y="${state.height - 66}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.dim}"># README-ready SVG card generated on demand</text>
-
-  <rect x="${state.width - 236}" y="${state.height - 118}" width="168" height="44" rx="22" fill="${provider.badgeFill}"></rect>
-  <text x="${state.width - 152}" y="${state.height - 90}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="16" fill="${badgeText}">${escapeXml(provider.label + "/" + state.theme)}</text>
+  <text x="68" y="${state.height - 66}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>
 </svg>`.trim();
   }
 
