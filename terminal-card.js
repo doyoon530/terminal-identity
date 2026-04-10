@@ -678,19 +678,19 @@
 
     // Profile image (circular)
     const showProfile = !!state.profileUri && !state.hideProfile;
-    const PROFILE_R  = 32;
-    const PROFILE_CX = leftX + 16 + PROFILE_R;
-    const PROFILE_CY = contentY + 46;
-    // divider is at PROFILE_CY + PROFILE_R + 22 = contentY + 100
-    // role starts below it with breathing room
+    const PROFILE_R   = 32;
+    const PROFILE_CX  = leftX + 20 + PROFILE_R;
+    const PROFILE_CY  = contentY + 54;            // more top breathing room
+    const DIVIDER_Y   = PROFILE_CY + PROFILE_R + 14;
+    const ABOUT_LBL_Y = DIVIDER_Y + 14;
 
     // Dynamic Y positions for left panel content
-    const ROLE_Y   = showProfile ? contentY + 118 : contentY + 36;
-    const TAG_Y    = showProfile ? contentY + 146 : contentY + 64;
-    const CMD_Y    = showProfile ? contentY + 170 : contentY + 90;
+    const ROLE_Y = showProfile ? ABOUT_LBL_Y + 24 : contentY + 44;
+    const TAG_Y  = showProfile ? ROLE_Y + 32      : ROLE_Y + 30;
+    const CMD_Y  = showProfile ? TAG_Y  + 26      : TAG_Y  + 26;
 
-    const showLPTag  = leftH >= (showProfile ? 153 : 76);
-    const showLPCmd  = !state.hideCommand && leftH >= (showProfile ? 177 : 102);
+    const showLPTag = leftH >= (ROLE_Y - contentY + 38);
+    const showLPCmd = !state.hideCommand && leftH >= (CMD_Y - contentY + 16);
 
     const rpDataTop = rightY + 16;
     const rpDataBot = Math.max(footerY - 12, rpDataTop);
@@ -728,15 +728,15 @@
   </defs>
   <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="rgba(255,255,255,0.08)"/>
   <image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#profile-clip-${escapeXml(state.username || "anon")})" preserveAspectRatio="xMidYMid slice"/>
-  <rect x="${leftX + 16}" y="${PROFILE_CY + PROFILE_R + 12}" width="${leftW - 32}" height="1" fill="rgba(255,255,255,0.07)"/>
-  <text x="${leftX + 16}" y="${PROFILE_CY + PROFILE_R + 25}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">ABOUT</text>
-  ${state.username ? `<text x="${PROFILE_CX + PROFILE_R + 14}" y="${PROFILE_CY - 4}" font-family="Sora, Arial, sans-serif" font-size="17" font-weight="700" fill="#f6f2ef">${escapeXml(state.name)}</text>
-  <text x="${PROFILE_CX + PROFILE_R + 14}" y="${PROFILE_CY + 16}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">@${escapeXml(state.username)}</text>` : ""}` : ""}
+  <rect x="${leftX + 20}" y="${DIVIDER_Y}" width="${leftW - 40}" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="${leftX + 20}" y="${ABOUT_LBL_Y}" font-family="IBM Plex Mono, monospace" font-size="10" fill="${dim}" letter-spacing="0.8">ABOUT</text>
+  ${state.username ? `<text x="${PROFILE_CX + PROFILE_R + 16}" y="${PROFILE_CY - 8}" font-family="Sora, Arial, sans-serif" font-size="18" font-weight="700" fill="#f6f2ef">${escapeXml(state.name)}</text>
+  <text x="${PROFILE_CX + PROFILE_R + 16}" y="${PROFILE_CY + 14}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">@${escapeXml(state.username)}</text>` : ""}` : ""}
 
-  <circle cx="${leftX + 22}" cy="${ROLE_Y - 5}" r="3" fill="${accent}"/>
-  <text x="${leftX + 32}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${accent}">${escapeXml(truncateText(state.role, 28))}</text>
-  ${showLPTag ? `<text x="${leftX + 16}" y="${TAG_Y}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
-  ${showLPCmd ? `<text x="${leftX + 16}" y="${CMD_Y}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">$ ${escapeXml(truncateText(state.command, 30))}</text>` : ""}
+  <circle cx="${leftX + 24}" cy="${ROLE_Y - 6}" r="3.5" fill="${accent}"/>
+  <text x="${leftX + 34}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 26))}</text>
+  ${showLPTag ? `<text x="${leftX + 20}" y="${TAG_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="#d4cdc9">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
+  ${showLPCmd ? `<text x="${leftX + 20}" y="${CMD_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dim}">$ ${escapeXml(truncateText(state.command, 32))}</text>` : ""}
 
   ${showStats
     ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
