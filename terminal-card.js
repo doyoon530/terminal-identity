@@ -376,6 +376,35 @@
     return state.role;
   }
 
+  function buildStatBars(stats, x, y, trackWidth, accentColor, dimColor, trackBg) {
+    const bg = trackBg || "rgba(255,255,255,0.08)";
+    const items = [
+      { label: "repos",     value: stats.repos },
+      { label: "stars",     value: stats.stars },
+      { label: "forks",     value: stats.forks },
+      { label: "followers", value: stats.followers },
+    ];
+    const maxVal = Math.max(...items.map((s) => s.value), 1);
+    const labelW = 74;
+    const valW = 42;
+    const barTrack = Math.max(trackWidth - labelW - valW, 40);
+    const rowH = 18;
+    const barH = 3;
+
+    return items
+      .map((item, i) => {
+        const filled = Math.max(2, Math.round((item.value / maxVal) * barTrack));
+        const rowY = y + i * rowH;
+        return [
+          `<text x="${x}" y="${rowY + 12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dimColor}">${item.label}</text>`,
+          `<rect x="${x + labelW}" y="${rowY + 5}" width="${barTrack}" height="${barH}" rx="1" fill="${bg}"></rect>`,
+          `<rect x="${x + labelW}" y="${rowY + 5}" width="${filled}" height="${barH}" rx="1" fill="${accentColor}"></rect>`,
+          `<text x="${x + labelW + barTrack + 8}" y="${rowY + 12}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dimColor}">${formatCompactStat(item.value)}</text>`,
+        ].join("\n  ");
+      })
+      .join("\n  ");
+  }
+
   function normalizeState(input) {
     const state = input || {};
     const rawTheme = String(state.theme || defaults.theme);
@@ -594,12 +623,16 @@
   )}</text>
 
   <rect x="${mainX}" y="${responseY}" width="${mainWidth}" height="${responseHeight}" rx="10" fill="#0e1915"></rect>
-  <text x="${mainX + 22}" y="${responseY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">response</text>
-  <text x="${mainX + 22}" y="${responseY + 54}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">Generated a README-ready identity card.</text>
-  <text x="${mainX + 22}" y="${responseY + 76}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">Copy the URL, paste into your profile, ship it.</text>
+  <text x="${mainX + 22}" y="${responseY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">output</text>
+  ${state.githubStats
+    ? buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainWidth - 44, accent, dim)
+    : `<text x="${mainX + 22}" y="${responseY + 52}" font-family="Sora, Arial, sans-serif" font-size="15" font-weight="600" fill="${ink}">${escapeXml(truncateText(state.tagline, 38))}</text>
+  <circle cx="${mainX + 22}" cy="${responseY + 76}" r="5" fill="${accent}"></circle>
+  <text x="${mainX + 36}" y="${responseY + 82}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(state.status, 44))}</text>`}
 
   <rect x="${outerX}" y="${outerY + outerHeight - 54}" width="${outerWidth}" height="1" fill="rgba(116,240,184,0.08)"></rect>
-  <text x="${outerX + 22}" y="${outerY + outerHeight - 22}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">&gt; switch theme: /gpt/${escapeXml(state.theme)}</text>`;
+  <circle cx="${outerX + 22}" cy="${outerY + outerHeight - 30}" r="5" fill="${accent}"></circle>
+  <text x="${outerX + 36}" y="${outerY + outerHeight - 24}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.status, 64))}</text>`;
   }
 
   function buildGeminiCanvas(state, palette, provider) {
@@ -656,11 +689,11 @@
   <text x="${lowerMidX + 18}" y="${lowerMidY + 80}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">theme   ${escapeXml(state.theme)}</text>
 
   <rect x="${lowerRightX}" y="${lowerRightY}" width="${lowerRightWidth}" height="${lowerRightHeight}" rx="10" fill="rgba(255,255,255,0.7)"></rect>
-  <text x="${lowerRightX + 18}" y="${lowerRightY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">status</text>
-  <circle cx="${lowerRightX + 26}" cy="${lowerRightY + 58}" r="5" fill="#7f94ff"></circle>
-  <text x="${lowerRightX + 40}" y="${lowerRightY + 64}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(
-    truncateText(statusText, 20)
-  )}</text>`;
+  <text x="${lowerRightX + 18}" y="${lowerRightY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${state.githubStats ? "github stats" : "status"}</text>
+  ${state.githubStats
+    ? buildStatBars(state.githubStats, lowerRightX + 18, lowerRightY + 34, lowerRightWidth - 36, accent, dim, "rgba(0,0,0,0.06)")
+    : `<circle cx="${lowerRightX + 26}" cy="${lowerRightY + 58}" r="5" fill="#7f94ff"></circle>
+  <text x="${lowerRightX + 40}" y="${lowerRightY + 64}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(statusText, 20))}</text>`}`;
   }
 
   function buildSvg(input) {
@@ -725,11 +758,15 @@
   )}</text>
   <text x="256" y="272" font-family="Sora, Arial, sans-serif" font-size="16" fill="${palette.text}">${escapeXml(state.tagline)}</text>
 
-  <circle cx="264" cy="310" r="5" fill="${palette.success}"></circle>
-  <text x="280" y="316" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>
+  ${state.githubStats && state.height >= 460
+    ? buildStatBars(state.githubStats, 256, 302, state.width - 256 - 56, palette.accent, palette.dim)
+    : `<circle cx="264" cy="310" r="5" fill="${palette.success}"></circle>
+  <text x="280" y="316" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
 
   <rect x="28" y="${state.height - 76}" width="${state.width - 56}" height="1" fill="rgba(255,255,255,0.08)"></rect>
-  <text x="56" y="${state.height - 44}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>
+  <circle cx="56" cy="${state.height - 54}" r="5" fill="${palette.success}"></circle>
+  <text x="72" y="${state.height - 48}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">${escapeXml(state.githubStats ? getStatusText(state) : state.status)}</text>
+  <text x="256" y="${state.height - 48}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>
 </svg>`.trim();
   }
 
