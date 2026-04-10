@@ -428,7 +428,7 @@
     ];
     const items = keys && keys.length < 4 ? allItems.filter((item) => keys.includes(item.label)) : allItems;
     const maxVal = Math.max(...items.map((s) => s.value), 1);
-    const labelW = 74;
+    const labelW = 90;
     const valW = 42;
     const barTrack = Math.max(trackWidth - labelW - valW, 40);
     const rowH = 18;
