@@ -16,8 +16,7 @@
 
 <p align="center">
   <a href="https://github.com/doyoon530/terminal-identity">
-    <img src="https://terminal-identity-opal.vercel.app/api?name=DoYoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/ember&avatar=GG&pattern=grid&width=980&height=450&langStyle=icons&iconSize=lg&excludeLangs=Jupyter%20Notebook&v=11"
-    width="100%" alt="Terminal Identity demo card" />
+    <img src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=Frontend+Engineer&tagline=Building+tiny+tools+with+taste.&status=available+for+cool+internet+projects&command=npx+terminal-identity&theme=amber%2Fsolar&avatar=GG&pattern=grid&width=900&height=590&langCount=5&langStyle=icons&iconSize=lg&bio=-+%F0%9F%92%A1+**Focus%3A**+Specialized+in+**React%2C+TypeScript%2C+and+Next.js**+ecosystem.%0A-+%F0%9F%8E%A8+**Philosophy%3A**+I+believe+great+UX+is+built+on+the+foundation+of+robust+engineering.%0A-+%F0%9F%9B%A0️+**Current+Activity%3A**+Refining+**Server-side+Rendering+%28SSR%29**+patterns+and+building+a+custom+**Design+System**.%0A-+%F0%9F%8C%B1+**Learning%3A**+Deep+diving+into+Web+Accessibility+%28a11y%29+and+Performance+Optimization." width="100%" alt="Terminal identity card" />
   </a>
 </p>
 
