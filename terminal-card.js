@@ -164,6 +164,8 @@
     },
   };
 
+  const STAT_KEYS = ["repos", "stars", "forks", "followers"];
+
   const defaults = {
     name: "ggam",
     username: "",
@@ -312,8 +314,6 @@
       },
     },
   ];
-
-  const STAT_KEYS = ["repos", "stars", "forks", "followers"];
 
   function escapeXml(value) {
     return String(value)
