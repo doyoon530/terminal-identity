@@ -419,32 +419,36 @@
     return String(value);
   }
 
-  function displayWidth(str) {
-    // CJK characters (Hangul, Chinese, Japanese, fullwidth) count as 2 units
-    return [...String(str)].reduce((w, c) => {
-      const code = c.charCodeAt(0);
-      const isWide = (code >= 0x1100 && code <= 0x11FF) ||
-                     (code >= 0x2E80 && code <= 0x9FFF) ||
-                     (code >= 0xAC00 && code <= 0xD7AF) ||
-                     (code >= 0xF900 && code <= 0xFAFF) ||
-                     (code >= 0xFF00 && code <= 0xFFEF);
-      return w + (isWide ? 2 : 1);
-    }, 0);
+  // Approximate pixel width per character at 12px
+  // IBM Plex Mono ASCII: ~7.2px, Korean/CJK fallback font: ~13px
+  function charPxWidth(char) {
+    const code = char.charCodeAt(0);
+    const isWide = (code >= 0x1100 && code <= 0x11FF) ||
+                   (code >= 0x2E80 && code <= 0x9FFF) ||
+                   (code >= 0xAC00 && code <= 0xD7AF) ||
+                   (code >= 0xF900 && code <= 0xFAFF) ||
+                   (code >= 0xFF00 && code <= 0xFFEF);
+    return isWide ? 13 : 7.2;
   }
 
-  function wrapText(text, maxWidth, maxLines) {
+  function wrapText(text, maxPx, maxLines) {
     if (!text) return [];
     const words = String(text).split(/\s+/).filter(Boolean);
     const lines = [];
     let current = "";
+    let currentPx = 0;
+    const spacePx = 7.2;
     for (const word of words) {
       if (lines.length >= maxLines) break;
-      const candidate = current ? `${current} ${word}` : word;
-      if (displayWidth(candidate) <= maxWidth) {
-        current = candidate;
+      const wordPx = [...word].reduce((w, c) => w + charPxWidth(c), 0);
+      const candidatePx = current ? currentPx + spacePx + wordPx : wordPx;
+      if (candidatePx <= maxPx) {
+        current = current ? `${current} ${word}` : word;
+        currentPx = candidatePx;
       } else {
         if (current) lines.push(current);
         current = word;
+        currentPx = wordPx;
       }
     }
     if (current && lines.length < maxLines) lines.push(current);
@@ -726,7 +730,8 @@
     const bioSource = state.bio || state.tagline;
     const BIO_LINE_H = 17;
     const bioMaxLines = Math.max(1, Math.floor((leftH - (ROLE_Y - contentY) - 26 - 10) / BIO_LINE_H));
-    const bioLines = wrapText(bioSource, 38, bioMaxLines);
+    const BIO_TEXT_W = leftW - 40;  // panel width minus left+right padding
+    const bioLines = wrapText(bioSource, BIO_TEXT_W, bioMaxLines);
 
     const showLPBio = bioLines.length > 0 && leftH >= (ROLE_Y - contentY + BIO_LINE_H + 10);
 
@@ -1087,7 +1092,12 @@
 
   function buildApiUrl(input, baseUrl) {
     const state = normalizeState(input);
-    return `${baseUrl}?${serializeState(state).toString()}`;
+    // Decode CJK/Hangul percent-sequences back to readable characters
+    const qs = serializeState(state).toString().replace(
+      /(?:%[EF][0-9A-Fa-f]%[89A-Fa-f][0-9A-Fa-f]%[89A-Fa-f][0-9A-Fa-f])+/g,
+      m => { try { return decodeURIComponent(m); } catch { return m; } }
+    );
+    return `${baseUrl}?${qs}`;
   }
 
   return {
