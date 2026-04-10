@@ -743,7 +743,7 @@
     return state.showContribs === "on" || !!state.username;
   }
 
-  function usesContributionGlyphs(theme) {
+  function usesLargeContributionMarks(theme) {
     return theme === "moon" || theme === "star";
   }
 
@@ -761,6 +761,14 @@
     return points.join(" ");
   }
 
+  function buildMoonShadowOffset(level, radius) {
+    if (level <= 0) return 0;
+    if (level === 1) return -radius * 0.62;
+    if (level === 2) return -radius * 0.1;
+    if (level === 3) return radius * 0.24;
+    return null;
+  }
+
   function getContributionThemeColors(theme, palette) {
     const accent = palette.accentAlt || palette.accent;
 
@@ -770,6 +778,16 @@
         levels: ["rgba(72,83,118,0.18)", "rgba(106,118,164,0.20)", "rgba(130,142,196,0.22)", "rgba(166,177,230,0.24)", "rgba(209,218,255,0.26)"],
         accent: "#d1daff",
         glow: "rgba(209,218,255,0.16)",
+        moonFillLevels: ["#2b3144", "#9baeff", "#c7d4ff", "#e7eeff", "#fff5d7"],
+        moonCoreLevels: ["#111723", "#dbe2ff", "#eef2ff", "#ffffff", "#fffef7"],
+        moonGlowLevels: [
+          "rgba(0,0,0,0)",
+          "rgba(145, 171, 255, 0.16)",
+          "rgba(199, 212, 255, 0.2)",
+          "rgba(232, 238, 255, 0.24)",
+          "rgba(255, 245, 215, 0.28)",
+        ],
+        moonShadow: "#1d2333",
       };
     }
 
@@ -832,14 +850,14 @@
 
     const gap = 2;
     const maxWeeks = contributions.weeks.length;
-    const glyphTheme = usesContributionGlyphs(theme);
-    const minVisibleCols = glyphTheme ? 10 : 16;
-    const targetCell = safeNumber(options?.targetCell, glyphTheme ? 12 : 10, 6, 14);
+    const enlargedMarkTheme = usesLargeContributionMarks(theme);
+    const minVisibleCols = enlargedMarkTheme ? 10 : 16;
+    const targetCell = safeNumber(options?.targetCell, enlargedMarkTheme ? 12 : 10, 6, 14);
     const minCols = safeNumber(options?.minCols, minVisibleCols, 10, 53);
     const desiredCols = Math.max(minVisibleCols, Math.floor((trackWidth + gap) / (targetCell + gap)));
     const cols = Math.min(maxWeeks, Math.max(minCols, desiredCols));
     const weeks = contributions.weeks.slice(-cols);
-    const cell = glyphTheme
+    const cell = enlargedMarkTheme
       ? Math.max(8, Math.min(14, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))))
       : Math.max(5, Math.min(12, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
     const gridW = cols * cell + Math.max(0, cols - 1) * gap;
@@ -863,11 +881,20 @@
         const cy = py + cell / 2;
 
         if (theme === "moon") {
-          const emojiMap = ["🌑", "🌒", "🌓", "🌔", "🌕"];
-          const emoji = emojiMap[level] || "🌑";
-          const emojiSize = Math.max(10, Math.min(16, cell + 2));
+          const moonR = Math.max(2.8, cell * 0.32);
+          const moonFill = colors.moonFillLevels?.[level] || colors.accent;
+          const moonCore = colors.moonCoreLevels?.[level] || "#ffffff";
+          const moonGlow = colors.moonGlowLevels?.[level] || colors.glow;
+          const shadowOffset = buildMoonShadowOffset(level, moonR);
           cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${Math.max(3, Math.floor(cell * 0.34))}" fill="${colors.levels[level] || colors.base}"></rect>`);
-          cells.push(`<text x="${cx}" y="${cy + 0.5}" text-anchor="middle" dominant-baseline="middle" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif" font-size="${emojiSize}">${emoji}</text>`);
+          cells.push(`<circle cx="${cx}" cy="${cy}" r="${Math.max(3.2, moonR * 1.34)}" fill="${moonGlow}" opacity="${level === 0 ? 0 : 0.16 + level * 0.06}"></circle>`);
+          cells.push(`<circle cx="${cx}" cy="${cy}" r="${moonR}" fill="${level === 0 ? colors.moonShadow : moonFill}"></circle>`);
+          if (level > 0) {
+            cells.push(`<circle cx="${cx - moonR * 0.18}" cy="${cy - moonR * 0.18}" r="${Math.max(0.9, moonR * 0.42)}" fill="${moonCore}" opacity="${0.2 + level * 0.12}"></circle>`);
+            if (shadowOffset !== null) {
+              cells.push(`<circle cx="${cx + shadowOffset}" cy="${cy}" r="${moonR}" fill="${colors.moonShadow}"></circle>`);
+            }
+          }
           return;
         }
 
