@@ -1,0 +1,61 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Terminal Identity social preview">
+  <defs>
+    <linearGradient id="pageBg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff7f0"></stop>
+      <stop offset="1" stop-color="#efe2d5"></stop>
+    </linearGradient>
+    <linearGradient id="cardBg" x1="320" y1="120" x2="1012" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#171218"></stop>
+      <stop offset="1" stop-color="#24192b"></stop>
+    </linearGradient>
+    <linearGradient id="avatarBg" x1="420" y1="240" x2="560" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff7a59"></stop>
+      <stop offset="1" stop-color="#ffd166"></stop>
+    </linearGradient>
+    <filter id="softShadow" x="250" y="80" width="820" height="500" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="28" stdDeviation="28" flood-color="rgba(44,26,17,0.16)"></feDropShadow>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#pageBg)"></rect>
+  <circle cx="156" cy="110" r="110" fill="rgba(255,179,112,0.28)"></circle>
+  <circle cx="1088" cy="120" r="92" fill="rgba(255,214,191,0.72)"></circle>
+
+  <text x="90" y="154" font-family="Sora, Arial, sans-serif" font-size="24" letter-spacing="6" fill="#8f341d">DYNAMIC SVG README CARDS</text>
+  <text x="90" y="252" font-family="Sora, Arial, sans-serif" font-size="84" font-weight="700" fill="#171310">Terminal</text>
+  <text x="90" y="338" font-family="Sora, Arial, sans-serif" font-size="84" font-weight="700" fill="#171310">Identity</text>
+  <text x="90" y="394" font-family="Sora, Arial, sans-serif" font-size="28" fill="#625851">Turn a few query params into a README card people actually remember.</text>
+
+  <g filter="url(#softShadow)">
+    <rect x="320" y="120" width="790" height="394" rx="28" fill="url(#cardBg)"></rect>
+    <rect x="320.5" y="120.5" width="789" height="393" rx="27.5" stroke="rgba(255,255,255,0.08)"></rect>
+    <rect x="348" y="144" width="734" height="66" rx="18" fill="#2e2336"></rect>
+    <circle cx="392" cy="177" r="8" fill="#ff5f57"></circle>
+    <circle cx="418" cy="177" r="8" fill="#febc2e"></circle>
+    <circle cx="444" cy="177" r="8" fill="#28c840"></circle>
+    <text x="715" y="183" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="20" fill="#b7a59d">identity.sh</text>
+
+    <rect x="348" y="226" width="734" height="258" rx="24" fill="#2b2033"></rect>
+    <rect x="348.5" y="226.5" width="733" height="257" rx="23.5" stroke="rgba(255,255,255,0.08)"></rect>
+
+    <circle cx="950" cy="300" r="76" fill="rgba(255,122,89,0.12)"></circle>
+    <circle cx="1008" cy="406" r="24" fill="rgba(255,209,102,0.16)"></circle>
+    <circle cx="892" cy="334" r="4" fill="rgba(255,255,255,0.12)"></circle>
+    <circle cx="920" cy="334" r="4" fill="rgba(255,255,255,0.12)"></circle>
+    <circle cx="948" cy="334" r="4" fill="rgba(255,255,255,0.12)"></circle>
+    <circle cx="976" cy="334" r="4" fill="rgba(255,255,255,0.12)"></circle>
+    <circle cx="1004" cy="334" r="4" fill="rgba(255,255,255,0.12)"></circle>
+
+    <rect x="392" y="270" width="146" height="146" rx="30" fill="url(#avatarBg)"></rect>
+    <text x="465" y="357" text-anchor="middle" font-family="Sora, Arial, sans-serif" font-size="52" font-weight="700" fill="#fff8f1">GG</text>
+
+    <text x="580" y="290" font-family="IBM Plex Mono, monospace" font-size="18" fill="#ff7a59">$ whoami</text>
+    <text x="580" y="340" font-family="Sora, Arial, sans-serif" font-size="48" font-weight="700" fill="#fff6f0">ggam</text>
+    <text x="580" y="378" font-family="IBM Plex Mono, monospace" font-size="22" fill="#ffd166">frontend engineer</text>
+    <text x="580" y="422" font-family="Sora, Arial, sans-serif" font-size="22" fill="#f5ddd1">Building tiny tools with taste.</text>
+
+    <rect x="580" y="444" width="360" height="42" rx="21" fill="rgba(255,255,255,0.06)"></rect>
+    <circle cx="604" cy="465" r="6" fill="#7ee787"></circle>
+    <text x="620" y="471" font-family="IBM Plex Mono, monospace" font-size="17" fill="#f5ddd1">available for cool internet projects</text>
+  </g>
+</svg>

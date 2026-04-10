@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terminal Identity</title>
+    <meta
+      name="description"
+      content="Dynamic terminal-style SVG identity cards for GitHub READMEs."
+    />
+    <meta property="og:title" content="Terminal Identity" />
+    <meta
+      property="og:description"
+      content="Turn a few query params into a README card people actually remember."
+    />
+    <meta property="og:image" content="./og-preview.svg" />
+    <meta property="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Dynamic SVG README cards</p>
+          <h1>Your GitHub intro, but terminal-cool.</h1>
+          <p class="hero-text">
+            Terminal Identity turns a few query params into a polished terminal
+            profile card you can paste straight into a README. Fast to use, hard
+            to scroll past.
+          </p>
+        </div>
+        <div class="hero-note">
+          <p>Why it works</p>
+          <strong>One URL becomes a personality-packed hero card.</strong>
+          <span>That mix of utility, design, and instant gratification is what gets stars.</span>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="panel controls">
+          <div class="panel-head">
+            <h2>Card Controls</h2>
+            <p>Keep the params simple and the result vivid.</p>
+          </div>
+
+          <form id="builder-form">
+            <label>
+              Name
+              <input id="name" name="name" placeholder="ggam" />
+            </label>
+
+            <label>
+              Role
+              <input id="role" name="role" placeholder="frontend engineer" />
+            </label>
+
+            <label>
+              Tagline
+              <input id="tagline" name="tagline" placeholder="Building tiny tools with taste." />
+            </label>
+
+            <label>
+              Status
+              <input id="status" name="status" placeholder="available for cool internet projects" />
+            </label>
+
+            <label>
+              Command
+              <input id="command" name="command" placeholder="npx terminal-identity" />
+            </label>
+
+            <div class="option-grid">
+              <label>
+                Theme
+                <select id="theme" name="theme">
+                  <option value="ember">Ember Shell</option>
+                  <option value="aurora">Aurora Mint</option>
+                  <option value="cobalt">Cobalt Night</option>
+                  <option value="velvet">Velvet Signal</option>
+                  <option value="graphite">Graphite Mono</option>
+                  <option value="matcha">Matcha Console</option>
+                  <option value="sakura">Sakura Bloom</option>
+                  <option value="solar">Solar Gold</option>
+                </select>
+              </label>
+
+              <label>
+                Pattern
+                <select id="pattern" name="pattern">
+                  <option value="grid">Grid</option>
+                  <option value="rings">Rings</option>
+                  <option value="pulse">Pulse</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="option-grid">
+              <label>
+                Avatar initials
+                <input id="avatar" name="avatar" placeholder="GG" />
+              </label>
+
+              <label>
+                Width
+                <input id="width" name="width" type="number" min="720" max="1400" step="10" />
+              </label>
+            </div>
+
+            <label>
+              Height
+              <input id="height" name="height" type="number" min="420" max="820" step="10" />
+            </label>
+
+            <div class="action-row">
+              <button type="button" id="presetButton">Load demo</button>
+              <button type="button" id="copySvgButton" class="primary">Copy SVG</button>
+              <button type="button" id="copyMarkdownButton">Copy markdown</button>
+              <button type="button" id="copyShareButton">Copy API URL</button>
+              <button type="button" id="downloadButton">Download SVG</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel preview">
+          <div class="panel-head">
+            <h2>Live Result</h2>
+            <p>Preview the card, then paste the URL into your README.</p>
+          </div>
+
+          <div class="preview-frame">
+            <div id="svgMount" class="svg-mount"></div>
+          </div>
+
+          <label class="output-wrap">
+            README markdown
+            <textarea id="markdownOutput" rows="5" readonly></textarea>
+          </label>
+
+          <label class="output-wrap">
+            API URL
+            <textarea id="apiOutput" rows="4" readonly></textarea>
+          </label>
+
+          <label class="output-wrap">
+            SVG source
+            <textarea id="svgOutput" rows="14" readonly></textarea>
+          </label>
+        </section>
+      </main>
+
+      <section class="panel presets-panel">
+        <div class="panel-head">
+          <h2>Preset Gallery</h2>
+          <p>Click a preset to load a polished card people would actually want to use.</p>
+        </div>
+        <div id="presetGallery" class="preset-gallery"></div>
+      </section>
+    </div>
+
+    <script src="./terminal-card.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
