@@ -26,7 +26,7 @@
 
 <p align="center">
   <a href="https://terminal-identity-opal.vercel.app">
-    <img src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=Frontend+Engineer&tagline=Building+tiny+tools+with+taste.&status=available+for+cool+internet+projects&command=npx+terminal-identity&theme=amber%2Fsolar&avatar=GG&pattern=grid&width=900&height=480&langCount=7&langStyle=icons&iconSize=lg&motion=pulse&bio=-%20%F0%9F%92%A1%20**Focus%3A**%20Specialized%20in%20**React%2C%20TypeScript%2C%20and%20Next.js**%20ecosystem.%0A-%20%F0%9F%9B%A0%EF%B8%8F%20**Current%20Activity%3A**%20Refining%20**Server-side%20Rendering%20(SSR)**%20patterns%20and%20building%20a%20custom%20**Design%20System**.&v=23"
+    <img src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=Frontend+Engineer&tagline=Building+tiny+tools+with+taste.&status=available+for+cool+internet+projects&command=npx+terminal-identity&theme=amber%2Fsolar&avatar=GG&pattern=grid&width=900&height=480&langCount=7&langStyle=icons&iconSize=lg&motion=pulse&bio=-%20%F0%9F%92%A1%20**Focus%3A**%20Specialized%20in%20**React%2C%20TypeScript%2C%20and%20Next.js**%20ecosystem.%0A-%20%F0%9F%9B%A0%EF%B8%8F%20**Current%20Activity%3A**%20Refining%20**Server-side%20Rendering%20(SSR)**%20patterns%20and%20building%20a%20custom%20**Design%20System**.&v=24"
     width="100%" alt="Terminal Identity demo card" />
   </a>
 </p>
