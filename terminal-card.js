@@ -1064,11 +1064,14 @@
     const minVisibleCols = enlargedMarkTheme ? 10 : 16;
     const targetCell = safeNumber(options?.targetCell, enlargedMarkTheme ? 12 : 10, 6, 14);
     const minCols = safeNumber(options?.minCols, minVisibleCols, 10, 53);
+    const minCell = safeNumber(options?.minCell, enlargedMarkTheme ? 8 : 5, 4, 16);
+    const maxCell = safeNumber(options?.maxCell, enlargedMarkTheme ? 14 : 12, minCell, 20);
     const desiredCols = Math.max(minVisibleCols, Math.floor((trackWidth + gap) / (targetCell + gap)));
     const cols = Math.min(maxWeeks, Math.max(minCols, desiredCols));
-    const cell = enlargedMarkTheme
-      ? Math.max(8, Math.min(14, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))))
-      : Math.max(5, Math.min(12, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1))));
+    const cell = Math.max(
+      minCell,
+      Math.min(maxCell, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1)))
+    );
     const gridW = cols * cell + Math.max(0, cols - 1) * gap;
     const gridH = 7 * cell + 6 * gap;
 
@@ -1145,13 +1148,22 @@
     }
 
     if (contributions?.weeks?.length) {
+      const amberContribOptions = {
+        targetCell: 6,
+        minCols: 32,
+        minCell: 5,
+        maxCell: 7,
+        showFooter: false,
+        contentTop: 20,
+        bottomPad: 2,
+      };
       if (topLangs?.length) rightRequired += 14;
       const rightW = Math.max(state.width - 126 - leftW, 0);
       rightRequired += estimateContributionSectionHeight(
         contributions,
         rightW - 36,
         state.contribTheme,
-        { targetCell: 7, minCols: 24, showFooter: false, contentTop: 24, bottomPad: 4 }
+        amberContribOptions
       );
     }
 
@@ -1813,15 +1825,25 @@
 
     const contribModuleTop = rpModuleTop + (showLangs ? langModuleTotalH + moduleGap : 0);
     const contribAvailH = rpDataBot - contribModuleTop - 4;
+    const amberContribOptions = {
+      labelColor: label,
+      targetCell: 6,
+      minCols: 32,
+      minCell: 5,
+      maxCell: 7,
+      showFooter: false,
+      contentTop: 20,
+      bottomPad: 2,
+    };
     const contribSectionH = estimateContributionSectionHeight(
       contributions,
       rightW - 36,
       state.contribTheme,
-      { targetCell: 7, minCols: 24, showFooter: false, contentTop: 24, bottomPad: 4 }
+      amberContribOptions
     );
     const canShowContribs = hasContribs && contribAvailH >= contribSectionH;
     const CONTRIB_DIVIDER_Y = contribModuleTop - 2;
-    const CONTRIB_GRID_Y = contribModuleTop + 24;
+    const CONTRIB_GRID_Y = contribModuleTop + amberContribOptions.contentTop;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
@@ -1862,7 +1884,7 @@
     : ""}
   ${canShowContribs
     ? `<rect x="${rightX}" y="${CONTRIB_DIVIDER_Y}" width="${rightW}" height="1" fill="${surfaces.line}"></rect>
-  ${buildContributionGrid(contributions, rightX + 18, CONTRIB_GRID_Y, rightW - 36, state.contribTheme, palette, { labelColor: label, targetCell: 7, minCols: 24, showFooter: false })}`
+  ${buildContributionGrid(contributions, rightX + 18, CONTRIB_GRID_Y, rightW - 36, state.contribTheme, palette, amberContribOptions)}`
     : ""}`
     : `<text x="${rightX + 18}" y="${rpDataTop + 13}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TAGLINE</text>
   <text x="${rightX + 18}" y="${rpDataTop + 44}" font-family="Sora, Arial, sans-serif" font-size="16" font-weight="600" fill="${surfaces.textStrong}">${escapeXml(truncateText(state.tagline, 52))}</text>
