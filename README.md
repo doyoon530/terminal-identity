@@ -64,6 +64,7 @@ Add `username=your-handle` to show live GitHub stats and top languages:
 | `showLangs` | `auto` | Top languages display: `auto`, `on`, or `off` |
 | `langCount` | `4` | Number of top languages to show (1–6) |
 | `langStyle` | `bar` | Language display style: `bar` or `icons` |
+| `iconSize` | `md` | Icon size when `langStyle=icons`: `sm`, `md`, or `lg` |
 | `barStyle` | `bar` | Graph style for stats and lang bars: `bar`, `dots`, or `blocks` |
 | `hideAvatar` | `false` | Set to `true` to hide the avatar block |
 | `hideCommand` | `false` | Set to `true` to hide the command line |

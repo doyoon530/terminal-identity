@@ -516,10 +516,13 @@
       .join("\n  ");
   }
 
-  function buildLangIcons(uri, x, y, trackWidth, count) {
-    // Each skillicons icon is 45×45 with 15px gap; display at 26px height
-    const iconH = 26;
-    const iconW = Math.min(count * 32, trackWidth);
+  // skillicons.dev renders each icon at 45×45 with 15px gap (60px/icon)
+  const ICON_SIZES = { sm: 26, md: 38, lg: 52 };
+
+  function buildLangIcons(uri, x, y, trackWidth, count, iconSize) {
+    const iconH = ICON_SIZES[iconSize] ?? ICON_SIZES.md;
+    const perIconW = Math.round(iconH * (60 / 45));
+    const iconW = Math.min(count * perIconW, trackWidth);
     return `<image x="${x}" y="${y}" width="${iconW}" height="${iconH}" href="${escapeXml(uri)}" preserveAspectRatio="xMinYMid meet"></image>`;
   }
 
@@ -559,6 +562,7 @@
       excludeLangs: parseExcludeLangs(state.excludeLangs),
       barStyle: ["bar", "dots", "blocks"].includes(state.barStyle) ? state.barStyle : "bar",
       langStyle: ["bar", "icons"].includes(state.langStyle) ? state.langStyle : "bar",
+      iconSize: ["sm", "md", "lg"].includes(state.iconSize) ? state.iconSize : "md",
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
     };
   }
@@ -572,6 +576,7 @@
       if (key === "langCount" && value === 4) return;
       if (key === "barStyle" && value === "bar") return;
       if (key === "langStyle" && value === "bar") return;
+      if (key === "iconSize" && value === "md") return;
       if (key === "langIconsUri") return;
       if (key === "stats") {
         if (value.length < 4) params.set("stats", value.join(","));
@@ -724,7 +729,7 @@
     ? `<rect x="${rightX}" y="${rpLangsTop - 2}" width="${rightW}" height="1" fill="rgba(255,255,255,0.07)"></rect>
   <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">top langs</text>
   ${state.langStyle === "icons" && state.langIconsUri && langsToShow
-    ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, langsToShow.length)
+    ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, langsToShow.length, state.iconSize)
     : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, undefined, state.barStyle)}`
     : ""}`
     : state.githubStats
@@ -810,7 +815,7 @@
   ${state.githubStats
     ? (topLangs
         ? (state.langStyle === "icons" && state.langIconsUri
-            ? buildLangIcons(state.langIconsUri, mainX + 22, responseY + 34, mainW - 44, topLangs.length)
+            ? buildLangIcons(state.langIconsUri, mainX + 22, responseY + 34, mainW - 44, topLangs.length, state.iconSize)
             : buildLangBars(topLangs, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.barStyle))
         : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainW - 44, accent, dim, undefined, state.stats, state.barStyle))
     : `<text x="${mainX + 22}" y="${responseY + 52}" font-family="Sora, Arial, sans-serif" font-size="15" font-weight="600" fill="${ink}">${escapeXml(truncateText(state.tagline, 38))}</text>
@@ -888,7 +893,7 @@
   <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
   ${topLangs
     ? (state.langStyle === "icons" && state.langIconsUri
-        ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, topLangs.length)
+        ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, topLangs.length, state.iconSize)
         : buildLangBars(topLangs, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.barStyle))
     : state.githubStats
       ? buildStatBars(state.githubStats, lrX + 18, lowerY + 34, lrW - 36, accent, dim, "rgba(0,0,0,0.06)", state.stats, state.barStyle)
@@ -1007,7 +1012,7 @@
   ${showStats && (showLangs || (state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs))
     ? `<rect x="${contentX}" y="${LANGS_TOP - 2}" width="${contentW}" height="1" fill="rgba(255,255,255,0.05)"></rect>
   ${state.langStyle === "icons" && state.langIconsUri && effectiveTopLangs
-    ? buildLangIcons(state.langIconsUri, contentX, LANGS_TOP, contentW, effectiveTopLangs.length)
+    ? buildLangIcons(state.langIconsUri, contentX, LANGS_TOP, contentW, effectiveTopLangs.length, state.iconSize)
     : buildLangBars(langsToShow, contentX, LANGS_TOP, contentW, palette.accent, palette.dim, undefined, state.barStyle)}`
     : ""}
 

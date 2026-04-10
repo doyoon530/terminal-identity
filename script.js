@@ -51,6 +51,7 @@ function getState() {
     accent: document.getElementById("accent").value.trim(),
     barStyle: document.getElementById("barStyle").value,
     langStyle: document.getElementById("langStyle").value,
+    iconSize: document.getElementById("iconSize").value,
     showLangs: document.getElementById("showLangs").value,
     langCount: document.getElementById("langCount").value,
     hideAvatar: document.getElementById("hideAvatar").checked,
@@ -76,6 +77,7 @@ function fillForm(state) {
   document.getElementById("accent").value = state.accent || "";
   document.getElementById("barStyle").value = state.barStyle || "bar";
   document.getElementById("langStyle").value = state.langStyle || "bar";
+  document.getElementById("iconSize").value = state.iconSize || "md";
   document.getElementById("showLangs").value = state.showLangs || "auto";
   document.getElementById("langCount").value = state.langCount || "";
   document.getElementById("hideAvatar").checked = state.hideAvatar === "true" || state.hideAvatar === true;
@@ -107,6 +109,7 @@ function loadStateFromUrl() {
     accent: params.get("accent"),
     barStyle: params.get("barStyle"),
     langStyle: params.get("langStyle"),
+    iconSize: params.get("iconSize"),
     showLangs: params.get("showLangs"),
     langCount: params.get("langCount"),
     hideAvatar: params.get("hideAvatar"),
