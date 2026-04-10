@@ -762,7 +762,17 @@
     const BIO_LINE_H = 17;
     const bioMaxLines = Math.max(1, Math.floor((leftH - (ROLE_Y - contentY) - 26 - 10) / BIO_LINE_H));
     const BIO_TEXT_W = leftW - 40;  // panel width minus left+right padding
-    const bioLines = wrapText(bioSource, BIO_TEXT_W, bioMaxLines);
+    const bioLines = (() => {
+      const segments = String(bioSource || "").split(/\r?\n/);
+      const result = [];
+      for (const seg of segments) {
+        if (result.length >= bioMaxLines) break;
+        if (!seg.trim()) continue;
+        const wrapped = wrapText(seg, BIO_TEXT_W, bioMaxLines - result.length);
+        result.push(...wrapped);
+      }
+      return result;
+    })();
 
     const showLPBio = bioLines.length > 0 && leftH >= (ROLE_Y - contentY + BIO_LINE_H + 10);
 
