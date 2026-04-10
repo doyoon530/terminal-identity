@@ -426,6 +426,92 @@
   <circle cx="120" cy="60" r="8" fill="#28c840"></circle>`;
   }
 
+  function buildClaudeDashboard(state, palette, provider) {
+    const outerX = 28;
+    const outerY = 96;
+    const outerWidth = state.width - 56;
+    const outerHeight = state.height - 124;
+    const leftX = 54;
+    const leftY = 132;
+    const leftWidth = 330;
+    const leftHeight = 214;
+    const rightX = 404;
+    const rightY = 132;
+    const rightWidth = state.width - rightX - 54;
+    const topRightHeight = 116;
+    const bottomRightY = rightY + topRightHeight;
+    const bottomRightHeight = leftHeight - topRightHeight;
+    const footerY = state.height - 142;
+    const accent = "#f08a61";
+    const dim = "#9c928d";
+    const promptY = state.height - 82;
+    const iconX = leftX + 146;
+    const iconY = leftY + 94;
+    const cliTheme = `${provider.label}/${state.theme}`;
+    const activityItems = [
+      `1m ago   Updated ${state.name}`,
+      `8m ago   Reviewed ${state.role}`,
+      `2d ago   ${state.status.slice(0, 28)}`,
+      `1w ago   ${state.command.slice(0, 28)}`,
+    ];
+    const whatsNewItems = [
+      `/${state.theme} to load this palette`,
+      `/${provider.label} shell enabled`,
+      `${state.pattern} pattern active`,
+      `... /help for more`,
+    ];
+
+    return `
+  <rect x="${outerX}" y="${outerY}" width="${outerWidth}" height="${outerHeight}" rx="14" fill="#231f1d"></rect>
+  <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerWidth - 1}" height="${outerHeight - 1}" rx="13.5" stroke="rgba(255,255,255,0.05)"></rect>
+
+  <rect x="${leftX}" y="${leftY}" width="${leftWidth}" height="${leftHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
+  <rect x="${rightX}" y="${rightY}" width="${rightWidth}" height="${topRightHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
+  <rect x="${rightX}" y="${bottomRightY}" width="${rightWidth}" height="${bottomRightHeight}" rx="10" fill="none" stroke="${accent}" stroke-width="2" stroke-dasharray="6 6"></rect>
+
+  <text x="${leftX + 16}" y="${leftY - 14}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">-------- Claude Code  v2.0.0  -------------------------</text>
+
+  <text x="${leftX + 94}" y="${leftY + 52}" font-family="IBM Plex Mono, monospace" font-size="24" fill="#f6f2ef">Welcome back ${escapeXml(state.name)}!</text>
+
+  <rect x="${iconX}" y="${iconY}" width="84" height="34" fill="${accent}"></rect>
+  <rect x="${iconX + 16}" y="${iconY - 16}" width="52" height="16" fill="${accent}"></rect>
+  <rect x="${iconX + 12}" y="${iconY + 16}" width="6" height="14" fill="#231f1d"></rect>
+  <rect x="${iconX + 66}" y="${iconY + 16}" width="6" height="14" fill="#231f1d"></rect>
+  <rect x="${iconX + 30}" y="${iconY + 34}" width="6" height="18" fill="${accent}"></rect>
+  <rect x="${iconX + 48}" y="${iconY + 34}" width="6" height="18" fill="${accent}"></rect>
+  <rect x="${iconX + 16}" y="${iconY + 34}" width="6" height="18" fill="${accent}"></rect>
+  <rect x="${iconX + 62}" y="${iconY + 34}" width="6" height="18" fill="${accent}"></rect>
+
+  <text x="${leftX + 96}" y="${leftY + 164}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${dim}">${escapeXml(state.role)}  •  ${escapeXml(cliTheme)}</text>
+  <text x="${leftX + 72}" y="${leftY + 198}" font-family="IBM Plex Mono, monospace" font-size="17" fill="${dim}">${escapeXml(state.tagline)}</text>
+  <text x="${leftX + 72}" y="${leftY + 230}" font-family="IBM Plex Mono, monospace" font-size="17" fill="${dim}">${escapeXml(state.command)}</text>
+
+  <text x="${rightX + 18}" y="${rightY + 32}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${accent}">Recent activity</text>
+  ${activityItems
+    .map(
+      (item, index) =>
+        `<text x="${rightX + 18}" y="${rightY + 60 + index * 28}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${
+          index === activityItems.length - 1 ? dim : "#f2efec"
+        }">${escapeXml(item)}</text>`
+    )
+    .join("\n")}
+
+  <text x="${rightX + 18}" y="${bottomRightY + 30}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${accent}">What's new</text>
+  ${whatsNewItems
+    .map(
+      (item, index) =>
+        `<text x="${rightX + 18}" y="${bottomRightY + 58 + index * 24}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${
+          index === whatsNewItems.length - 1 ? dim : "#f2efec"
+        }">${escapeXml(item)}</text>`
+    )
+    .join("\n")}
+
+  <line x1="${outerX}" y1="${footerY}" x2="${state.width - 28}" y2="${footerY}" stroke="rgba(255,255,255,0.18)"></line>
+  <text x="${outerX + 12}" y="${promptY}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${dim}">&gt;</text>
+  <rect x="${outerX + 28}" y="${promptY - 20}" width="14" height="32" fill="#f2efec"></rect>
+  <text x="${outerX + 48}" y="${promptY}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${dim}">Try \"edit &lt;filepath&gt; to ...\"</text>`;
+  }
+
   function buildSvg(input) {
     const state = normalizeState(input);
     const palette = themeMap[state.theme];
@@ -440,6 +526,25 @@
     const topBarText = provider.topBarText || palette.dim;
     const badgeText = provider.badgeText || palette.accentAlt;
     const frameStroke = provider.frameTone || palette.line;
+
+    if (state.provider === "claude") {
+      return `
+<svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
+  <defs>
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="${state.width}" y2="${state.height}" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#373532"></stop>
+      <stop offset="1" stop-color="#312f2c"></stop>
+    </linearGradient>
+  </defs>
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#bgGradient)"></rect>
+  <rect x="0.5" y="0.5" width="${state.width - 1}" height="${state.height - 1}" rx="${shellRadius - 0.5}" stroke="${frameStroke}"></rect>
+  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="16" fill="#4a4843"></rect>
+  <circle cx="68" cy="60" r="8" fill="#ee8b62"></circle>
+  <circle cx="94" cy="60" r="8" fill="#ffc75a"></circle>
+  <circle cx="120" cy="60" r="8" fill="#6ecf59"></circle>
+  ${buildClaudeDashboard(state, palette, provider)}
+</svg>`.trim();
+    }
 
     return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
