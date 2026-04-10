@@ -658,7 +658,6 @@
 
   function buildAmberDashboard(state, palette, provider, topLangs) {
     const statusText = getStatusText(state);
-    const activityHandle = state.username ? `@${state.username}` : state.name;
     const outerX = 28;
     const outerY = 96;
     const outerW = state.width - 56;
@@ -668,7 +667,6 @@
     const accent = state.accent || "#f08a61";
     const dim = "#9c928d";
     const label = "#c8a898";
-    const cliTheme = `${provider.label}/${state.theme}`;
 
     // Proportional columns
     const leftX = 54;
@@ -683,17 +681,19 @@
     const PROFILE_R  = 32;
     const PROFILE_CX = leftX + 16 + PROFILE_R;
     const PROFILE_CY = contentY + 46;
+    // divider is at PROFILE_CY + PROFILE_R + 22 = contentY + 100
+    // role starts below it with breathing room
 
     // Dynamic Y positions for left panel content
-    const ROLE_Y   = showProfile ? contentY + 100 : contentY + 36;
-    const TAG_Y    = showProfile ? contentY + 128 : contentY + 66;
-    const CMD_Y    = showProfile ? contentY + 152 : contentY + 92;
-    const STAT_CY  = showProfile ? contentY + 178 : contentY + 118;
-    const STAT_TY  = showProfile ? contentY + 184 : contentY + 124;
+    const ROLE_Y   = showProfile ? contentY + 118 : contentY + 36;
+    const TAG_Y    = showProfile ? contentY + 146 : contentY + 64;
+    const CMD_Y    = showProfile ? contentY + 170 : contentY + 90;
+    const STAT_CY  = showProfile ? contentY + 196 : contentY + 116;
+    const STAT_TY  = showProfile ? contentY + 202 : contentY + 122;
 
-    const showLPTag  = leftH >= (showProfile ? 135 : 78);
-    const showLPCmd  = !state.hideCommand && leftH >= (showProfile ? 159 : 104);
-    const showLPStat = leftH >= (showProfile ? 185 : 130);
+    const showLPTag  = leftH >= (showProfile ? 153 : 76);
+    const showLPCmd  = !state.hideCommand && leftH >= (showProfile ? 177 : 102);
+    const showLPStat = leftH >= (showProfile ? 203 : 128);
 
     const rpDataTop = rightY + 16;
     const rpDataBot = Math.max(footerY - 12, rpDataTop);
@@ -722,6 +722,7 @@
   <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerW - 1}" height="${outerH - 1}" rx="13.5" stroke="rgba(255,255,255,0.05)"></rect>
 
   <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10" fill="rgba(255,255,255,0.04)"></rect>
+  <rect x="${leftX + 6}" y="${contentY + 14}" width="2" height="80" rx="1" fill="${accent}" opacity="0.35"></rect>
 
   ${showProfile ? `<defs>
     <clipPath id="profile-clip-${escapeXml(state.username || "anon")}">
@@ -732,10 +733,11 @@
   <image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#profile-clip-${escapeXml(state.username || "anon")})" preserveAspectRatio="xMidYMid slice"/>
   <text x="${PROFILE_CX}" y="${PROFILE_CY + PROFILE_R + 14}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="${dim}" letter-spacing="0.5">about</text>
   <rect x="${leftX + 16}" y="${PROFILE_CY + PROFILE_R + 22}" width="${leftW - 32}" height="1" fill="rgba(255,255,255,0.07)"/>
-  ${state.username ? `<text x="${PROFILE_CX + PROFILE_R + 14}" y="${PROFILE_CY - 6}" font-family="IBM Plex Mono, monospace" font-size="15" fill="#f6f2ef">${escapeXml(state.name)}</text>
-  <text x="${PROFILE_CX + PROFILE_R + 14}" y="${PROFILE_CY + 14}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">@${escapeXml(state.username)}</text>` : ""}` : ""}
+  ${state.username ? `<text x="${PROFILE_CX + PROFILE_R + 14}" y="${PROFILE_CY - 4}" font-family="Sora, Arial, sans-serif" font-size="17" font-weight="700" fill="#f6f2ef">${escapeXml(state.name)}</text>
+  <text x="${PROFILE_CX + PROFILE_R + 14}" y="${PROFILE_CY + 16}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">@${escapeXml(state.username)}</text>` : ""}` : ""}
 
-  <text x="${leftX + 16}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 30))}</text>
+  <circle cx="${leftX + 22}" cy="${ROLE_Y - 5}" r="3" fill="${accent}"/>
+  <text x="${leftX + 32}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${accent}">${escapeXml(truncateText(state.role, 28))}</text>
   ${showLPTag ? `<text x="${leftX + 16}" y="${TAG_Y}" font-family="IBM Plex Mono, monospace" font-size="13" fill="#c5bfbb">${escapeXml(truncateText(state.tagline, 44))}</text>` : ""}
   ${showLPCmd ? `<text x="${leftX + 16}" y="${CMD_Y}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">$ ${escapeXml(truncateText(state.command, 30))}</text>` : ""}
   ${showLPStat ? `<circle cx="${leftX + 24}" cy="${STAT_CY}" r="5" fill="#7adf8d"></circle>
@@ -943,7 +945,13 @@
     if (state.provider === "amber") {
       return `
 <svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
-  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="#373532"></rect>
+  <defs>
+    <linearGradient id="amber-shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3e3a37"/>
+      <stop offset="100%" stop-color="#2c2a27"/>
+    </linearGradient>
+  </defs>
+  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="url(#amber-shell)"></rect>
   <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="#4a4843"></rect>
   <circle cx="68" cy="60" r="7" fill="#ee8b62"></circle>
   <circle cx="92" cy="60" r="7" fill="#ffc75a"></circle>
