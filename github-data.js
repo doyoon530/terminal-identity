@@ -40,15 +40,43 @@ function parseContributionCalendar(html) {
 
   const totalMatch = html.match(/>\s*([\d,]+)\s+contributions?\s+(?:in the last year|in \d{4})\s*</i);
   const total = totalMatch ? Number(String(totalMatch[1]).replaceAll(",", "")) : 0;
+  const tooltipCounts = new Map();
+  const tooltipRe = /<tool-tip\b[^>]*\bfor="([^"]+)"[^>]*>([\s\S]*?)<\/tool-tip>/g;
   const days = [];
-  const dayRe = /data-date="(\d{4}-\d{2}-\d{2})"[^>]*data-level="([0-4])"/g;
   let match;
 
+  while ((match = tooltipRe.exec(html)) !== null) {
+    const text = match[2].replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    const countMatch = text.match(/([\d,]+)\s+contributions?/i);
+    tooltipCounts.set(match[1], countMatch ? Number(countMatch[1].replaceAll(",", "")) : 0);
+  }
+
+  const dayRe = /<td\b(?=[^>]*ContributionCalendar-day)[^>]*>/g;
+
   while ((match = dayRe.exec(html)) !== null) {
+    const cell = match[0];
+    const dateMatch = cell.match(/\bdata-date="(\d{4}-\d{2}-\d{2})"/);
+    const levelMatch = cell.match(/\bdata-level="([0-4])"/);
+    const idMatch = cell.match(/\bid="([^"]+)"/);
+
+    if (!dateMatch || !levelMatch) continue;
+
     days.push({
-      date: match[1],
-      level: Number(match[2] || 0),
+      date: dateMatch[1],
+      level: Number(levelMatch[1] || 0),
+      count: idMatch && tooltipCounts.has(idMatch[1]) ? tooltipCounts.get(idMatch[1]) : undefined,
     });
+  }
+
+  if (days.length === 0) {
+    const fallbackDayRe = /data-date="(\d{4}-\d{2}-\d{2})"[^>]*data-level="([0-4])"/g;
+
+    while ((match = fallbackDayRe.exec(html)) !== null) {
+      days.push({
+        date: match[1],
+        level: Number(match[2] || 0),
+      });
+    }
   }
 
   if (days.length === 0) {
@@ -68,10 +96,16 @@ function parseContributionCalendar(html) {
       weekMap.set(key, Array.from({ length: 7 }, () => null));
     }
 
-    weekMap.get(key)[date.getUTCDay()] = {
+    const normalizedDay = {
       date: day.date,
       level: Math.max(0, Math.min(4, day.level)),
     };
+
+    if (typeof day.count === "number") {
+      normalizedDay.count = Math.max(0, Math.floor(day.count));
+    }
+
+    weekMap.get(key)[date.getUTCDay()] = normalizedDay;
   });
 
   const weekKeys = [...weekMap.keys()].sort();
@@ -82,7 +116,9 @@ function parseContributionCalendar(html) {
 
     return {
       total,
-      activeDays: sorted.filter((day) => day.level > 0).length,
+      activeDays: sorted.filter((day) =>
+        typeof day.count === "number" ? day.count > 0 : day.level > 0
+      ).length,
       weeks: allWeeks,
     };
   }

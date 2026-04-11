@@ -234,6 +234,19 @@
     "39w": 39,
     "1y": 53,
   };
+  const CONTRIBUTION_RANGE_LABELS = {
+    "4w": "last 4 weeks",
+    "8w": "last 8 weeks",
+    "12w": "last 12 weeks",
+    "16w": "last 16 weeks",
+    "24w": "last 24 weeks",
+    "26w": "last 26 weeks",
+    "3m": "last 3 months",
+    "6m": "last 6 months",
+    "9m": "last 9 months",
+    "39w": "last 39 weeks",
+    "1y": "this year",
+  };
   const CONTRIBUTION_RANGES = Object.keys(CONTRIBUTION_RANGE_LIMITS);
 
   const presets = [
@@ -575,10 +588,16 @@
                 days: Array.isArray(week.days)
                   ? week.days.slice(0, 7).map((day) => {
                       if (!day) return null;
-                      return {
+                      const normalizedDay = {
                         date: String(day.date || "").slice(0, 10),
                         level: safeNumber(day.level, 0, 0, 4),
                       };
+
+                      if (typeof day.count === "number" && Number.isFinite(day.count)) {
+                        normalizedDay.count = Math.floor(safeNumber(day.count, 0, 0, 1000000));
+                      }
+
+                      return normalizedDay;
                     })
                   : Array.from({ length: 7 }, () => null),
               })),
@@ -919,14 +938,51 @@
     return state.showContribs === "on" || !!state.username;
   }
 
-  function getContributionRangeLimit(range) {
+  function getContributionRangeKey(range) {
     const key = String(range || defaults.contribRange).trim().toLowerCase();
-    return CONTRIBUTION_RANGE_LIMITS[key] || CONTRIBUTION_RANGE_LIMITS[defaults.contribRange];
+    return CONTRIBUTION_RANGE_LIMITS[key] ? key : defaults.contribRange;
+  }
+
+  function getContributionRangeLimit(range) {
+    return CONTRIBUTION_RANGE_LIMITS[getContributionRangeKey(range)] || CONTRIBUTION_RANGE_LIMITS[defaults.contribRange];
+  }
+
+  function getContributionRangeLabel(range) {
+    return CONTRIBUTION_RANGE_LABELS[getContributionRangeKey(range)] || CONTRIBUTION_RANGE_LABELS[defaults.contribRange];
   }
 
   function getContributionWeeks(contributions, range) {
     if (!contributions?.weeks?.length) return [];
     return contributions.weeks.slice(-getContributionRangeLimit(range));
+  }
+
+  function getContributionRangeSummary(contributions, range) {
+    const weeks = getContributionWeeks(contributions, range);
+    const days = weeks
+      .flatMap((week) => (Array.isArray(week.days) ? week.days : []))
+      .filter(Boolean);
+    const hasExactCounts = days.length > 0 && days.every((day) => typeof day.count === "number");
+    let total;
+
+    if (hasExactCounts) {
+      total = days.reduce((sum, day) => sum + Math.floor(safeNumber(day.count, 0, 0, 1000000)), 0);
+    } else if (getContributionRangeKey(range) === "1y") {
+      total = safeNumber(contributions.total, 0, 0, 100000000);
+    } else {
+      total = days.filter((day) => safeNumber(day.level, 0, 0, 4) > 0).length;
+    }
+
+    const activeDays = days.filter((day) =>
+      hasExactCounts
+        ? safeNumber(day.count, 0, 0, 1000000) > 0
+        : safeNumber(day.level, 0, 0, 4) > 0
+    ).length;
+
+    return {
+      total,
+      activeDays,
+      label: getContributionRangeLabel(range),
+    };
   }
 
   function isContributionFocus(state, contributions) {
@@ -1412,8 +1468,9 @@
     const colors = getContributionThemeColors(theme, palette);
     const title = options?.title || "CONTRIBUTIONS";
     const labelColor = options?.labelColor || palette.dim;
-    const totalLabel = `${formatCompactStat(contributions.total)} this year`;
-    const activeLabel = `${contributions.activeDays} active days`;
+    const summary = getContributionRangeSummary(contributions, options?.range);
+    const totalLabel = `${formatCompactStat(summary.total)} ${summary.label}`;
+    const activeLabel = `${summary.activeDays} active days`;
     const showFooter = options?.showFooter !== false;
 
     const cells = [];
