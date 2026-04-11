@@ -271,17 +271,17 @@ Available themes: `ember` · `aurora` · `cobalt` · `velvet` · `graphite` · `
 
 ## README Recipes
 
-Copy-paste starter cards for different contribution moods. Each example leans on a different `contribTheme` so you can see how far the same API can stretch.
+Copy-paste starter cards for different contribution moods. Each example leans on a different `contribTheme` and uses a public GitHub org account for realistic live stats; replace `username` with your own handle when you use it.
 
 ### Cat jump ghost grid
 
 `theme=obsidian/velvet` · `showContribs=on` · `contribTheme=cat_jump` · `contribRange=16w` · `contribMode=focus`
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=obsidian/velvet&avatar=GG&pattern=pulse&width=980&height=auto&motion=boot&showContribs=on&contribTheme=cat_jump&contribRange=16w&contribMode=focus&showLangs=off&hideCommand=true&v=68" width="100%" alt="Cat jump contribution card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=GitHub&username=github&role=developer%20platform&tagline=Where%20the%20world%20builds%20software.&status=maintaining%20the%20home%20of%20open%20source&command=gh%20repo%20star%20terminal-identity&theme=obsidian/velvet&avatar=GH&pattern=pulse&width=980&height=auto&motion=boot&showContribs=on&contribTheme=cat_jump&contribRange=16w&contribMode=focus&showLangs=off&hideCommand=true&v=70" width="100%" alt="Cat jump contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=obsidian/velvet&avatar=GG&pattern=pulse&width=980&height=auto&motion=boot&showContribs=on&contribTheme=cat_jump&contribRange=16w&contribMode=focus&showLangs=off&hideCommand=true"
+  src="https://terminal-identity-opal.vercel.app/api?name=GitHub&username=github&role=developer%20platform&tagline=Where%20the%20world%20builds%20software.&status=maintaining%20the%20home%20of%20open%20source&command=gh%20repo%20star%20terminal-identity&theme=obsidian/velvet&avatar=GH&pattern=pulse&width=980&height=auto&motion=boot&showContribs=on&contribTheme=cat_jump&contribRange=16w&contribMode=focus&showLangs=off&hideCommand=true"
   width="100%"
   alt="Terminal identity card with cat jump activity"
 />
@@ -291,11 +291,11 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 
 `theme=amber/sakura` · `showContribs=on` · `contribTheme=popcat` · `contribRange=16w` · `contribMode=focus`
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/sakura&avatar=GG&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=popcat&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks&v=67" width="100%" alt="Popcat contribution card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=Vercel&username=vercel&role=frontend%20cloud&tagline=Ship%20the%20web%20faster%2C%20from%20preview%20to%20production.&status=deploying%20preview%20builds%20worldwide&command=vercel%20deploy&theme=amber/sakura&avatar=VC&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=popcat&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks&v=70" width="100%" alt="Popcat contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/sakura&avatar=GG&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=popcat&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks"
+  src="https://terminal-identity-opal.vercel.app/api?name=Vercel&username=vercel&role=frontend%20cloud&tagline=Ship%20the%20web%20faster%2C%20from%20preview%20to%20production.&status=deploying%20preview%20builds%20worldwide&command=vercel%20deploy&theme=amber/sakura&avatar=VC&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=popcat&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks"
   width="100%"
   alt="Terminal identity card with popcat activity"
 />
@@ -305,11 +305,11 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 
 `theme=amber/solar` · `showContribs=on` · `contribTheme=moon` · `contribRange=16w` · `showLangs=on`
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=moon&contribRange=16w&showLangs=on&langCount=4&langStyle=icons&iconSize=sm&v=41" width="100%" alt="Moon phase contribution card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=OpenAI&username=openai&role=AI%20research%20and%20products&tagline=Building%20useful%20AI%20tools%20for%20people%20and%20developers.&status=researching%2C%20shipping%2C%20and%20iterating&command=openai%20api%20models.list&theme=amber/solar&avatar=AI&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=moon&contribRange=16w&showLangs=on&langCount=4&langStyle=icons&iconSize=sm&v=70" width="100%" alt="Moon phase contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=doyoon&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=amber/solar&avatar=GG&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=moon&contribRange=16w&showLangs=on&langCount=4&langStyle=icons&iconSize=sm"
+  src="https://terminal-identity-opal.vercel.app/api?name=OpenAI&username=openai&role=AI%20research%20and%20products&tagline=Building%20useful%20AI%20tools%20for%20people%20and%20developers.&status=researching%2C%20shipping%2C%20and%20iterating&command=openai%20api%20models.list&theme=amber/solar&avatar=AI&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=moon&contribRange=16w&showLangs=on&langCount=4&langStyle=icons&iconSize=sm"
   width="100%"
   alt="Terminal identity card with moon phase activity"
 />
@@ -319,11 +319,11 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 
 `theme=obsidian/graphite` · `contribTheme=star` · `contribRange=16w` · `motion=pulse` · `pattern=pulse`
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&username=doyoon530&role=open-source%20maintainer&tagline=Shipping%20small%20fixes%2C%20sharp%20docs%2C%20and%20stable%20releases.&status=reviewing%20PRs%20and%20polishing%20tooling&command=pnpm%20release%20--safe&theme=obsidian/graphite&avatar=MS&pattern=pulse&width=980&height=auto&motion=pulse&showContribs=on&contribTheme=star&contribRange=16w&showLangs=on&langCount=4&langStyle=bar&barStyle=blocks&v=42" width="100%" alt="Starfield contribution card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=Microsoft&username=microsoft&role=open-source%20ecosystem&tagline=Developer%20tools%2C%20cloud%2C%20and%20platforms%20at%20planetary%20scale.&status=reviewing%20SDKs%2C%20docs%2C%20and%20tooling&command=dotnet%20build%20--configuration%20Release&theme=obsidian/graphite&avatar=MS&pattern=pulse&width=980&height=auto&motion=pulse&showContribs=on&contribTheme=star&contribRange=16w&showLangs=on&langCount=4&langStyle=bar&barStyle=blocks&v=70" width="100%" alt="Starfield contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=mina.sh&username=doyoon530&role=open-source%20maintainer&tagline=Shipping%20small%20fixes%2C%20sharp%20docs%2C%20and%20stable%20releases.&status=reviewing%20PRs%20and%20polishing%20tooling&command=pnpm%20release%20--safe&theme=obsidian/graphite&avatar=MS&pattern=pulse&width=980&height=auto&motion=pulse&showContribs=on&contribTheme=star&contribRange=16w&showLangs=on&langCount=4&langStyle=bar&barStyle=blocks"
+  src="https://terminal-identity-opal.vercel.app/api?name=Microsoft&username=microsoft&role=open-source%20ecosystem&tagline=Developer%20tools%2C%20cloud%2C%20and%20platforms%20at%20planetary%20scale.&status=reviewing%20SDKs%2C%20docs%2C%20and%20tooling&command=dotnet%20build%20--configuration%20Release&theme=obsidian/graphite&avatar=MS&pattern=pulse&width=980&height=auto&motion=pulse&showContribs=on&contribTheme=star&contribRange=16w&showLangs=on&langCount=4&langStyle=bar&barStyle=blocks"
   width="100%"
   alt="Terminal identity card with starfield activity"
 />
@@ -333,11 +333,11 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 
 `theme=prism/aurora` · `contribTheme=orbit` · `contribRange=16w` · `accent=%239cd7ff` · `showLangs=off`
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=leo&username=doyoon530&role=product%20builder&tagline=Turning%20napkin%20ideas%20into%20small%20products%20people%20keep%20using.&status=building%20in%20public&command=pnpm%20ship%20--fast&theme=prism/aurora&avatar=LE&pattern=rings&width=980&height=auto&accent=%239cd7ff&showContribs=on&contribTheme=orbit&contribRange=16w&showLangs=off&barStyle=dots&v=43" width="100%" alt="Orbit contribution card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=Google&username=google&role=research%20and%20platforms&tagline=Android%2C%20TensorFlow%2C%20Chrome%2C%20and%20systems%20in%20orbit.&status=maintaining%20open%20source%20at%20scale&command=bazel%20build%20//...&theme=prism/aurora&avatar=GO&pattern=rings&width=980&height=auto&accent=%239cd7ff&showContribs=on&contribTheme=orbit&contribRange=16w&showLangs=off&barStyle=dots&v=70" width="100%" alt="Orbit contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=leo&username=doyoon530&role=product%20builder&tagline=Turning%20napkin%20ideas%20into%20small%20products%20people%20keep%20using.&status=building%20in%20public&command=pnpm%20ship%20--fast&theme=prism/aurora&avatar=LE&pattern=rings&width=980&height=auto&accent=%239cd7ff&showContribs=on&contribTheme=orbit&contribRange=16w&showLangs=off&barStyle=dots"
+  src="https://terminal-identity-opal.vercel.app/api?name=Google&username=google&role=research%20and%20platforms&tagline=Android%2C%20TensorFlow%2C%20Chrome%2C%20and%20systems%20in%20orbit.&status=maintaining%20open%20source%20at%20scale&command=bazel%20build%20//...&theme=prism/aurora&avatar=GO&pattern=rings&width=980&height=auto&accent=%239cd7ff&showContribs=on&contribTheme=orbit&contribRange=16w&showLangs=off&barStyle=dots"
   width="100%"
   alt="Terminal identity card with orbit activity"
 />
@@ -347,11 +347,11 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 
 `theme=obsidian/aurora` · `contribTheme=signal` · `contribRange=16w` · `motion=scan` · `stats=stars,forks,followers`
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=sora&username=doyoon530&role=platform%20engineer&tagline=Watching%20systems%2C%20signals%2C%20and%20all%20the%20small%20things%20that%20break%20first.&status=tracking%20latency%20and%20shipping%20fixes&command=pnpm%20run%20watch-signals&theme=obsidian/aurora&avatar=SR&pattern=grid&width=980&height=auto&motion=scan&showContribs=on&contribTheme=signal&contribRange=16w&showLangs=off&stats=stars%2Cforks%2Cfollowers&barStyle=dots&v=44" width="100%" alt="Signal contribution card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=Cloudflare&username=cloudflare&role=edge%20network&tagline=Signals%20from%20the%20edge%2C%20shipped%20close%20to%20users.&status=tracking%20latency%20and%20shipping%20fixes&command=wrangler%20deploy&theme=obsidian/aurora&avatar=CF&pattern=grid&width=980&height=auto&motion=scan&showContribs=on&contribTheme=signal&contribRange=16w&showLangs=off&stats=stars%2Cforks%2Cfollowers&barStyle=dots&v=70" width="100%" alt="Signal contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=sora&username=doyoon530&role=platform%20engineer&tagline=Watching%20systems%2C%20signals%2C%20and%20all%20the%20small%20things%20that%20break%20first.&status=tracking%20latency%20and%20shipping%20fixes&command=pnpm%20run%20watch-signals&theme=obsidian/aurora&avatar=SR&pattern=grid&width=980&height=auto&motion=scan&showContribs=on&contribTheme=signal&contribRange=16w&showLangs=off&stats=stars%2Cforks%2Cfollowers&barStyle=dots"
+  src="https://terminal-identity-opal.vercel.app/api?name=Cloudflare&username=cloudflare&role=edge%20network&tagline=Signals%20from%20the%20edge%2C%20shipped%20close%20to%20users.&status=tracking%20latency%20and%20shipping%20fixes&command=wrangler%20deploy&theme=obsidian/aurora&avatar=CF&pattern=grid&width=980&height=auto&motion=scan&showContribs=on&contribTheme=signal&contribRange=16w&showLangs=off&stats=stars%2Cforks%2Cfollowers&barStyle=dots"
   width="100%"
   alt="Terminal identity card with signal activity"
 />
@@ -361,11 +361,11 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 
 `theme=amber/matcha` · `showContribs=on` · `contribTheme=capybara_onsen` · `contribRange=16w` · `contribMode=focus`
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=noyu&username=doyoon530&role=cozy%20toolmaker&tagline=Small%20commits%2C%20warm%20baths%2C%20and%20steady%20shipping.&status=soaking%20in%20the%20release%20queue&command=npm%20run%20onsen&theme=amber/matcha&avatar=NY&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks&v=69" width="100%" alt="Capybara onsen contribution card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=Rust&username=rust-lang&role=systems%20language&tagline=Fast%2C%20reliable%2C%20and%20quietly%20cozy%20open%20source.&status=soaking%20release%20trains%20in%20careful%20reviews&command=cargo%20test%20--workspace&theme=amber/matcha&avatar=RS&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks&v=70" width="100%" alt="Capybara onsen contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=noyu&username=doyoon530&role=cozy%20toolmaker&tagline=Small%20commits%2C%20warm%20baths%2C%20and%20steady%20shipping.&status=soaking%20in%20the%20release%20queue&command=npm%20run%20onsen&theme=amber/matcha&avatar=NY&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks"
+  src="https://terminal-identity-opal.vercel.app/api?name=Rust&username=rust-lang&role=systems%20language&tagline=Fast%2C%20reliable%2C%20and%20quietly%20cozy%20open%20source.&status=soaking%20release%20trains%20in%20careful%20reviews&command=cargo%20test%20--workspace&theme=amber/matcha&avatar=RS&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks"
   width="100%"
   alt="Terminal identity card with capybara onsen activity"
 />
@@ -375,11 +375,11 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 
 `theme=obsidian/velvet` · `contribTheme=firefly` · `contribRange=16w` · `hideCommand=true` · `motion=boot`
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=ara&username=doyoon530&role=night%20shift%20coder&tagline=Quiet%20hours%2C%20sharp%20focus%2C%20and%20tiny%20experiments%20that%20turn%20into%20features.&status=shipping%20after%20dark&theme=obsidian/velvet&avatar=AR&pattern=pulse&width=980&height=auto&motion=boot&showContribs=on&contribTheme=firefly&contribRange=16w&showLangs=off&hideCommand=true&v=47" width="100%" alt="Firefly contribution card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=Mozilla&username=mozilla&role=open%20web%20community&tagline=Nightly%20builds%2C%20browser%20experiments%2C%20and%20the%20open%20web.&status=shipping%20after%20dark&theme=obsidian/velvet&avatar=MZ&pattern=pulse&width=980&height=auto&motion=boot&showContribs=on&contribTheme=firefly&contribRange=16w&showLangs=off&hideCommand=true&v=70" width="100%" alt="Firefly contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=ara&username=doyoon530&role=night%20shift%20coder&tagline=Quiet%20hours%2C%20sharp%20focus%2C%20and%20tiny%20experiments%20that%20turn%20into%20features.&status=shipping%20after%20dark&theme=obsidian/velvet&avatar=AR&pattern=pulse&width=980&height=auto&motion=boot&showContribs=on&contribTheme=firefly&contribRange=16w&showLangs=off&hideCommand=true"
+  src="https://terminal-identity-opal.vercel.app/api?name=Mozilla&username=mozilla&role=open%20web%20community&tagline=Nightly%20builds%2C%20browser%20experiments%2C%20and%20the%20open%20web.&status=shipping%20after%20dark&theme=obsidian/velvet&avatar=MZ&pattern=pulse&width=980&height=auto&motion=boot&showContribs=on&contribTheme=firefly&contribRange=16w&showLangs=off&hideCommand=true"
   width="100%"
   alt="Terminal identity card with firefly activity"
 />
