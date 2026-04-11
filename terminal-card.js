@@ -1291,7 +1291,7 @@
       minCell: state.contribMode === "focus" ? 9 : 5,
       maxCell: getContributionMaxCell(rangeWeeks, enlargedMarkTheme, focusMode),
       showFooter: false,
-      contentTop: 20,
+      contentTop: 31,
       bottomPad: 2,
       ...(overrides || {}),
     });
