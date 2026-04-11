@@ -248,6 +248,12 @@
     "1y": "this year",
   };
   const CONTRIBUTION_RANGES = Object.keys(CONTRIBUTION_RANGE_LIMITS);
+  const CONTRIBUTION_THEMES = ["cat_jump", "moon", "star", "orbit", "signal", "citylight", "petal", "moss", "firefly", "constellation"];
+  const CONTRIBUTION_THEME_ALIASES = {
+    cat: "cat_jump",
+    catjump: "cat_jump",
+    "cat-jump": "cat_jump",
+  };
   const CAT_CONTRIB_TILE_URIS = [
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACwUlEQVR42u1Xy27bMBCcIeVDTgaKXFKJIvz/H9XaknLKJ4icHiTalPWwHCTtpQQMmQa1O5ydfRj4vx4vjZ9/C8LCfAsIs5+G7yFhFwBjzNpBnU4nGbONjrSrYdwFQBJKX89+ds6h73s452Gt1dw4dTqdVNfVqu3iGbpIKynwtickQRLeyp8wkEgL6YYlhPBFGpAgBeTOATM+AYNhLwkxxsk58QsAJEfTfXIUryCTZm4rwoAgPwmgwBDbnEoCqqpqZoYLXqQUpk8C6BHgfI2iKJAFf3hYs8lSYoDk50VIEohCUETlHPJ0UogznQzhMJM7SgKJRRYeMaC6rq9AjBlEt3Wje5NJK3XtsVQLzHYBwoieE5Hdf7+nfJo5urKwWwOj8FSWbuIsGRRvjMwc0mSOgRjjBlhgjUs552ZUiwC1vk8glkJ0uVwWfZq9eQ8MzvLbUNvvpbNd18EeisULFwsGpJXSNbudGTJk6VwCQxIxBigss22WXvbebZbk+z6QakICl2fKVhFaY2BZ7UYwWaORNFwpObqrCXOxGQmRjxi4eo5xqGBt+46uadGc21sWSDv6xk393nsIcVcWqK5rkETTNKmrMW/Hr68/8PLy8tw8J6Ft3xOo5SwgqaIoQA7t9N75YCjw4+MDXddNjOftd4kNWgPnSpCcDS7FZOopy5H2M2jNYlwlMcaolBF5VmS5fi1UzjloBFiWb2iabi5CSyPna0hC3/dD7MLWGDH0fBFAFJqmAQyTgJkxo8vlghgjvPcgiyzVh3MGAIIiQgiIMQ4NZ0eHlJQXIiJqVkBGtggC5/MZIQR47+G9R1EUykPA9r0TBVhrITzEMDAgQYx7ZnqSVNd1qKpqLE5xsxesruPxqOPxOGGjPXcI6B/aop2OlU9PxQBwOBxgDEBaRAjnX79RwO5Lx/D8hVdtkRS+6e/aX11/AItnqJQ8+eYsAAAAAElFTkSuQmCC",
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADHElEQVR42u1XTW/bRhSceUtLTVskAQLKgimSaU+55lz02FOB/nL/hCawZcl109hoi34gsLjTw4oSlyIpqkBToOheJEjLfbMz8z4I/L+OL/2nQdiYTSTxrwLof5oqy1IjGOrdMwqAJLzMvmgfoDzPQQFFseiTSXmeqyzL3kjJWAk2bnPwGwWIAGQoigKSBCPgtd9DAvAA2IlxtATebw5YqT/r7zUokjCwsa8/zGgGqkqjzCkJJAMze/i9NrHjLnUiCedcM7C2lO8ChiADoMS/B2DyyRmyLAO8YKCa9DeDkQ7p+QxfvnoVBZaE119/BVg3gMEET+B09mSCNE3hvYfZMN7ZbIbLy0sWRRHxvVwuCUCEQfAczUBFjzRNG26ODdhF+Tfffas2AwBQliVopzEgksjzfBtIUI+Oex8Mr+VyeRAz6TYGlZ7PMJ2e7Q6uL92+fR3czOC972Tp5FL89PkzTCYTABbRGBeXOOVU+cNCtf2PJFarFboslAw1HxGtgoLoxvAK2e0F9aTf7Xq9ZcagDg2TjuCis4B+CJy0U7NP/wZbrOvEUQCLiwx0W668dhWt1rttui4DRiBP9oBtdVUVldPaC7WmMdVVrLsUGXKoXbPt/sXLIlQ9MyTm8P3bN7vD8zzvZOKQBR9S1kJT+un+Pf747XceleDTzz8DALx79x4fPvwZmYak1us1siwLAZ0BlTo9QLpwaQGCUD1uahbYKwFJubMElIcZDhzrvWdVVdt0Cl2hWZqbejcZIYn5fA4DQVK9DCwWC5gZlqsbtMp1dDkpbkj7dkvc3KxBEh4VKGA+nyNJkiBfWeD29haPj4+HAF68SFV3K0mABhAwvulqtYJEmHlAgFegWQDu7u5UF7bnT58Fys3k/f78Ot8CRQKoY5ORDyAtFKNQqDy9D4+3ChEl8deff4GZ4eLiAlmWRVIkAHB/f8+Hh4ea2sGuQmewxAFe8BQq+TFDLa+urjSbn2M6ncI5h81mE3vgWODdJLTI4TcVJB2dD9ogfvzhTu30T3DCioZPEtfX16e+SfCkiaiPhRagf+616WOsvwA0M6YIqCkAPQAAAABJRU5ErkJggg==",
@@ -997,7 +1003,7 @@
   }
 
   function usesLargeContributionMarks(theme) {
-    return theme === "cat" || theme === "moon" || theme === "star" || theme === "orbit" || theme === "signal" || theme === "citylight";
+    return theme === "cat_jump" || theme === "moon" || theme === "star" || theme === "orbit" || theme === "signal" || theme === "citylight";
   }
 
   function buildStarPoints(cx, cy, outerR, innerR) {
@@ -1037,7 +1043,7 @@
   function getContributionThemeColors(theme, palette) {
     const accent = palette.accentAlt || palette.accent;
 
-    if (theme === "cat") {
+    if (theme === "cat_jump") {
       return {
         base: "rgba(235,255,248,0.06)",
         levels: ["rgba(235,255,248,0.05)", "rgba(235,255,248,0.08)", "rgba(223,255,242,0.1)", "rgba(207,255,239,0.13)", "rgba(244,255,248,0.16)"],
@@ -1521,7 +1527,7 @@
         const cx = px + cell / 2;
         const cy = py + cell / 2;
 
-        if (theme === "cat") {
+        if (theme === "cat_jump") {
           const rx = Math.max(2, Math.floor(cell * 0.2));
           const catUri = CAT_CONTRIB_TILE_URIS[level] || CAT_CONTRIB_TILE_URIS[0];
           const eyeY = py + cell * 0.29;
@@ -1740,6 +1746,8 @@
     const pattern = ["grid", "rings", "pulse"].includes(state.pattern)
       ? state.pattern
       : defaults.pattern;
+    const rawContribTheme = String(state.contribTheme || "").trim().toLowerCase();
+    const contribTheme = CONTRIBUTION_THEME_ALIASES[rawContribTheme] || rawContribTheme;
 
     return {
       name: String(state.name || defaults.name).slice(0, 36),
@@ -1768,7 +1776,7 @@
       langStyle: ["bar", "icons"].includes(state.langStyle) ? state.langStyle : "bar",
       iconSize: ["sm", "md", "lg"].includes(state.iconSize) ? state.iconSize : "md",
       motion: ["off", "pulse", "scan", "boot"].includes(state.motion) ? state.motion : "off",
-      contribTheme: ["cat", "moon", "star", "orbit", "signal", "citylight", "petal", "moss", "firefly", "constellation"].includes(state.contribTheme) ? state.contribTheme : defaults.contribTheme,
+      contribTheme: CONTRIBUTION_THEMES.includes(contribTheme) ? contribTheme : defaults.contribTheme,
       contribRange: CONTRIBUTION_RANGES.includes(String(state.contribRange || "").trim().toLowerCase())
         ? String(state.contribRange).trim().toLowerCase()
         : defaults.contribRange,
