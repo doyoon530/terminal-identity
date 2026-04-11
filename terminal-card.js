@@ -1263,7 +1263,6 @@
     const rpModuleAvail = rpDataBot - rpModuleTop;
     const hasLangs = !!topLangs?.length;
     const hasContribs = !!contributions?.weeks?.length;
-    const focusContribs = isContributionFocus(state, contributions);
     const maxBarLangs = hasLangs
       ? Math.min(topLangs.length, Math.max(0, Math.floor(Math.max(0, rpModuleAvail - 30) / 18)))
       : 0;
@@ -1279,9 +1278,7 @@
         : langCount * 18;
     const langModuleTotalH = canShowLangsFirst ? langContentH + 30 : 0;
 
-    const contribModuleTop = focusContribs
-      ? rpModuleTop
-      : rpModuleTop + (canShowLangsFirst ? langModuleTotalH + moduleGap : 0);
+    const contribModuleTop = rpModuleTop + (canShowLangsFirst ? langModuleTotalH + moduleGap : 0);
     const contribSectionH = estimateContributionSectionHeight(
         contributions,
         rightW - 36,
@@ -1289,12 +1286,7 @@
         getAmberContributionOptions(state)
       );
     const canShowContribs = hasContribs && (rpDataBot - contribModuleTop - 4) >= contribSectionH;
-    const langModuleTop = focusContribs && canShowContribs
-      ? contribModuleTop + contribSectionH + moduleGap
-      : rpModuleTop;
-    const showLangs = hasLangs && langCount > 0 && (
-      focusContribs ? (rpDataBot - langModuleTop >= langModuleH) : canShowLangsFirst
-    );
+    const showLangs = canShowLangsFirst;
 
     if (hasContribs && !canShowContribs) return false;
     if (hasLangs && !showLangs) return false;
@@ -1907,7 +1899,6 @@
     const moduleGap = 14;
     const hasContribs = contributions && showStats;
     const hasLangs = topLangs && showStats;
-    const focusContribs = isContributionFocus(state, contributions);
     const rpModuleAvail = rpDataBot - rpModuleTop;
     const maxBarLangs = topLangs
       ? Math.min(topLangs.length, Math.max(0, Math.floor(Math.max(0, rpModuleAvail - 30) / 18)))
@@ -1925,7 +1916,7 @@
         : preliminaryLangsToShow.length * 18;
     const langModuleTotalH = canShowLangsFirst ? langContentH + 30 : 0;
 
-    const contribModuleTop = focusContribs ? rpModuleTop : rpModuleTop + (canShowLangsFirst ? langModuleTotalH + moduleGap : 0);
+    const contribModuleTop = rpModuleTop + (canShowLangsFirst ? langModuleTotalH + moduleGap : 0);
     const contribAvailH = rpDataBot - contribModuleTop - 4;
     const amberContribOptions = getAmberContributionOptions(state, {
       labelColor: label,
@@ -1937,8 +1928,8 @@
       amberContribOptions
     );
     const canShowContribs = hasContribs && contribAvailH >= contribSectionH;
-    const langModuleTop = focusContribs && canShowContribs ? contribModuleTop + contribSectionH + moduleGap : rpModuleTop;
-    const showLangs = hasLangs && langCount > 0 && (focusContribs ? (rpDataBot - langModuleTop >= langModuleH) : canShowLangsFirst);
+    const langModuleTop = rpModuleTop;
+    const showLangs = canShowLangsFirst;
     const langsToShow = showLangs ? topLangs.slice(0, langCount) : null;
     const LANGS_LABEL_Y = langModuleTop + 11;
     const LANGS_Y = langModuleTop + 22;
