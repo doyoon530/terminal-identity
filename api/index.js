@@ -1,5 +1,16 @@
 const { buildSvg, normalizeState, LANG_ICON_MAP } = require("../terminal-card");
 const { fetchGithubStats } = require("../github-data");
+const fs = require("fs");
+const path = require("path");
+
+const capybaraSpriteUri = (() => {
+  try {
+    const sprite = fs.readFileSync(path.join(__dirname, "../assets/capybara-onsen-contrib-sprite.png"));
+    return `data:image/png;base64,${sprite.toString("base64")}`;
+  } catch (_) {
+    return null;
+  }
+})();
 
 function buildFallbackSvg(width, height) {
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -48,6 +59,7 @@ module.exports = async function handler(req, res) {
     const state = normalizeState({
       ...query,
       height: query.height ?? "auto",
+      capybaraSpriteUri,
     });
     let nextState = state;
 

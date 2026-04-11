@@ -105,7 +105,7 @@ Want motion? Add `motion=pulse`, `motion=scan`, or `motion=boot` to the same API
 - **4 provider shells** — Classic, Amber, Obsidian, Prism, each with a distinct layout
 - **8 themes** — Ember · Aurora · Cobalt · Velvet · Graphite · Matcha · Sakura · Solar
 - **Live GitHub stats** — repos, stars, forks, followers fetched from the public API
-- **Contribution themes** — `cat_jump`, `popcat`, `moon`, `star`, `orbit`, `signal`, `citylight`, `moss`, `petal`, `firefly`, and `constellation`
+- **Contribution themes** — `cat_jump`, `popcat`, `capybara_onsen`, `moon`, `star`, `orbit`, `signal`, `citylight`, `moss`, `petal`, `firefly`, and `constellation`
 - **Top languages** — bar chart or skill icons, filterable by name
 - **Inline bold** — use `**text**` in bio for bold SVG text
 - **Multi-line bio** — wraps dynamically to fit the card height, with line-break support
@@ -179,7 +179,7 @@ Want a contribution block too:
 | `accent` | — | Override accent color with a hex value, e.g. `%23ff7a59` |
 | `motion` | `off` | Animated SVG overlay: `off`, `pulse`, `scan`, or `boot` |
 | `showContribs` | `off` | Contribution grid display: `off`, `on`, or `auto` |
-| `contribTheme` | `moss` | Contribution concept theme: `cat_jump`, `popcat`, `moon`, `star`, `orbit`, `signal`, `citylight`, `moss`, `petal`, `firefly`, or `constellation` |
+| `contribTheme` | `moss` | Contribution concept theme: `cat_jump`, `popcat`, `capybara_onsen`, `moon`, `star`, `orbit`, `signal`, `citylight`, `moss`, `petal`, `firefly`, or `constellation` |
 | `contribRange` | `16w` | Contribution window: `4w`, `8w`, `12w`, `16w`, `24w`, `26w`, `39w`, `3m`, `6m`, `9m`, or `1y` |
 | `contribMode` | `compact` | Contribution layout mode: `compact` or `focus` |
 | `showLangs` | `auto` | Top languages display: `auto`, `on`, or `off` |
@@ -301,6 +301,20 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 />
 ```
 
+### Capybara onsen
+
+`theme=amber/matcha` · `showContribs=on` · `contribTheme=capybara_onsen` · `contribRange=16w` · `contribMode=focus`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=noyu&username=doyoon530&role=cozy%20toolmaker&tagline=Small%20commits%2C%20warm%20baths%2C%20and%20steady%20shipping.&status=soaking%20in%20the%20release%20queue&command=npm%20run%20onsen&theme=amber/matcha&avatar=NY&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks&v=69" width="100%" alt="Capybara onsen contribution card" />
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=noyu&username=doyoon530&role=cozy%20toolmaker&tagline=Small%20commits%2C%20warm%20baths%2C%20and%20steady%20shipping.&status=soaking%20in%20the%20release%20queue&command=npm%20run%20onsen&theme=amber/matcha&avatar=NY&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks"
+  width="100%"
+  alt="Terminal identity card with capybara onsen activity"
+/>
+```
+
 ### Moon phase dashboard
 
 `theme=amber/solar` · `showContribs=on` · `contribTheme=moon` · `contribRange=16w` · `showLangs=on`
@@ -397,7 +411,7 @@ Returns an `image/svg+xml` response. Drop it directly in any Markdown `<img>` ta
 
 Animated cards use the same endpoint. Add `motion=pulse`, `motion=scan`, or `motion=boot` to return an animated SVG instead of a static one.
 
-Contribution cards use the same endpoint too. Add `showContribs=on`, a `contribTheme`, and optionally `contribRange=4w|8w|12w|16w|24w|26w|39w|1y` plus `contribMode=compact|focus` to control how large the activity block feels inside the card. Range aliases `3m`, `6m`, and `9m` are also supported, and the summary label changes with the selected window (`last 16 weeks`, `last 6 months`, or `this year`). `cat_jump` uses a custom black pixel cat sprite with ghost-white eyes, `popcat` uses a custom mouth-opening pixel cat sprite, `moon` draws custom SVG moon phases, `star` uses a custom glowing star, `orbit` draws a tiny planet system, `signal` renders radar-like arcs, and `citylight` turns activity into lit windows.
+Contribution cards use the same endpoint too. Add `showContribs=on`, a `contribTheme`, and optionally `contribRange=4w|8w|12w|16w|24w|26w|39w|1y` plus `contribMode=compact|focus` to control how large the activity block feels inside the card. Range aliases `3m`, `6m`, and `9m` are also supported, and the summary label changes with the selected window (`last 16 weeks`, `last 6 months`, or `this year`). `cat_jump` uses a custom black pixel cat sprite with ghost-white eyes, `popcat` uses a custom mouth-opening pixel cat sprite, `capybara_onsen` uses a cozy yuzu bath sprite, `moon` draws custom SVG moon phases, `star` uses a custom glowing star, `orbit` draws a tiny planet system, `signal` renders radar-like arcs, and `citylight` turns activity into lit windows.
 
 > **Accent color:** URL-encode `#` as `%23` when passing the `accent` param. Example: `accent=%23ff7a59` for `#ff7a59`.
 

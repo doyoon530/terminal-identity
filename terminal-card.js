@@ -248,14 +248,19 @@
     "1y": "this year",
   };
   const CONTRIBUTION_RANGES = Object.keys(CONTRIBUTION_RANGE_LIMITS);
-  const CONTRIBUTION_THEMES = ["cat_jump", "popcat", "moon", "star", "orbit", "signal", "citylight", "petal", "moss", "firefly", "constellation"];
+  const CONTRIBUTION_THEMES = ["cat_jump", "popcat", "capybara_onsen", "moon", "star", "orbit", "signal", "citylight", "petal", "moss", "firefly", "constellation"];
   const CONTRIBUTION_THEME_ALIASES = {
     cat: "cat_jump",
     catjump: "cat_jump",
     "cat-jump": "cat_jump",
     pop_cat: "popcat",
     "pop-cat": "popcat",
+    capybara: "capybara_onsen",
+    "capybara-onsen": "capybara_onsen",
+    capybaraonsen: "capybara_onsen",
+    onsen: "capybara_onsen",
   };
+  const CAPYBARA_ONSEN_CONTRIB_SPRITE_URI = "assets/capybara-onsen-contrib-sprite.png";
   const CAT_CONTRIB_TILE_URIS = [
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACwUlEQVR42u1Xy27bMBCcIeVDTgaKXFKJIvz/H9XaknLKJ4icHiTalPWwHCTtpQQMmQa1O5ydfRj4vx4vjZ9/C8LCfAsIs5+G7yFhFwBjzNpBnU4nGbONjrSrYdwFQBJKX89+ds6h73s452Gt1dw4dTqdVNfVqu3iGbpIKynwtickQRLeyp8wkEgL6YYlhPBFGpAgBeTOATM+AYNhLwkxxsk58QsAJEfTfXIUryCTZm4rwoAgPwmgwBDbnEoCqqpqZoYLXqQUpk8C6BHgfI2iKJAFf3hYs8lSYoDk50VIEohCUETlHPJ0UogznQzhMJM7SgKJRRYeMaC6rq9AjBlEt3Wje5NJK3XtsVQLzHYBwoieE5Hdf7+nfJo5urKwWwOj8FSWbuIsGRRvjMwc0mSOgRjjBlhgjUs552ZUiwC1vk8glkJ0uVwWfZq9eQ8MzvLbUNvvpbNd18EeisULFwsGpJXSNbudGTJk6VwCQxIxBigss22WXvbebZbk+z6QakICl2fKVhFaY2BZ7UYwWaORNFwpObqrCXOxGQmRjxi4eo5xqGBt+46uadGc21sWSDv6xk393nsIcVcWqK5rkETTNKmrMW/Hr68/8PLy8tw8J6Ft3xOo5SwgqaIoQA7t9N75YCjw4+MDXddNjOftd4kNWgPnSpCcDS7FZOopy5H2M2jNYlwlMcaolBF5VmS5fi1UzjloBFiWb2iabi5CSyPna0hC3/dD7MLWGDH0fBFAFJqmAQyTgJkxo8vlghgjvPcgiyzVh3MGAIIiQgiIMQ4NZ0eHlJQXIiJqVkBGtggC5/MZIQR47+G9R1EUykPA9r0TBVhrITzEMDAgQYx7ZnqSVNd1qKpqLE5xsxesruPxqOPxOGGjPXcI6B/aop2OlU9PxQBwOBxgDEBaRAjnX79RwO5Lx/D8hVdtkRS+6e/aX11/AItnqJQ8+eYsAAAAAElFTkSuQmCC",
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADHElEQVR42u1XTW/bRhSceUtLTVskAQLKgimSaU+55lz02FOB/nL/hCawZcl109hoi34gsLjTw4oSlyIpqkBToOheJEjLfbMz8z4I/L+OL/2nQdiYTSTxrwLof5oqy1IjGOrdMwqAJLzMvmgfoDzPQQFFseiTSXmeqyzL3kjJWAk2bnPwGwWIAGQoigKSBCPgtd9DAvAA2IlxtATebw5YqT/r7zUokjCwsa8/zGgGqkqjzCkJJAMze/i9NrHjLnUiCedcM7C2lO8ChiADoMS/B2DyyRmyLAO8YKCa9DeDkQ7p+QxfvnoVBZaE119/BVg3gMEET+B09mSCNE3hvYfZMN7ZbIbLy0sWRRHxvVwuCUCEQfAczUBFjzRNG26ODdhF+Tfffas2AwBQliVopzEgksjzfBtIUI+Oex8Mr+VyeRAz6TYGlZ7PMJ2e7Q6uL92+fR3czOC972Tp5FL89PkzTCYTABbRGBeXOOVU+cNCtf2PJFarFboslAw1HxGtgoLoxvAK2e0F9aTf7Xq9ZcagDg2TjuCis4B+CJy0U7NP/wZbrOvEUQCLiwx0W668dhWt1rttui4DRiBP9oBtdVUVldPaC7WmMdVVrLsUGXKoXbPt/sXLIlQ9MyTm8P3bN7vD8zzvZOKQBR9S1kJT+un+Pf747XceleDTzz8DALx79x4fPvwZmYak1us1siwLAZ0BlTo9QLpwaQGCUD1uahbYKwFJubMElIcZDhzrvWdVVdt0Cl2hWZqbejcZIYn5fA4DQVK9DCwWC5gZlqsbtMp1dDkpbkj7dkvc3KxBEh4VKGA+nyNJkiBfWeD29haPj4+HAF68SFV3K0mABhAwvulqtYJEmHlAgFegWQDu7u5UF7bnT58Fys3k/f78Ot8CRQKoY5ORDyAtFKNQqDy9D4+3ChEl8deff4GZ4eLiAlmWRVIkAHB/f8+Hh4ea2sGuQmewxAFe8BQq+TFDLa+urjSbn2M6ncI5h81mE3vgWODdJLTI4TcVJB2dD9ogfvzhTu30T3DCioZPEtfX16e+SfCkiaiPhRagf+616WOsvwA0M6YIqCkAPQAAAABJRU5ErkJggg==",
@@ -1132,7 +1137,7 @@
   }
 
   function usesLargeContributionMarks(theme) {
-    return theme === "cat_jump" || theme === "popcat" || theme === "moon" || theme === "star" || theme === "orbit" || theme === "signal" || theme === "citylight";
+    return theme === "cat_jump" || theme === "popcat" || theme === "capybara_onsen" || theme === "moon" || theme === "star" || theme === "orbit" || theme === "signal" || theme === "citylight";
   }
 
   function buildStarPoints(cx, cy, outerR, innerR) {
@@ -1216,6 +1221,22 @@
           "rgba(255,236,204,0.34)",
         ],
         popSpark: "#ffe9cf",
+      };
+    }
+
+    if (theme === "capybara_onsen") {
+      return {
+        base: "rgba(255,219,172,0.06)",
+        levels: ["rgba(92,68,51,0.2)", "rgba(177,125,79,0.1)", "rgba(230,153,68,0.12)", "rgba(255,202,132,0.16)", "rgba(255,225,154,0.24)"],
+        accent: "#ffd58f",
+        glow: "rgba(255,197,112,0.18)",
+        onsenGlowLevels: [
+          "rgba(0,0,0,0)",
+          "rgba(255,196,112,0.12)",
+          "rgba(255,181,83,0.18)",
+          "rgba(255,217,153,0.24)",
+          "rgba(255,235,178,0.34)",
+        ],
       };
     }
 
@@ -1428,6 +1449,7 @@
     return {
       range: state.contribRange,
       mode: state.contribMode,
+      capybaraSpriteUri: state.capybaraSpriteUri,
       ...(overrides || {}),
     };
   }
@@ -1683,18 +1705,22 @@
     const totalLabel = `${formatCompactStat(summary.total)} ${summary.label}`;
     const activeLabel = `${summary.activeDays} active days`;
     const showFooter = options?.showFooter !== false;
-    const popcatIdBase = `popcat-contrib-${Math.round(x)}-${Math.round(y)}-${Math.round(trackWidth)}`;
-    const popcatSheetId = `${popcatIdBase}-sheet`;
-    const popcatGrayId = `popcat-contrib-gray-${Math.round(x)}-${Math.round(y)}`;
-    const popcatBaseDefs = theme === "popcat"
+    const spriteTheme = theme === "popcat" || theme === "capybara_onsen";
+    const spriteIdBase = `${theme.replace(/[^a-z0-9_-]/g, "-")}-contrib-${Math.round(x)}-${Math.round(y)}-${Math.round(trackWidth)}`;
+    const spriteSheetId = `${spriteIdBase}-sheet`;
+    const spriteGrayId = `${spriteIdBase}-gray`;
+    const spriteUri = theme === "capybara_onsen"
+      ? (options?.capybaraSpriteUri || CAPYBARA_ONSEN_CONTRIB_SPRITE_URI)
+      : POPCAT_CONTRIB_SPRITE_URI;
+    const spriteBaseDefs = spriteTheme
       ? `<defs>
-    <image id="${popcatSheetId}" x="0" y="0" width="160" height="32" href="${POPCAT_CONTRIB_SPRITE_URI}" preserveAspectRatio="none" style="image-rendering: pixelated;"></image>
-    <filter id="${popcatGrayId}" color-interpolation-filters="sRGB">
+    <image id="${spriteSheetId}" x="0" y="0" width="160" height="32" href="${spriteUri}" preserveAspectRatio="none" style="image-rendering: pixelated;"></image>
+    <filter id="${spriteGrayId}" color-interpolation-filters="sRGB">
       <feColorMatrix type="saturate" values="0"></feColorMatrix>
     </filter>
   </defs>`
       : "";
-    const popcatClipDefs = [];
+    const spriteClipDefs = [];
 
     const cells = [];
     const connectorSegments = [];
@@ -1735,24 +1761,25 @@
           return;
         }
 
-        if (theme === "popcat") {
+        if (theme === "popcat" || theme === "capybara_onsen") {
+          const isCapybara = theme === "capybara_onsen";
           const rx = Math.max(2, Math.floor(cell * 0.2));
-          const glow = colors.popGlowLevels?.[level] || colors.glow;
-          const clipId = `${popcatIdBase}-clip-${col}-${row}`;
+          const glow = (isCapybara ? colors.onsenGlowLevels?.[level] : colors.popGlowLevels?.[level]) || colors.glow;
+          const clipId = `${spriteIdBase}-clip-${col}-${row}`;
           const scale = cell / 32;
           cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${rx}" fill="${colors.levels[level] || colors.base}"></rect>`);
-          popcatClipDefs.push(`<clipPath id="${clipId}" clipPathUnits="userSpaceOnUse"><rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${rx}"></rect></clipPath>`);
+          spriteClipDefs.push(`<clipPath id="${clipId}" clipPathUnits="userSpaceOnUse"><rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${rx}"></rect></clipPath>`);
           if (level > 0) {
-            cells.push(`<ellipse cx="${(px + cell * 0.62).toFixed(2)}" cy="${(py + cell * 0.43).toFixed(2)}" rx="${Math.max(2.2, cell * (0.16 + level * 0.03)).toFixed(2)}" ry="${Math.max(1.8, cell * (0.12 + level * 0.03)).toFixed(2)}" fill="${glow}" opacity="${0.3 + level * 0.08}"></ellipse>`);
-            if (level >= 3) {
+            cells.push(`<ellipse cx="${(px + cell * (isCapybara ? 0.56 : 0.62)).toFixed(2)}" cy="${(py + cell * (isCapybara ? 0.68 : 0.43)).toFixed(2)}" rx="${Math.max(2.2, cell * (0.16 + level * 0.03)).toFixed(2)}" ry="${Math.max(1.8, cell * (0.1 + level * 0.026)).toFixed(2)}" fill="${glow}" opacity="${0.25 + level * 0.07}"></ellipse>`);
+            if (!isCapybara && level >= 3) {
               const sparkX = px + cell * 0.84;
               const sparkY = py + cell * 0.22;
               const sparkR = Math.max(0.9, cell * 0.08);
               cells.push(`<path d="M ${sparkX.toFixed(2)} ${(sparkY - sparkR).toFixed(2)} L ${sparkX.toFixed(2)} ${(sparkY + sparkR).toFixed(2)} M ${(sparkX - sparkR).toFixed(2)} ${sparkY.toFixed(2)} L ${(sparkX + sparkR).toFixed(2)} ${sparkY.toFixed(2)}" stroke="${colors.popSpark}" stroke-width="${Math.max(0.45, cell * 0.04).toFixed(2)}" stroke-linecap="round" opacity="${level === 4 ? 0.72 : 0.44}"></path>`);
             }
           }
-          cells.push(`<g clip-path="url(#${clipId})"${level === 0 ? ` filter="url(#${popcatGrayId})"` : ""}>
-      <use href="#${popcatSheetId}" transform="translate(${(px - level * cell).toFixed(2)} ${py.toFixed(2)}) scale(${scale.toFixed(4)})"></use>
+          cells.push(`<g clip-path="url(#${clipId})"${theme === "popcat" && level === 0 ? ` filter="url(#${spriteGrayId})"` : ""}>
+      <use href="#${spriteSheetId}" transform="translate(${(px - level * cell).toFixed(2)} ${py.toFixed(2)}) scale(${scale.toFixed(4)})"></use>
     </g>`);
           return;
         }
@@ -1927,9 +1954,9 @@
     return `
   <text x="${x}" y="${y - 14}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${labelColor}" letter-spacing="0.5">${title}</text>
   <text x="${x + trackWidth}" y="${y - 14}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="${labelColor}">${escapeXml(totalLabel)}</text>
-  ${popcatBaseDefs}
-  ${popcatClipDefs.length ? `<defs>
-    ${popcatClipDefs.join("\n    ")}
+  ${spriteBaseDefs}
+  ${spriteClipDefs.length ? `<defs>
+    ${spriteClipDefs.join("\n    ")}
   </defs>` : ""}
   <g>
     ${connectorSegments.join("\n    ")}
@@ -1989,6 +2016,7 @@
       contribMode: ["compact", "focus"].includes(state.contribMode) ? state.contribMode : defaults.contribMode,
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
+      capybaraSpriteUri: typeof state.capybaraSpriteUri === "string" && state.capybaraSpriteUri.length > 0 ? state.capybaraSpriteUri : null,
       hideProfile: parseBool(state.hideProfile),
       langIconCount: typeof state.langIconCount === "number" ? state.langIconCount : null,
       bio: String(state.bio || "").slice(0, 400),
@@ -2017,6 +2045,7 @@
       if (key === "contribTheme" && value === defaults.contribTheme) return;
       if (key === "langIconsUri") return;
       if (key === "profileUri") return;
+      if (key === "capybaraSpriteUri") return;
       if (key === "langIconCount") return;
       if (key === "stats") {
         if (value.length < 4) params.set("stats", value.join(","));
