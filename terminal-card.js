@@ -214,7 +214,7 @@
     hideCommand: false,
     motion: "off",
     contribTheme: "moss",
-    contribRange: "1y",
+    contribRange: "16w",
     contribMode: "compact",
     stats: STAT_KEYS,
     excludeLangs: [],

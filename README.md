@@ -180,7 +180,7 @@ Want a contribution block too:
 | `motion` | `off` | Animated SVG overlay: `off`, `pulse`, `scan`, or `boot` |
 | `showContribs` | `off` | Contribution grid display: `off`, `on`, or `auto` |
 | `contribTheme` | `moss` | Contribution concept theme: `cat`, `moon`, `star`, `orbit`, `signal`, `citylight`, `moss`, `petal`, `firefly`, or `constellation` |
-| `contribRange` | `1y` | Contribution window: `4w`, `8w`, `12w`, `16w`, `24w`, `26w`, `39w`, `3m`, `6m`, `9m`, or `1y` |
+| `contribRange` | `16w` | Contribution window: `4w`, `8w`, `12w`, `16w`, `24w`, `26w`, `39w`, `3m`, `6m`, `9m`, or `1y` |
 | `contribMode` | `compact` | Contribution layout mode: `compact` or `focus` |
 | `showLangs` | `auto` | Top languages display: `auto`, `on`, or `off` |
 | `langCount` | `4` | Number of top languages to show (1–6) |

@@ -85,7 +85,7 @@ function fillForm(state) {
   document.getElementById("motion").value = state.motion || "off";
   document.getElementById("showContribs").value = state.showContribs || "off";
   document.getElementById("contribTheme").value = state.contribTheme || "moss";
-  document.getElementById("contribRange").value = state.contribRange || "1y";
+  document.getElementById("contribRange").value = state.contribRange || "16w";
   document.getElementById("contribMode").value = state.contribMode || "compact";
   document.getElementById("barStyle").value = state.barStyle || "bar";
   document.getElementById("langStyle").value = state.langStyle || "bar";
