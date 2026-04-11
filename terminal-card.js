@@ -1224,12 +1224,18 @@
   }
 
   function fitsAmberAutoHeight(state, topLangs, contributions) {
+    const outerY = 96;
     const outerW = state.width - 56;
+    const outerH = state.height - 124;
+    const footerY = outerY + outerH - 54;
+    const contentY = outerY + 36;
     const leftW = Math.min(380, Math.round(outerW * 0.42));
-    const leftH = state.height - 214;
+    const leftH = Math.max(footerY - contentY - 8, 0);
     const showProfile = !!state.profileUri && !state.hideProfile;
-    const contentY = 132;
-    const roleY = showProfile ? 270 : contentY + 44;
+    const profileCy = contentY + 54;
+    const dividerY = profileCy + 32 + 14;
+    const aboutLabelY = dividerY + 14;
+    const roleY = showProfile ? aboutLabelY + 24 : contentY + 44;
     const bioTopY = roleY + 26;
     const bioLines = wrapTextBlock(state.bio || state.tagline, leftW - 18, 48, { slackPx: 26 });
     const leftRequired = bioLines.length
@@ -1239,29 +1245,60 @@
     if (leftH < leftRequired) return false;
     if (!state.githubStats) return true;
 
-    const statsH = (state.stats || STAT_KEYS).length * 18;
-    let rightRequired = 42 + statsH;
+    const leftX = 54;
+    const rightX = leftX + leftW + 18;
+    const rightW = Math.max(state.width - rightX - 54, 0);
+    const rightY = contentY;
+    const rpDataTop = rightY + 16;
+    const rpDataBot = Math.max(footerY - 12, rpDataTop);
+    const statKeys = state.stats || STAT_KEYS;
+    const statsH = statKeys.length * 18;
+    const showStats = state.githubStats && (rpDataBot - rpDataTop) >= statsH + 16;
+
+    if (!showStats) return false;
+
+    const statsEndY = rpDataTop + 24 + statsH;
+    const rpModuleTop = statsEndY + 18;
+    const moduleGap = 14;
+    const rpModuleAvail = rpDataBot - rpModuleTop;
+    const hasLangs = !!topLangs?.length;
+    const hasContribs = !!contributions?.weeks?.length;
     const focusContribs = isContributionFocus(state, contributions);
-    const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 4 });
+    const maxBarLangs = hasLangs
+      ? Math.min(topLangs.length, Math.max(0, Math.floor(Math.max(0, rpModuleAvail - 30) / 18)))
+      : 0;
+    const langCount = shouldRenderLangIcons(state)
+      ? getLangDisplayCount(state, topLangs, { maxIcons: 4 })
+      : maxBarLangs;
     const langModuleH = getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
+    const canShowLangsFirst = hasLangs && langCount > 0 && rpModuleAvail >= langModuleH;
+    const langContentH = !canShowLangsFirst
+      ? 0
+      : shouldRenderLangIcons(state)
+        ? (ICON_SIZES[state.iconSize] ?? ICON_SIZES.md)
+        : langCount * 18;
+    const langModuleTotalH = canShowLangsFirst ? langContentH + 30 : 0;
 
-    if (topLangs?.length && !focusContribs) {
-      rightRequired += langModuleH;
-    }
-
-    if (contributions?.weeks?.length) {
-      if (topLangs?.length && !focusContribs) rightRequired += 14;
-      const rightW = Math.max(state.width - 126 - leftW, 0);
-      rightRequired += estimateContributionSectionHeight(
+    const contribModuleTop = focusContribs
+      ? rpModuleTop
+      : rpModuleTop + (canShowLangsFirst ? langModuleTotalH + moduleGap : 0);
+    const contribSectionH = estimateContributionSectionHeight(
         contributions,
         rightW - 36,
         state.contribTheme,
         getAmberContributionOptions(state)
       );
-      if (topLangs?.length && focusContribs) rightRequired += 14 + langModuleH;
-    }
+    const canShowContribs = hasContribs && (rpDataBot - contribModuleTop - 4) >= contribSectionH;
+    const langModuleTop = focusContribs && canShowContribs
+      ? contribModuleTop + contribSectionH + moduleGap
+      : rpModuleTop;
+    const showLangs = hasLangs && langCount > 0 && (
+      focusContribs ? (rpDataBot - langModuleTop >= langModuleH) : canShowLangsFirst
+    );
 
-    return state.height - 242 >= rightRequired;
+    if (hasContribs && !canShowContribs) return false;
+    if (hasLangs && !showLangs) return false;
+    return true;
   }
 
   function fitsObsidianAutoHeight(state, topLangs, contributions) {
