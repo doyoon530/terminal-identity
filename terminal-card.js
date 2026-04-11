@@ -1159,6 +1159,19 @@
     };
   }
 
+  function getAmberContributionOptions(state, overrides) {
+    return getContributionOptions(state, {
+      targetCell: state.contribMode === "focus" ? 18 : 6,
+      minCols: state.contribMode === "focus" ? 1 : 32,
+      minCell: state.contribMode === "focus" ? 9 : 5,
+      maxCell: state.contribMode === "focus" ? 24 : 7,
+      showFooter: false,
+      contentTop: 20,
+      bottomPad: 2,
+      ...(overrides || {}),
+    });
+  }
+
   function getObsidianResponseRequiredHeight(state, topLangs, contributions, mainW) {
     if (contributions?.weeks?.length) {
       return estimateContributionSectionHeight(
@@ -1236,22 +1249,13 @@
     }
 
     if (contributions?.weeks?.length) {
-      const amberContribOptions = {
-        targetCell: 6,
-        minCols: 32,
-        minCell: 5,
-        maxCell: 7,
-        showFooter: false,
-        contentTop: 20,
-        bottomPad: 2,
-      };
       if (topLangs?.length && !focusContribs) rightRequired += 14;
       const rightW = Math.max(state.width - 126 - leftW, 0);
       rightRequired += estimateContributionSectionHeight(
         contributions,
         rightW - 36,
         state.contribTheme,
-        getContributionOptions(state, amberContribOptions)
+        getAmberContributionOptions(state)
       );
     }
 
@@ -1886,17 +1890,9 @@
 
     const contribModuleTop = rpModuleTop + (showLangs ? langModuleTotalH + moduleGap : 0);
     const contribAvailH = rpDataBot - contribModuleTop - 4;
-    const amberContribOptions = {
-      ...getContributionOptions(state),
+    const amberContribOptions = getAmberContributionOptions(state, {
       labelColor: label,
-      targetCell: state.contribMode === "focus" ? 18 : 6,
-      minCols: state.contribMode === "focus" ? 1 : 32,
-      minCell: state.contribMode === "focus" ? 9 : 5,
-      maxCell: state.contribMode === "focus" ? 24 : 7,
-      showFooter: false,
-      contentTop: 20,
-      bottomPad: 2,
-    };
+    });
     const contribSectionH = estimateContributionSectionHeight(
       contributions,
       rightW - 36,
