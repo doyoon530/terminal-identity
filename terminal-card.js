@@ -1583,7 +1583,7 @@
   function normalizeState(input) {
     const state = input || {};
     const rawHeight = state.height ?? defaults.height;
-    const heightAuto = isAutoHeightValue(rawHeight);
+    const heightAuto = isAutoHeightValue(rawHeight) || state.heightAuto === true;
     const rawTheme = String(state.theme || defaults.theme);
     const [providerFromTheme, themeFromCombo] = rawTheme.includes("/")
       ? rawTheme.split("/", 2)

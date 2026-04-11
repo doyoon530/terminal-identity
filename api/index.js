@@ -35,29 +35,6 @@ async function fetchProfileImageUri(avatarUrl) {
   }
 }
 
-function buildSvgWithContributionFallback(state) {
-  let svg = buildSvg(state);
-  const shouldRetry =
-    state.heightAuto &&
-    state.showContribs !== "off" &&
-    state.githubStats?.contributions?.weeks?.length &&
-    !svg.includes("CONTRIBUTIONS");
-
-  if (!shouldRetry) {
-    return svg;
-  }
-
-  for (const height of [620, 660, 720, 780, 840, 920, 1000, 1120, 1260, 1400]) {
-    const nextSvg = buildSvg({ ...state, height });
-    svg = nextSvg;
-    if (nextSvg.includes("CONTRIBUTIONS")) {
-      break;
-    }
-  }
-
-  return svg;
-}
-
 module.exports = async function handler(req, res) {
   const query = req.query || {};
   const width = Math.min(Math.max(Number(query.width) || 980, 720), 1400);
@@ -97,7 +74,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    res.status(200).send(buildSvgWithContributionFallback(nextState));
+    res.status(200).send(buildSvg(nextState));
   } catch (_err) {
     res.status(200).send(buildFallbackSvg(width, height));
   }
