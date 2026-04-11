@@ -45,7 +45,10 @@ module.exports = async function handler(req, res) {
   res.setHeader("Content-Disposition", 'inline; filename="terminal-identity-card.svg"');
 
   try {
-    const state = normalizeState(query);
+    const state = normalizeState({
+      ...query,
+      height: query.height ?? "auto",
+    });
     let nextState = state;
 
     if (state.username) {
