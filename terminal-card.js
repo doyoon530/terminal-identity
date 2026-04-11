@@ -221,6 +221,21 @@
     bio: "",
   };
 
+  const CONTRIBUTION_RANGE_LIMITS = {
+    "4w": 4,
+    "8w": 8,
+    "12w": 12,
+    "16w": 16,
+    "24w": 24,
+    "26w": 26,
+    "3m": 13,
+    "6m": 26,
+    "9m": 39,
+    "39w": 39,
+    "1y": 53,
+  };
+  const CONTRIBUTION_RANGES = Object.keys(CONTRIBUTION_RANGE_LIMITS);
+
   const presets = [
     {
       label: "Starter",
@@ -905,9 +920,8 @@
   }
 
   function getContributionRangeLimit(range) {
-    if (range === "12w") return 12;
-    if (range === "16w") return 16;
-    return 53;
+    const key = String(range || defaults.contribRange).trim().toLowerCase();
+    return CONTRIBUTION_RANGE_LIMITS[key] || CONTRIBUTION_RANGE_LIMITS[defaults.contribRange];
   }
 
   function getContributionWeeks(contributions, range) {
@@ -1078,30 +1092,44 @@
     }
 
     const enlargedMarkTheme = usesLargeContributionMarks(theme);
-    const range = options?.range || "1y";
-    const fixedRangeCols = range === "12w" || range === "16w";
-    const minVisibleCols = fixedRangeCols ? maxWeeks : (enlargedMarkTheme ? 10 : 16);
+    const rangeWeeks = getContributionRangeLimit(options?.range);
+    const spotlightRange = rangeWeeks <= 26;
+    const minVisibleCols = maxWeeks;
     const focusMode = options?.mode === "focus";
-    const defaultTargetCell = fixedRangeCols
+    const defaultTargetCell = spotlightRange
       ? (enlargedMarkTheme ? (focusMode ? 21 : 18) : (focusMode ? 18 : 15))
       : (enlargedMarkTheme ? (focusMode ? 13 : 12) : (focusMode ? 12 : 10));
     const targetCell = safeNumber(options?.targetCell, defaultTargetCell, 6, 28);
-    const minCols = safeNumber(options?.minCols, minVisibleCols, fixedRangeCols ? 1 : 10, 53);
+    const minCols = safeNumber(options?.minCols, minVisibleCols, 1, 53);
     const minCell = safeNumber(options?.minCell, enlargedMarkTheme ? (focusMode ? 9 : 8) : (focusMode ? 6 : 5), 4, 18);
-    const defaultMaxCell = fixedRangeCols
-      ? (enlargedMarkTheme ? (focusMode ? 26 : 22) : (focusMode ? 22 : 18))
-      : (enlargedMarkTheme ? (focusMode ? 16 : 14) : (focusMode ? 14 : 12));
-    const maxCell = safeNumber(options?.maxCell, defaultMaxCell, minCell, 32);
+    const defaultMaxCell = getContributionMaxCell(rangeWeeks, enlargedMarkTheme, focusMode);
+    const maxCell = safeNumber(options?.maxCell, defaultMaxCell, minCell, 48);
     const desiredCols = Math.max(minVisibleCols, Math.floor((trackWidth + gap) / (targetCell + gap)));
-    const cols = fixedRangeCols ? maxWeeks : Math.min(maxWeeks, Math.max(minCols, desiredCols));
-    const cell = Math.max(
-      minCell,
-      Math.min(maxCell, Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1)))
-    );
+    const cols = Math.min(maxWeeks, Math.max(minCols, desiredCols));
+    const availableCell = Math.floor((trackWidth - Math.max(0, cols - 1) * gap) / Math.max(cols, 1));
+    const cell = Math.max(2, Math.min(maxCell, availableCell >= minCell ? Math.max(minCell, availableCell) : availableCell));
     const gridW = cols * cell + Math.max(0, cols - 1) * gap;
     const gridH = 7 * cell + 6 * gap;
 
     return { cols, cell, gridW, gridH, gap };
+  }
+
+  function getContributionMaxCell(rangeWeeks, enlargedMarkTheme, focusMode) {
+    if (focusMode) {
+      if (rangeWeeks <= 4) return enlargedMarkTheme ? 38 : 34;
+      if (rangeWeeks <= 8) return enlargedMarkTheme ? 34 : 30;
+      if (rangeWeeks <= 12) return enlargedMarkTheme ? 30 : 26;
+      if (rangeWeeks <= 16) return enlargedMarkTheme ? 26 : 22;
+      if (rangeWeeks <= 26) return enlargedMarkTheme ? 18 : 16;
+      return enlargedMarkTheme ? 16 : 14;
+    }
+
+    if (rangeWeeks <= 4) return enlargedMarkTheme ? 26 : 22;
+    if (rangeWeeks <= 8) return enlargedMarkTheme ? 24 : 20;
+    if (rangeWeeks <= 12) return enlargedMarkTheme ? 22 : 18;
+    if (rangeWeeks <= 16) return enlargedMarkTheme ? 20 : 16;
+    if (rangeWeeks <= 26) return enlargedMarkTheme ? 14 : 12;
+    return enlargedMarkTheme ? 12 : 10;
   }
 
   function estimateContributionSectionHeight(contributions, trackWidth, theme, options) {
@@ -1160,11 +1188,15 @@
   }
 
   function getAmberContributionOptions(state, overrides) {
+    const rangeWeeks = getContributionRangeLimit(state.contribRange);
+    const focusMode = state.contribMode === "focus";
+    const enlargedMarkTheme = usesLargeContributionMarks(state.contribTheme);
+
     return getContributionOptions(state, {
       targetCell: state.contribMode === "focus" ? 18 : 6,
       minCols: state.contribMode === "focus" ? 1 : 32,
       minCell: state.contribMode === "focus" ? 9 : 5,
-      maxCell: state.contribMode === "focus" ? 24 : 7,
+      maxCell: getContributionMaxCell(rangeWeeks, enlargedMarkTheme, focusMode),
       showFooter: false,
       contentTop: 20,
       bottomPad: 2,
@@ -1615,7 +1647,9 @@
       iconSize: ["sm", "md", "lg"].includes(state.iconSize) ? state.iconSize : "md",
       motion: ["off", "pulse", "scan", "boot"].includes(state.motion) ? state.motion : "off",
       contribTheme: ["moon", "star", "orbit", "signal", "citylight", "petal", "moss", "firefly", "constellation"].includes(state.contribTheme) ? state.contribTheme : defaults.contribTheme,
-      contribRange: ["12w", "16w", "1y"].includes(state.contribRange) ? state.contribRange : defaults.contribRange,
+      contribRange: CONTRIBUTION_RANGES.includes(String(state.contribRange || "").trim().toLowerCase())
+        ? String(state.contribRange).trim().toLowerCase()
+        : defaults.contribRange,
       contribMode: ["compact", "focus"].includes(state.contribMode) ? state.contribMode : defaults.contribMode,
       langIconsUri: typeof state.langIconsUri === "string" && state.langIconsUri.length > 0 ? state.langIconsUri : null,
       profileUri: typeof state.profileUri === "string" && state.profileUri.length > 0 ? state.profileUri : null,
