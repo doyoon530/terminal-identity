@@ -301,20 +301,6 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 />
 ```
 
-### Capybara onsen
-
-`theme=amber/matcha` · `showContribs=on` · `contribTheme=capybara_onsen` · `contribRange=16w` · `contribMode=focus`
-
-<img src="https://terminal-identity-opal.vercel.app/api?name=noyu&username=doyoon530&role=cozy%20toolmaker&tagline=Small%20commits%2C%20warm%20baths%2C%20and%20steady%20shipping.&status=soaking%20in%20the%20release%20queue&command=npm%20run%20onsen&theme=amber/matcha&avatar=NY&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks&v=69" width="100%" alt="Capybara onsen contribution card" />
-
-```html
-<img
-  src="https://terminal-identity-opal.vercel.app/api?name=noyu&username=doyoon530&role=cozy%20toolmaker&tagline=Small%20commits%2C%20warm%20baths%2C%20and%20steady%20shipping.&status=soaking%20in%20the%20release%20queue&command=npm%20run%20onsen&theme=amber/matcha&avatar=NY&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks"
-  width="100%"
-  alt="Terminal identity card with capybara onsen activity"
-/>
-```
-
 ### Moon phase dashboard
 
 `theme=amber/solar` · `showContribs=on` · `contribTheme=moon` · `contribRange=16w` · `showLangs=on`
@@ -371,17 +357,17 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 />
 ```
 
-### Citylight portfolio
+### Capybara onsen
 
-`theme=amber/graphite` · `contribTheme=citylight` · `contribRange=16w` · `stats=repos,followers` · `excludeLangs=HTML,CSS`
+`theme=amber/matcha` · `showContribs=on` · `contribTheme=capybara_onsen` · `contribRange=16w` · `contribMode=focus`
 
-<img src="https://terminal-identity-opal.vercel.app/api?name=jiwon&username=doyoon530&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=amber/graphite&avatar=JW&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=citylight&contribRange=16w&showLangs=on&langCount=3&langStyle=icons&iconSize=sm&stats=repos%2Cfollowers&excludeLangs=HTML%2CCSS&v=45" width="100%" alt="Citylight contribution card" />
+<img src="https://terminal-identity-opal.vercel.app/api?name=noyu&username=doyoon530&role=cozy%20toolmaker&tagline=Small%20commits%2C%20warm%20baths%2C%20and%20steady%20shipping.&status=soaking%20in%20the%20release%20queue&command=npm%20run%20onsen&theme=amber/matcha&avatar=NY&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks&v=69" width="100%" alt="Capybara onsen contribution card" />
 
 ```html
 <img
-  src="https://terminal-identity-opal.vercel.app/api?name=jiwon&username=doyoon530&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=amber/graphite&avatar=JW&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=citylight&contribRange=16w&showLangs=on&langCount=3&langStyle=icons&iconSize=sm&stats=repos%2Cfollowers&excludeLangs=HTML%2CCSS"
+  src="https://terminal-identity-opal.vercel.app/api?name=noyu&username=doyoon530&role=cozy%20toolmaker&tagline=Small%20commits%2C%20warm%20baths%2C%20and%20steady%20shipping.&status=soaking%20in%20the%20release%20queue&command=npm%20run%20onsen&theme=amber/matcha&avatar=NY&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks"
   width="100%"
-  alt="Terminal identity card with citylight activity"
+  alt="Terminal identity card with capybara onsen activity"
 />
 ```
 
