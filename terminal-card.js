@@ -1242,10 +1242,11 @@
     const statsH = (state.stats || STAT_KEYS).length * 18;
     let rightRequired = 42 + statsH;
     const focusContribs = isContributionFocus(state, contributions);
+    const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 4 });
+    const langModuleH = getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
 
     if (topLangs?.length && !focusContribs) {
-      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 4 });
-      rightRequired += getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
+      rightRequired += langModuleH;
     }
 
     if (contributions?.weeks?.length) {
@@ -1257,6 +1258,7 @@
         state.contribTheme,
         getAmberContributionOptions(state)
       );
+      if (topLangs?.length && focusContribs) rightRequired += 14 + langModuleH;
     }
 
     return state.height - 242 >= rightRequired;
@@ -1877,18 +1879,16 @@
       ? getLangDisplayCount(state, topLangs, { maxIcons: 4 })
       : maxBarLangs;
     const langModuleH = getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
-    const showLangs = !focusContribs && hasLangs && langCount > 0 && rpModuleAvail >= langModuleH;
-    const langsToShow = showLangs ? topLangs.slice(0, langCount) : null;
-    const langContentH = !showLangs
+    const canShowLangsFirst = hasLangs && langCount > 0 && rpModuleAvail >= langModuleH;
+    const preliminaryLangsToShow = canShowLangsFirst ? topLangs.slice(0, langCount) : null;
+    const langContentH = !canShowLangsFirst
       ? 0
       : shouldRenderLangIcons(state)
         ? (ICON_SIZES[state.iconSize] ?? ICON_SIZES.md)
-        : langsToShow.length * 18;
-    const langModuleTotalH = showLangs ? langContentH + 30 : 0;
-    const LANGS_LABEL_Y = rpModuleTop + 11;
-    const LANGS_Y = rpModuleTop + 22;
+        : preliminaryLangsToShow.length * 18;
+    const langModuleTotalH = canShowLangsFirst ? langContentH + 30 : 0;
 
-    const contribModuleTop = rpModuleTop + (showLangs ? langModuleTotalH + moduleGap : 0);
+    const contribModuleTop = focusContribs ? rpModuleTop : rpModuleTop + (canShowLangsFirst ? langModuleTotalH + moduleGap : 0);
     const contribAvailH = rpDataBot - contribModuleTop - 4;
     const amberContribOptions = getAmberContributionOptions(state, {
       labelColor: label,
@@ -1900,6 +1900,11 @@
       amberContribOptions
     );
     const canShowContribs = hasContribs && contribAvailH >= contribSectionH;
+    const langModuleTop = focusContribs && canShowContribs ? contribModuleTop + contribSectionH + moduleGap : rpModuleTop;
+    const showLangs = hasLangs && langCount > 0 && (focusContribs ? (rpDataBot - langModuleTop >= langModuleH) : canShowLangsFirst);
+    const langsToShow = showLangs ? topLangs.slice(0, langCount) : null;
+    const LANGS_LABEL_Y = langModuleTop + 11;
+    const LANGS_Y = langModuleTop + 22;
     const CONTRIB_DIVIDER_Y = contribModuleTop - 2;
     const CONTRIB_GRID_Y = contribModuleTop + amberContribOptions.contentTop;
 
