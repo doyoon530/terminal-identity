@@ -1683,9 +1683,10 @@
     const totalLabel = `${formatCompactStat(summary.total)} ${summary.label}`;
     const activeLabel = `${summary.activeDays} active days`;
     const showFooter = options?.showFooter !== false;
-    const popcatSheetId = `popcat-contrib-sheet-${Math.round(x)}-${Math.round(y)}`;
+    const popcatIdBase = `popcat-contrib-${Math.round(x)}-${Math.round(y)}-${Math.round(trackWidth)}`;
+    const popcatSheetId = `${popcatIdBase}-sheet`;
     const popcatGrayId = `popcat-contrib-gray-${Math.round(x)}-${Math.round(y)}`;
-    const popcatDefs = theme === "popcat"
+    const popcatBaseDefs = theme === "popcat"
       ? `<defs>
     <image id="${popcatSheetId}" x="0" y="0" width="160" height="32" href="${POPCAT_CONTRIB_SPRITE_URI}" preserveAspectRatio="none" style="image-rendering: pixelated;"></image>
     <filter id="${popcatGrayId}" color-interpolation-filters="sRGB">
@@ -1693,6 +1694,7 @@
     </filter>
   </defs>`
       : "";
+    const popcatClipDefs = [];
 
     const cells = [];
     const connectorSegments = [];
@@ -1736,7 +1738,10 @@
         if (theme === "popcat") {
           const rx = Math.max(2, Math.floor(cell * 0.2));
           const glow = colors.popGlowLevels?.[level] || colors.glow;
+          const clipId = `${popcatIdBase}-clip-${col}-${row}`;
+          const scale = cell / 32;
           cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${rx}" fill="${colors.levels[level] || colors.base}"></rect>`);
+          popcatClipDefs.push(`<clipPath id="${clipId}" clipPathUnits="userSpaceOnUse"><rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${rx}"></rect></clipPath>`);
           if (level > 0) {
             cells.push(`<ellipse cx="${(px + cell * 0.62).toFixed(2)}" cy="${(py + cell * 0.43).toFixed(2)}" rx="${Math.max(2.2, cell * (0.16 + level * 0.03)).toFixed(2)}" ry="${Math.max(1.8, cell * (0.12 + level * 0.03)).toFixed(2)}" fill="${glow}" opacity="${0.3 + level * 0.08}"></ellipse>`);
             if (level >= 3) {
@@ -1746,9 +1751,9 @@
               cells.push(`<path d="M ${sparkX.toFixed(2)} ${(sparkY - sparkR).toFixed(2)} L ${sparkX.toFixed(2)} ${(sparkY + sparkR).toFixed(2)} M ${(sparkX - sparkR).toFixed(2)} ${sparkY.toFixed(2)} L ${(sparkX + sparkR).toFixed(2)} ${sparkY.toFixed(2)}" stroke="${colors.popSpark}" stroke-width="${Math.max(0.45, cell * 0.04).toFixed(2)}" stroke-linecap="round" opacity="${level === 4 ? 0.72 : 0.44}"></path>`);
             }
           }
-          cells.push(`<svg x="${px}" y="${py}" width="${cell}" height="${cell}" viewBox="${level * 32} 0 32 32" preserveAspectRatio="none" style="overflow:hidden;"${level === 0 ? ` filter="url(#${popcatGrayId})"` : ""}>
-      <use href="#${popcatSheetId}"></use>
-    </svg>`);
+          cells.push(`<g clip-path="url(#${clipId})"${level === 0 ? ` filter="url(#${popcatGrayId})"` : ""}>
+      <use href="#${popcatSheetId}" transform="translate(${(px - level * cell).toFixed(2)} ${py.toFixed(2)}) scale(${scale.toFixed(4)})"></use>
+    </g>`);
           return;
         }
 
@@ -1922,7 +1927,10 @@
     return `
   <text x="${x}" y="${y - 14}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${labelColor}" letter-spacing="0.5">${title}</text>
   <text x="${x + trackWidth}" y="${y - 14}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="${labelColor}">${escapeXml(totalLabel)}</text>
-  ${popcatDefs}
+  ${popcatBaseDefs}
+  ${popcatClipDefs.length ? `<defs>
+    ${popcatClipDefs.join("\n    ")}
+  </defs>` : ""}
   <g>
     ${connectorSegments.join("\n    ")}
     ${cells.join("\n    ")}
