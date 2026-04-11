@@ -1450,18 +1450,28 @@
   }
 
   function getObsidianResponseRequiredHeight(state, topLangs, contributions, mainW) {
-    if (contributions?.weeks?.length) {
-      return estimateContributionSectionHeight(
-        contributions,
-        mainW - 44,
-        state.contribTheme,
-        getContributionOptions(state, { contentTop: 36, bottomPad: 8 })
-      );
-    }
+    const sectionGap = 12;
+    const panelHeaderH = 34;
+    const panelBottomPad = 8;
+    let required = 0;
 
     if (topLangs?.length) {
       const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
-      return getLangSectionHeight(state, langCount, { contentTop: 34, bottomPad: 8 });
+      required += getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
+    }
+
+    if (contributions?.weeks?.length) {
+      if (required > 0) required += sectionGap;
+      required += estimateContributionSectionHeight(
+        contributions,
+        mainW - 44,
+        state.contribTheme,
+        getContributionOptions(state, { contentTop: 28, bottomPad: 8 })
+      );
+    }
+
+    if (required > 0) {
+      return panelHeaderH + required + panelBottomPad;
     }
 
     if (state.githubStats) {
@@ -1478,16 +1488,28 @@
     const lmRequired = state.hideCommand ? 88 : 96;
 
     let lrRequired = 74;
+    const sectionGap = 12;
+    const panelHeaderH = 34;
+    const panelBottomPad = 8;
+    let activityRequired = 0;
+
+    if (topLangs?.length) {
+      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
+      activityRequired += getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
+    }
+
     if (contributions?.weeks?.length) {
-      lrRequired = estimateContributionSectionHeight(
+      if (activityRequired > 0) activityRequired += sectionGap;
+      activityRequired += estimateContributionSectionHeight(
         contributions,
         lrW - 36,
         state.contribTheme,
-        getContributionOptions(state, { contentTop: 38, bottomPad: 8 })
+        getContributionOptions(state, { contentTop: 28, bottomPad: 8 })
       );
-    } else if (topLangs?.length) {
-      const langCount = getLangDisplayCount(state, topLangs, { maxIcons: 6 });
-      lrRequired = getLangSectionHeight(state, langCount, { contentTop: 34, bottomPad: 8 });
+    }
+
+    if (activityRequired > 0) {
+      lrRequired = panelHeaderH + activityRequired + panelBottomPad;
     } else if (state.githubStats) {
       lrRequired = 42 + (state.stats || STAT_KEYS).length * 18;
     }
@@ -2368,7 +2390,21 @@
     const ink = surfaces.textStrong;
     const dim = surfaces.textMuted;
     const model = `${provider.label}/${state.theme}`;
-    const showContribs = contributions && responseH >= responseRequiredH;
+    const sectionGap = 12;
+    const responseModuleTop = responseY + 34;
+    const langCount = topLangs?.length ? getLangDisplayCount(state, topLangs, { maxIcons: 6 }) : 0;
+    const langSectionH = topLangs?.length && langCount > 0
+      ? getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 })
+      : 0;
+    const obsidianContribOptions = getContributionOptions(state, { labelColor: dim, contentTop: 28, bottomPad: 8 });
+    const contribSectionH = contributions?.weeks?.length
+      ? estimateContributionSectionHeight(contributions, mainW - 44, state.contribTheme, obsidianContribOptions)
+      : 0;
+    const stackedRequiredH = 34 + langSectionH + (langSectionH && contribSectionH ? sectionGap : 0) + contribSectionH + 8;
+    const showLangs = !!topLangs?.length && langSectionH > 0 && responseH >= stackedRequiredH;
+    const showContribs = !!contributions?.weeks?.length && responseH >= (34 + (showLangs ? langSectionH + sectionGap : 0) + contribSectionH + 8);
+    const contribTop = responseModuleTop + (showLangs ? langSectionH + sectionGap : 0);
+    const langsToShow = showLangs ? topLangs.slice(0, langCount) : null;
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
@@ -2400,10 +2436,19 @@
 
   <rect x="${mainX}" y="${responseY}" width="${mainW}" height="${responseH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
   <text x="${mainX + 22}" y="${responseY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">output</text>
+  ${showLangs
+    ? `<text x="${mainX + 22}" y="${responseModuleTop + 11}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dim}" letter-spacing="0.5">TOP LANGS</text>
+  ${shouldRenderLangIcons(state) && langsToShow
+    ? buildLangIcons(state.langIconsUri, mainX + 22, responseModuleTop + 22, mainW - 44, state.langIconCount ?? langsToShow.length, state.iconSize)
+    : buildLangBars(langsToShow, mainX + 22, responseModuleTop + 22, mainW - 44, accent, dim, surfaces.softLine, state.barStyle)}`
+    : ""}
   ${showContribs
-    ? buildContributionGrid(contributions, mainX + 22, responseY + 36, mainW - 44, state.contribTheme, palette, getContributionOptions(state, { labelColor: dim }))
+    ? `${showLangs ? `<rect x="${mainX + 22}" y="${contribTop - 2}" width="${mainW - 44}" height="1" fill="${surfaces.line}"></rect>` : ""}
+  ${buildContributionGrid(contributions, mainX + 22, contribTop + obsidianContribOptions.contentTop, mainW - 44, state.contribTheme, palette, obsidianContribOptions)}`
+    : showLangs
+    ? ""
     : state.githubStats
-    ? (topLangs
+    ? (!showLangs && topLangs
         ? (shouldRenderLangIcons(state)
             ? buildLangIcons(state.langIconsUri, mainX + 22, responseY + 34, mainW - 44, state.langIconCount ?? topLangs.length, state.iconSize)
             : buildLangBars(topLangs, mainX + 22, responseY + 34, mainW - 44, accent, dim, surfaces.softLine, state.barStyle))
@@ -2455,7 +2500,28 @@
     const ink = surfaces.textStrong;
     const dim = surfaces.textMuted;
     const model = `${provider.label}/${state.theme}`;
-    const showContribs = contributions && lowerH >= lowerRequired && lrW >= 180;
+    const sectionGap = 12;
+    const activityModuleTop = lowerY + 34;
+    const langCount = topLangs?.length ? getLangDisplayCount(state, topLangs, { maxIcons: 6 }) : 0;
+    const langSectionH = topLangs?.length && langCount > 0
+      ? getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 })
+      : 0;
+    const prismContribOptions = getContributionOptions(state, { labelColor: dim, contentTop: 28, bottomPad: 8 });
+    const contribSectionH = contributions?.weeks?.length
+      ? estimateContributionSectionHeight(contributions, lrW - 36, state.contribTheme, prismContribOptions)
+      : 0;
+    const stackedRequiredH = 34 + langSectionH + (langSectionH && contribSectionH ? sectionGap : 0) + contribSectionH + 8;
+    const showLangs = !!topLangs?.length && langSectionH > 0 && lowerH >= stackedRequiredH && lrW >= 180;
+    const showContribs = !!contributions?.weeks?.length && lowerH >= (34 + (showLangs ? langSectionH + sectionGap : 0) + contribSectionH + 8) && lrW >= 180;
+    const contribTop = activityModuleTop + (showLangs ? langSectionH + sectionGap : 0);
+    const langsToShow = showLangs ? topLangs.slice(0, langCount) : null;
+    const activityTitle = showLangs || showContribs
+      ? "activity"
+      : topLangs
+        ? "top langs"
+        : state.githubStats
+          ? "github stats"
+          : "status";
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
@@ -2482,9 +2548,18 @@
   <text x="${lmX + 18}" y="${lowerY + 80}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">theme   ${escapeXml(state.theme)}</text>
 
   <rect x="${lrX}" y="${lowerY}" width="${lrW}" height="${lowerH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
-  <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${showContribs ? "contributions" : topLangs ? "top langs" : state.githubStats ? "github stats" : "status"}</text>
+  <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${activityTitle}</text>
+  ${showLangs
+    ? `<text x="${lrX + 18}" y="${activityModuleTop + 11}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dim}" letter-spacing="0.5">TOP LANGS</text>
+  ${shouldRenderLangIcons(state) && langsToShow
+    ? buildLangIcons(state.langIconsUri, lrX + 18, activityModuleTop + 22, lrW - 36, state.langIconCount ?? langsToShow.length, state.iconSize)
+    : buildLangBars(langsToShow, lrX + 18, activityModuleTop + 22, lrW - 36, accent, dim, surfaces.softLine, state.barStyle)}`
+    : ""}
   ${showContribs
-    ? buildContributionGrid(contributions, lrX + 18, lowerY + 38, lrW - 36, state.contribTheme, palette, getContributionOptions(state, { labelColor: dim, title: "ACTIVITY" }))
+    ? `${showLangs ? `<rect x="${lrX + 18}" y="${contribTop - 2}" width="${lrW - 36}" height="1" fill="${surfaces.line}"></rect>` : ""}
+  ${buildContributionGrid(contributions, lrX + 18, contribTop + prismContribOptions.contentTop, lrW - 36, state.contribTheme, palette, prismContribOptions)}`
+    : showLangs
+    ? ""
     : topLangs
     ? (shouldRenderLangIcons(state)
         ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, state.langIconCount ?? topLangs.length, state.iconSize)
