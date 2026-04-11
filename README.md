@@ -301,6 +301,20 @@ Copy-paste starter cards for different contribution moods. Each example leans on
 />
 ```
 
+### Capybara onsen
+
+`theme=amber/matcha` · `showContribs=on` · `contribTheme=capybara_onsen` · `contribRange=16w` · `contribMode=focus`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=David%20Tolnay&username=dtolnay&role=Rust%20maintainer&tagline=Careful%20crates%2C%20macro%20magic%2C%20and%20quietly%20cozy%20open%20source.&status=soaking%20release%20trains%20in%20careful%20reviews&command=cargo%20test%20--workspace&theme=amber/matcha&avatar=DT&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks&v=71" width="100%" alt="Capybara onsen contribution card" />
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=David%20Tolnay&username=dtolnay&role=Rust%20maintainer&tagline=Careful%20crates%2C%20macro%20magic%2C%20and%20quietly%20cozy%20open%20source.&status=soaking%20release%20trains%20in%20careful%20reviews&command=cargo%20test%20--workspace&theme=amber/matcha&avatar=DT&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks"
+  width="100%"
+  alt="Terminal identity card with capybara onsen activity"
+/>
+```
+
 ### Moon phase dashboard
 
 `theme=amber/solar` · `showContribs=on` · `contribTheme=moon` · `contribRange=16w` · `showLangs=on`
@@ -354,20 +368,6 @@ Copy-paste starter cards for different contribution moods. Each example leans on
   src="https://terminal-identity-opal.vercel.app/api?name=Sindre%20Sorhus&username=sindresorhus&role=open-source%20maintainer&tagline=Tiny%20packages%2C%20strong%20signals%2C%20and%20decades%20of%20useful%20APIs.&status=tracking%20issues%20and%20shipping%20small%20fixes&command=npm%20publish&theme=obsidian/aurora&avatar=SS&pattern=grid&width=980&height=auto&motion=scan&showContribs=on&contribTheme=signal&contribRange=16w&showLangs=off&stats=stars%2Cforks%2Cfollowers&barStyle=dots"
   width="100%"
   alt="Terminal identity card with signal activity"
-/>
-```
-
-### Capybara onsen
-
-`theme=amber/matcha` · `showContribs=on` · `contribTheme=capybara_onsen` · `contribRange=16w` · `contribMode=focus`
-
-<img src="https://terminal-identity-opal.vercel.app/api?name=David%20Tolnay&username=dtolnay&role=Rust%20maintainer&tagline=Careful%20crates%2C%20macro%20magic%2C%20and%20quietly%20cozy%20open%20source.&status=soaking%20release%20trains%20in%20careful%20reviews&command=cargo%20test%20--workspace&theme=amber/matcha&avatar=DT&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks&v=71" width="100%" alt="Capybara onsen contribution card" />
-
-```html
-<img
-  src="https://terminal-identity-opal.vercel.app/api?name=David%20Tolnay&username=dtolnay&role=Rust%20maintainer&tagline=Careful%20crates%2C%20macro%20magic%2C%20and%20quietly%20cozy%20open%20source.&status=soaking%20release%20trains%20in%20careful%20reviews&command=cargo%20test%20--workspace&theme=amber/matcha&avatar=DT&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=capybara_onsen&contribRange=16w&contribMode=focus&showLangs=off&barStyle=blocks"
-  width="100%"
-  alt="Terminal identity card with capybara onsen activity"
 />
 ```
 
