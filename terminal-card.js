@@ -1043,12 +1043,26 @@
         levels: ["rgba(235,255,248,0.05)", "rgba(235,255,248,0.08)", "rgba(223,255,242,0.1)", "rgba(207,255,239,0.13)", "rgba(244,255,248,0.16)"],
         accent: "#f4fff8",
         glow: "rgba(223,255,242,0.18)",
-        glowLevels: [
+        eyeGlowLevels: [
           "rgba(0,0,0,0)",
-          "rgba(223,255,242,0.08)",
-          "rgba(223,255,242,0.14)",
-          "rgba(207,255,239,0.2)",
-          "rgba(244,255,248,0.28)",
+          "rgba(207,255,239,0.14)",
+          "rgba(223,255,242,0.22)",
+          "rgba(244,255,248,0.32)",
+          "rgba(244,255,248,0.44)",
+        ],
+        eyeCoreLevels: [
+          "transparent",
+          "rgba(223,255,242,0.2)",
+          "rgba(244,255,248,0.32)",
+          "rgba(244,255,248,0.46)",
+          "rgba(255,255,255,0.62)",
+        ],
+        eyeHighlightLevels: [
+          "transparent",
+          "rgba(223,255,242,0.2)",
+          "rgba(244,255,248,0.34)",
+          "rgba(244,255,248,0.5)",
+          "rgba(255,255,255,0.72)",
         ],
       };
     }
@@ -1510,11 +1524,28 @@
         if (theme === "cat") {
           const rx = Math.max(2, Math.floor(cell * 0.2));
           const catUri = CAT_CONTRIB_TILE_URIS[level] || CAT_CONTRIB_TILE_URIS[0];
+          const eyeY = py + cell * 0.29;
+          const eyeLeftX = px + cell * 0.68;
+          const eyeRightX = px + cell * 0.88;
+          const eyeCenterX = px + cell * 0.78;
           cells.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="${rx}" fill="${colors.levels[level] || colors.base}"></rect>`);
           if (level > 0) {
-            cells.push(`<circle cx="${px + cell * 0.78}" cy="${py + cell * 0.28}" r="${Math.max(2, cell * (0.16 + level * 0.04))}" fill="${colors.glowLevels?.[level] || colors.glow}" opacity="${0.42 + level * 0.1}"></circle>`);
+            const haloRx = Math.max(2.4, cell * (0.14 + level * 0.045));
+            const haloRy = Math.max(1.8, cell * (0.1 + level * 0.032));
+            const coreR = Math.max(1.2, cell * (0.055 + level * 0.018));
+            cells.push(`<ellipse cx="${eyeCenterX}" cy="${eyeY}" rx="${haloRx.toFixed(2)}" ry="${haloRy.toFixed(2)}" fill="${colors.eyeGlowLevels?.[level] || colors.glow}"></ellipse>`);
+            cells.push(`<circle cx="${eyeCenterX}" cy="${eyeY}" r="${coreR.toFixed(2)}" fill="${colors.eyeCoreLevels?.[level] || colors.glow}"></circle>`);
           }
           cells.push(`<image x="${px}" y="${py}" width="${cell}" height="${cell}" href="${catUri}" preserveAspectRatio="none" style="image-rendering: pixelated;"></image>`);
+          if (level > 0) {
+            const eyeR = Math.max(0.65, cell * (0.02 + level * 0.006));
+            const highlight = colors.eyeHighlightLevels?.[level] || "#f4fff8";
+            cells.push(`<circle cx="${eyeLeftX}" cy="${eyeY}" r="${eyeR.toFixed(2)}" fill="${highlight}"></circle>`);
+            cells.push(`<circle cx="${eyeRightX}" cy="${eyeY}" r="${eyeR.toFixed(2)}" fill="${highlight}"></circle>`);
+            if (level >= 4) {
+              cells.push(`<path d="M ${(eyeRightX + eyeR * 1.5).toFixed(2)} ${eyeY.toFixed(2)} L ${(eyeRightX + eyeR * 3.4).toFixed(2)} ${eyeY.toFixed(2)}" stroke="#f4fff8" stroke-width="${Math.max(0.45, cell * 0.025).toFixed(2)}" stroke-linecap="round" opacity="0.42"></path>`);
+            }
+          }
           return;
         }
 
