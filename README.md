@@ -273,6 +273,20 @@ Available themes: `ember` · `aurora` · `cobalt` · `velvet` · `graphite` · `
 
 Copy-paste starter cards for different contribution moods. Each example leans on a different `contribTheme` so you can see how far the same API can stretch.
 
+### Cat jump ghost grid
+
+`theme=obsidian/velvet` · `showContribs=on` · `contribTheme=cat_jump` · `contribRange=16w` · `contribMode=focus`
+
+<img src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=obsidian/velvet&avatar=GG&pattern=pulse&width=980&height=auto&motion=boot&showContribs=on&contribTheme=cat_jump&contribRange=16w&contribMode=focus&showLangs=off&hideCommand=true&v=68" width="100%" alt="Cat jump contribution card" />
+
+```html
+<img
+  src="https://terminal-identity-opal.vercel.app/api?name=ggam&username=doyoon530&role=frontend%20engineer&tagline=Building%20tiny%20tools%20with%20taste.&status=available%20for%20cool%20internet%20projects&command=npx%20terminal-identity&theme=obsidian/velvet&avatar=GG&pattern=pulse&width=980&height=auto&motion=boot&showContribs=on&contribTheme=cat_jump&contribRange=16w&contribMode=focus&showLangs=off&hideCommand=true"
+  width="100%"
+  alt="Terminal identity card with cat jump activity"
+/>
+```
+
 ### Popcat activity burst
 
 `theme=amber/sakura` · `showContribs=on` · `contribTheme=popcat` · `contribRange=16w` · `contribMode=focus`
@@ -354,20 +368,6 @@ Copy-paste starter cards for different contribution moods. Each example leans on
   src="https://terminal-identity-opal.vercel.app/api?name=jiwon&username=doyoon530&role=design%20engineer&tagline=Design%20systems%20with%20motion%2C%20type%2C%20and%20restraint.&status=open%20to%20product%20design%20and%20frontend%20collaborations&command=npm%20run%20polish-ui&theme=amber/graphite&avatar=JW&pattern=grid&width=980&height=auto&showContribs=on&contribTheme=citylight&contribRange=16w&showLangs=on&langCount=3&langStyle=icons&iconSize=sm&stats=repos%2Cfollowers&excludeLangs=HTML%2CCSS"
   width="100%"
   alt="Terminal identity card with citylight activity"
-/>
-```
-
-### Constellation explorer
-
-`theme=prism/cobalt` · `contribTheme=constellation` · `contribRange=16w` · `showLangs=on` · `barStyle=blocks`
-
-<img src="https://terminal-identity-opal.vercel.app/api?name=noah&username=doyoon530&role=creative%20developer&tagline=Building%20interfaces%20that%20feel%20a%20little%20more%20alive.&status=crafting%20portfolio%20experiments&command=pnpm%20run%20ship-demo&theme=prism/cobalt&avatar=NH&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=constellation&contribRange=16w&showLangs=on&langCount=4&langStyle=bar&barStyle=blocks&v=46" width="100%" alt="Constellation contribution card" />
-
-```html
-<img
-  src="https://terminal-identity-opal.vercel.app/api?name=noah&username=doyoon530&role=creative%20developer&tagline=Building%20interfaces%20that%20feel%20a%20little%20more%20alive.&status=crafting%20portfolio%20experiments&command=pnpm%20run%20ship-demo&theme=prism/cobalt&avatar=NH&pattern=rings&width=980&height=auto&showContribs=on&contribTheme=constellation&contribRange=16w&showLangs=on&langCount=4&langStyle=bar&barStyle=blocks"
-  width="100%"
-  alt="Terminal identity card with constellation activity"
 />
 ```
 
