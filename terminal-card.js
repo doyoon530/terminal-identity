@@ -1204,8 +1204,8 @@
 
     if (theme === "popcat") {
       return {
-        base: "rgba(255,223,196,0.06)",
-        levels: ["rgba(255,223,196,0.05)", "rgba(255,214,184,0.08)", "rgba(255,197,162,0.12)", "rgba(255,174,132,0.16)", "rgba(255,236,204,0.2)"],
+        base: "rgba(224,224,224,0.06)",
+        levels: ["rgba(224,224,224,0.05)", "rgba(255,214,184,0.08)", "rgba(255,197,162,0.12)", "rgba(255,174,132,0.16)", "rgba(255,236,204,0.2)"],
         accent: "#ffd8bf",
         glow: "rgba(255,160,122,0.18)",
         popGlowLevels: [
@@ -1662,9 +1662,13 @@
     const activeLabel = `${summary.activeDays} active days`;
     const showFooter = options?.showFooter !== false;
     const popcatSheetId = `popcat-contrib-sheet-${Math.round(x)}-${Math.round(y)}`;
+    const popcatGrayId = `popcat-contrib-gray-${Math.round(x)}-${Math.round(y)}`;
     const popcatDefs = theme === "popcat"
       ? `<defs>
     <image id="${popcatSheetId}" x="0" y="0" width="160" height="32" href="${POPCAT_CONTRIB_SPRITE_URI}" preserveAspectRatio="none" style="image-rendering: pixelated;"></image>
+    <filter id="${popcatGrayId}" color-interpolation-filters="sRGB">
+      <feColorMatrix type="saturate" values="0"></feColorMatrix>
+    </filter>
   </defs>`
       : "";
 
@@ -1720,7 +1724,7 @@
               cells.push(`<path d="M ${sparkX.toFixed(2)} ${(sparkY - sparkR).toFixed(2)} L ${sparkX.toFixed(2)} ${(sparkY + sparkR).toFixed(2)} M ${(sparkX - sparkR).toFixed(2)} ${sparkY.toFixed(2)} L ${(sparkX + sparkR).toFixed(2)} ${sparkY.toFixed(2)}" stroke="${colors.popSpark}" stroke-width="${Math.max(0.45, cell * 0.04).toFixed(2)}" stroke-linecap="round" opacity="${level === 4 ? 0.72 : 0.44}"></path>`);
             }
           }
-          cells.push(`<svg x="${px}" y="${py}" width="${cell}" height="${cell}" viewBox="${level * 32} 0 32 32" preserveAspectRatio="none" style="overflow:hidden;">
+          cells.push(`<svg x="${px}" y="${py}" width="${cell}" height="${cell}" viewBox="${level * 32} 0 32 32" preserveAspectRatio="none" style="overflow:hidden;"${level === 0 ? ` filter="url(#${popcatGrayId})"` : ""}>
       <use href="#${popcatSheetId}"></use>
     </svg>`);
           return;
