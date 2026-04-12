@@ -534,6 +534,15 @@
       .replaceAll("'", "&apos;");
   }
 
+  function safeSvgId(prefix, value) {
+    const suffix = String(value || "anon")
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 48);
+    return `${prefix}-${suffix || "anon"}`;
+  }
+
   function isValidHex(value) {
     return typeof value === "string" && /^#[0-9a-fA-F]{3,8}$/.test(value);
   }
@@ -776,9 +785,10 @@
     return String(value);
   }
 
-  // Approximate pixel width per character at 12px
-  // IBM Plex Mono ASCII: ~7.2px, Korean/CJK fallback font: ~13px
-  function charPxWidth(char) {
+  // Approximate pixel width per character in the SVG mono stack.
+  // Keep this conservative so Windows font fallback does not overflow panels.
+  function charPxWidth(char, fontSize) {
+    const scale = (Number(fontSize) || 12) / 12;
     const code = char.codePointAt(0) || 0;
     const isWide = (code >= 0x1100 && code <= 0x11FF) ||
                    (code >= 0x2E80 && code <= 0x9FFF) ||
@@ -786,12 +796,12 @@
                    (code >= 0xF900 && code <= 0xFAFF) ||
                    (code >= 0xFF00 && code <= 0xFFEF);
     const isEmoji = code >= 0x1F300;
-    if (isEmoji) return 11.2;
-    return isWide ? 10.4 : 6.4;
+    if (isEmoji) return 13.5 * scale;
+    return (isWide ? 12.6 : 7.35) * scale;
   }
 
-  function measureTextPx(text) {
-    return [...String(text || "")].reduce((width, char) => width + charPxWidth(char), 0);
+  function measureTextPx(text, fontSize) {
+    return [...String(text || "")].reduce((width, char) => width + charPxWidth(char, fontSize), 0);
   }
 
   function tokenizeRichWords(text) {
@@ -831,9 +841,12 @@
       .join(" ");
   }
 
-  function measureRichLine(tokens) {
+  function measureRichLine(tokens, fontSize) {
     return tokens.reduce(
-      (width, token, index) => width + (index ? charPxWidth(" ") : 0) + measureTextPx(token.text),
+      (width, token, index) => {
+        const textWidth = measureTextPx(token.text, fontSize) * (token.bold ? 1.04 : 1);
+        return width + (index ? charPxWidth(" ", fontSize) : 0) + textWidth;
+      },
       0
     );
   }
@@ -879,6 +892,7 @@
     if (!text) return [];
     const slackPx = Math.max(0, Number(options?.slackPx) || 0);
     const limitPx = maxPx + slackPx;
+    const fontSize = Number(options?.fontSize) || 12;
     const units = groupRichTokens(tokenizeRichWords(text));
     const lines = [];
     let current = [];
@@ -890,7 +904,7 @@
 
     for (const unit of units) {
       if (lines.length >= maxLines) break;
-      const unitPx = measureRichLine(unit);
+      const unitPx = measureRichLine(unit, fontSize);
 
       if (unitPx > limitPx) {
         if (current.length) flush();
@@ -901,7 +915,7 @@
         let chunkPx = 0;
         for (const c of chars) {
           if (lines.length >= maxLines) break;
-          const cpx = charPxWidth(c);
+          const cpx = charPxWidth(c, fontSize);
           if (chunkPx + cpx > limitPx) {
             if (chunkText) lines.push(encodeRichLine([{ text: chunkText, bold: false }]));
             chunk = [c];
@@ -918,7 +932,7 @@
       }
 
       const candidate = current.length ? [...current, ...unit] : unit;
-      const candidatePx = measureRichLine(candidate);
+      const candidatePx = measureRichLine(candidate, fontSize);
       if (candidatePx <= limitPx) {
         current = candidate;
       } else {
@@ -926,7 +940,7 @@
           let splitIndex = 0;
           for (let index = 1; index <= unit.length; index += 1) {
             const prefixCandidate = [...current, ...unit.slice(0, index)];
-            if (measureRichLine(prefixCandidate) <= limitPx) {
+            if (measureRichLine(prefixCandidate, fontSize) <= limitPx) {
               splitIndex = index;
             } else {
               break;
@@ -978,6 +992,28 @@
     }
 
     return `${text.slice(0, Math.max(0, limit - 1))}…`;
+  }
+
+  function truncateTextPx(value, maxPx, options) {
+    const text = String(value || "");
+    const fontSize = Number(options?.fontSize) || 12;
+    const suffix = options?.suffix ?? "…";
+
+    if (measureTextPx(text, fontSize) <= maxPx) {
+      return text;
+    }
+
+    const suffixPx = measureTextPx(suffix, fontSize);
+    let out = "";
+
+    for (const char of [...text]) {
+      if (measureTextPx(out + char, fontSize) + suffixPx > maxPx) {
+        break;
+      }
+      out += char;
+    }
+
+    return out ? `${out}${suffix}` : suffix;
   }
 
   function getStatusText(state) {
@@ -1560,7 +1596,8 @@
     const aboutLabelY = dividerY + 14;
     const roleY = showProfile ? aboutLabelY + 24 : contentY + 44;
     const bioTopY = roleY + 26;
-    const bioLines = wrapTextBlock(state.bio || state.tagline, leftW - 18, 48, { slackPx: 26 });
+    const bioTextW = Math.max(40, leftW - 40);
+    const bioLines = wrapTextBlock(state.bio || state.tagline, bioTextW, 48, { fontSize: 12 });
     const leftRequired = bioLines.length
       ? bioTopY - contentY + bioLines.length * 17 + 10
       : roleY - contentY + 18;
@@ -2292,10 +2329,15 @@
     const bioSource = state.bio || state.tagline;
     const BIO_LINE_H = 17;
     const bioMaxLines = Math.max(1, Math.floor((leftH - (ROLE_Y - contentY) - 26 - 10) / BIO_LINE_H));
-    const BIO_TEXT_W = leftW - 18;  // panel width minus padding, lets copy use more of the card width
-    const bioLines = wrapTextBlock(bioSource, BIO_TEXT_W, bioMaxLines, { slackPx: 26 });
+    const BIO_TEXT_W = Math.max(40, leftW - 40);
+    const bioLines = wrapTextBlock(bioSource, BIO_TEXT_W, bioMaxLines, { fontSize: 12 });
 
     const showLPBio = bioLines.length > 0 && leftH >= (ROLE_Y - contentY + BIO_LINE_H + 10);
+    const leftClipId = safeSvgId("amber-left-clip", `${state.provider}-${state.theme}-${state.username || state.name}`);
+    const profileClipId = safeSvgId("profile-clip", state.username || state.name);
+    const profileTextX = PROFILE_CX + PROFILE_R + 16;
+    const profileTextW = Math.max(40, leftX + leftW - 20 - profileTextX);
+    const roleTextW = Math.max(40, leftW - 54);
 
     const rpDataTop = rightY + 16;
     const rpDataBot = Math.max(footerY - 12, rpDataTop);
@@ -2355,27 +2397,33 @@
   <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerW - 1}" height="${outerH - 1}" rx="13.5" stroke="${surfaces.panelStroke}"></rect>
 
   <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10" fill="${surfaces.panelFill}"></rect>
+  <defs>
+    <clipPath id="${leftClipId}">
+      <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10"></rect>
+    </clipPath>
+    ${showProfile ? `<clipPath id="${profileClipId}">
+      <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R}"></circle>
+    </clipPath>` : ""}
+  </defs>
+  <g clip-path="url(#${leftClipId})">
   <rect x="${leftX + 6}" y="${contentY + 14}" width="2" height="80" rx="1" fill="${accent}" opacity="0.35"></rect>
 
-  ${showProfile ? `<defs>
-    <clipPath id="profile-clip-${escapeXml(state.username || "anon")}">
-      <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R}"/>
-    </clipPath>
-  </defs>
+  ${showProfile ? `
   <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="${surfaces.strongLine}"/>
-  <image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#profile-clip-${escapeXml(state.username || "anon")})" preserveAspectRatio="xMidYMid slice"/>
+  <image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#${profileClipId})" preserveAspectRatio="xMidYMid slice"/>
   <rect x="${leftX + 20}" y="${DIVIDER_Y}" width="${leftW - 40}" height="1" fill="${surfaces.line}"/>
   <text x="${leftX + 20}" y="${ABOUT_LBL_Y}" font-family="IBM Plex Mono, monospace" font-size="10" fill="${dim}" letter-spacing="0.8">ABOUT</text>
-  ${state.username ? `<text x="${PROFILE_CX + PROFILE_R + 16}" y="${PROFILE_CY - 8}" font-family="Sora, Arial, sans-serif" font-size="18" font-weight="700" fill="${surfaces.textStrong}">${escapeXml(state.name)}</text>
-  <text x="${PROFILE_CX + PROFILE_R + 16}" y="${PROFILE_CY + 14}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">@${escapeXml(state.username)}</text>` : ""}` : ""}
+  ${state.username ? `<text x="${profileTextX}" y="${PROFILE_CY - 8}" font-family="Sora, Arial, sans-serif" font-size="18" font-weight="700" fill="${surfaces.textStrong}">${escapeXml(truncateTextPx(state.name, profileTextW, { fontSize: 18 }))}</text>
+  <text x="${profileTextX}" y="${PROFILE_CY + 14}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">@${escapeXml(truncateTextPx(state.username, profileTextW - 8, { fontSize: 12 }))}</text>` : ""}` : ""}
 
   <circle cx="${leftX + 24}" cy="${ROLE_Y - 6}" r="3.5" fill="${accent}" filter="url(#glow-accent)"/>
-  <text x="${leftX + 34}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateText(state.role, 26))}</text>
+  <text x="${leftX + 34}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateTextPx(state.role, roleTextW, { fontSize: 15 }))}</text>
   ${showLPBio ? bioLines.map((line, i) => {
     const lineY = BIO_TOP_Y + i * BIO_LINE_H;
     if (lineY > contentY + leftH - 10) return "";
     return `<text x="${leftX + 20}" y="${lineY}" font-family="IBM Plex Mono, Apple SD Gothic Neo, Malgun Gothic, monospace" font-size="12" fill="${surfaces.textBody}">${renderBoldLine(line, surfaces.textStrong)}</text>`;
   }).join("\n  ") : ""}
+  </g>
 
   ${showStats
     ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
