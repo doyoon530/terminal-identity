@@ -2386,7 +2386,8 @@
     const rightY = contentY;
 
     // Profile image (circular)
-    const showProfile = !!state.profileUri && !state.hideProfile;
+    const showProfileFrame = !state.hideProfile;
+    const hasProfileImage = !!state.profileUri;
     const PROFILE_R   = 32;
     const PROFILE_CX  = leftX + 20 + PROFILE_R;
     const PROFILE_CY  = contentY + 54;            // more top breathing room
@@ -2394,7 +2395,7 @@
     const ABOUT_LBL_Y = DIVIDER_Y + 14;
 
     // Dynamic Y positions for left panel content
-    const ROLE_Y    = showProfile ? ABOUT_LBL_Y + 24 : contentY + 44;
+    const ROLE_Y    = showProfileFrame ? ABOUT_LBL_Y + 24 : contentY + 44;
     const BIO_TOP_Y = ROLE_Y + 26;
 
     // Bio text wrapping (bio overrides tagline in left panel)
@@ -2473,16 +2474,18 @@
     <clipPath id="${leftClipId}">
       <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10"></rect>
     </clipPath>
-    ${showProfile ? `<clipPath id="${profileClipId}">
+    ${hasProfileImage ? `<clipPath id="${profileClipId}">
       <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R}"></circle>
     </clipPath>` : ""}
   </defs>
   <g clip-path="url(#${leftClipId})">
   <rect x="${leftX + 6}" y="${contentY + 14}" width="2" height="80" rx="1" fill="${accent}" opacity="0.35"></rect>
 
-  ${showProfile ? `
+  ${showProfileFrame ? `
   <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="${surfaces.strongLine}"/>
-  <image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#${profileClipId})" preserveAspectRatio="xMidYMid slice"/>
+  ${hasProfileImage
+    ? `<image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#${profileClipId})" preserveAspectRatio="xMidYMid slice"/>`
+    : `<text x="${PROFILE_CX}" y="${PROFILE_CY + 9}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="22" font-weight="700" fill="${surfaces.textStrong}">${escapeXml(state.avatar)}</text>`}
   <rect x="${leftX + 20}" y="${DIVIDER_Y}" width="${leftW - 40}" height="1" fill="${surfaces.line}"/>
   <text x="${leftX + 20}" y="${ABOUT_LBL_Y}" font-family="IBM Plex Mono, monospace" font-size="10" fill="${dim}" letter-spacing="0.8">ABOUT</text>
   ${state.username ? `<text x="${profileTextX}" y="${PROFILE_CY - 8}" font-family="Sora, Arial, sans-serif" font-size="18" font-weight="700" fill="${surfaces.textStrong}">${escapeXml(truncateTextPx(state.name, profileTextW, { fontSize: 18 }))}</text>

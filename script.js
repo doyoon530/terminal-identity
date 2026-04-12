@@ -78,6 +78,8 @@ const fieldIds = [
 ];
 
 const githubStatsCache = new Map();
+const GITHUB_CACHE_TTL_MS = 15 * 60 * 1000;
+const GITHUB_FETCH_TIMEOUT_MS = 5000;
 let renderToken = 0;
 let renderTimer = null;
 let currentExportTab = "markdown";
@@ -359,26 +361,80 @@ function updateShareUrl(state) {
   window.history.replaceState({}, "", nextUrl);
 }
 
-async function fetchGithubStats(username) {
+function getGithubCacheEntry(username) {
   const normalized = normalizeUsername(username);
-  if (!normalized || !window.location.origin.startsWith("http")) {
+  if (!normalized) {
     return null;
   }
 
   if (!githubStatsCache.has(normalized)) {
-    const request = fetch(`/api/github?username=${encodeURIComponent(normalized)}`)
-      .then((response) => (response.ok ? response.json() : null))
-      .catch(() => null)
-      .then((result) => {
-        if (!result) {
-          githubStatsCache.delete(normalized);
-        }
-        return result;
-      });
-    githubStatsCache.set(normalized, request);
+    githubStatsCache.set(normalized, {
+      data: null,
+      updatedAt: 0,
+      promise: null,
+    });
   }
 
   return githubStatsCache.get(normalized);
+}
+
+function getCachedGithubStats(username) {
+  return getGithubCacheEntry(username)?.data || null;
+}
+
+function requestGithubStats(normalized, entry) {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), GITHUB_FETCH_TIMEOUT_MS);
+
+  entry.promise = fetch(`/api/github?username=${encodeURIComponent(normalized)}`, {
+    signal: controller.signal,
+  })
+    .then((response) => (response.ok ? response.json() : null))
+    .catch(() => null)
+    .then((result) => {
+      if (result) {
+        entry.data = result;
+        entry.updatedAt = Date.now();
+        return result;
+      }
+
+      return entry.data || null;
+    })
+    .finally(() => {
+      window.clearTimeout(timeoutId);
+      entry.promise = null;
+      if (!entry.data) {
+        githubStatsCache.delete(normalized);
+      }
+    });
+
+  return entry.promise;
+}
+
+function fetchGithubStats(username, options = {}) {
+  const normalized = normalizeUsername(username);
+  if (!normalized || !window.location.origin.startsWith("http")) {
+    return Promise.resolve(null);
+  }
+
+  const entry = getGithubCacheEntry(normalized);
+  const forceRefresh = options.forceRefresh === true;
+  const waitForFresh = options.waitForFresh === true;
+  const isFresh = !!entry.data && Date.now() - entry.updatedAt < GITHUB_CACHE_TTL_MS;
+
+  if (!forceRefresh && isFresh) {
+    return Promise.resolve(entry.data);
+  }
+
+  if (!entry.promise) {
+    requestGithubStats(normalized, entry);
+  }
+
+  if (!forceRefresh && entry.data && !waitForFresh) {
+    return Promise.resolve(entry.data);
+  }
+
+  return entry.promise;
 }
 
 function initialsFrom(value) {
@@ -467,13 +523,26 @@ function renderSummary(state, githubStats) {
   previewSummary.innerHTML = chips;
 }
 
-function renderDiagnostics(state, githubStats) {
+function renderDiagnostics(state, githubStats, meta = {}) {
   const diagnostics = [];
+  const isLoading = meta.loading === true;
+
+  if (meta.renderError) {
+    diagnostics.push({
+      tone: "warn",
+      text: "The live preview hit a render hiccup, so it fell back to a simpler card while keeping your current settings.",
+    });
+  }
 
   if (!state.username) {
     diagnostics.push({
       tone: "info",
       text: "Add a GitHub username to unlock live stats, top languages, profile images, and contribution activity.",
+    });
+  } else if (isLoading && !githubStats) {
+    diagnostics.push({
+      tone: "info",
+      text: "Loading GitHub data for this card now.",
     });
   } else if (!githubStats) {
     diagnostics.push({
@@ -487,6 +556,11 @@ function renderDiagnostics(state, githubStats) {
       diagnostics.push({
         tone: "info",
         text: "Top languages appear after you add a GitHub username.",
+      });
+    } else if (isLoading && !githubStats?.topLangs?.length) {
+      diagnostics.push({
+        tone: "info",
+        text: "Loading language data from GitHub.",
       });
     } else if (!githubStats?.topLangs?.length) {
       diagnostics.push({
@@ -540,6 +614,11 @@ function renderDiagnostics(state, githubStats) {
         tone: "info",
         text: "Contribution activity appears after you add a GitHub username.",
       });
+    } else if (isLoading && !githubStats?.contributions?.weeks?.length) {
+      diagnostics.push({
+        tone: "info",
+        text: "Loading contribution activity from GitHub.",
+      });
     } else if (!githubStats?.contributions?.weeks?.length) {
       diagnostics.push({
         tone: "warn",
@@ -553,56 +632,14 @@ function renderDiagnostics(state, githubStats) {
     .join("");
 }
 
-function updateExportPanel() {
-  const tab = EXPORT_TABS[currentExportTab];
-  exportTabs.forEach((button) => {
-    button.classList.toggle("active", button.dataset.exportTab === currentExportTab);
-  });
-  exportLabelText.textContent = tab.label;
-  exportOutput.value = exportPayload[currentExportTab] || "";
-  copyCurrentButton.textContent = tab.copyLabel;
-}
+function buildRenderedState(state, githubStats) {
+  let nextState = githubStats ? { ...state, githubStats } : state;
 
-async function render(options) {
-  const currentToken = ++renderToken;
-  let state = getState();
-  let nextState = state;
-  const githubStats = await fetchGithubStats(state.username);
-
-  if (currentToken !== renderToken) {
-    return;
-  }
-
-  if (githubStats) {
-    nextState = { ...state, githubStats };
-    if (!state.hideProfile && (githubStats.avatarDataUri || githubStats.avatarUrl)) {
-      nextState = {
-        ...nextState,
-        profileUri: githubStats.avatarDataUri || `${githubStats.avatarUrl}&s=120`,
-      };
-    }
-  }
-
-  if (options?.syncProfile) {
-    const username = normalizeUsername(state.username) || DEFAULT_PROFILE;
-    document.getElementById("username").value = username;
-    if (!document.getElementById("name").value.trim()) {
-      document.getElementById("name").value = githubStats?.name || username;
-    }
-    if (!document.getElementById("avatar").value.trim()) {
-      document.getElementById("avatar").value = initialsFrom(githubStats?.name || username);
-    }
-    state = getState();
-    nextState = state;
-    if (githubStats) {
-      nextState = {
-        ...nextState,
-        githubStats,
-        ...(nextState.hideProfile || (!githubStats.avatarDataUri && !githubStats.avatarUrl)
-          ? {}
-          : { profileUri: githubStats.avatarDataUri || `${githubStats.avatarUrl}&s=120` }),
-      };
-    }
+  if (githubStats && !state.hideProfile && (githubStats.avatarDataUri || githubStats.avatarUrl)) {
+    nextState = {
+      ...nextState,
+      profileUri: githubStats.avatarDataUri || `${githubStats.avatarUrl}&s=120`,
+    };
   }
 
   if (nextState.langStyle === "icons" && nextState.githubStats?.topLangs) {
@@ -618,9 +655,24 @@ async function render(options) {
     }
   }
 
-  const svg = buildSvg(nextState);
-  const apiUrl = buildApiUrl(state, getApiBaseUrl());
+  return nextState;
+}
+
+function commitRender(baseState, renderedState, githubStats, meta = {}) {
+  const apiUrl = buildApiUrl(baseState, getApiBaseUrl());
   const link = document.getElementById("link").value.trim();
+  let finalState = renderedState;
+  let svg = "";
+  let renderError = null;
+
+  try {
+    svg = buildSvg(renderedState);
+  } catch (error) {
+    console.error("[playground] render failed", error);
+    renderError = error;
+    finalState = baseState;
+    svg = buildSvg(baseState);
+  }
 
   exportPayload = {
     markdown: buildMarkdown(apiUrl, link),
@@ -630,11 +682,74 @@ async function render(options) {
 
   svgMount.innerHTML = svg;
   updateExportPanel();
-  renderSummary(nextState, githubStats);
-  renderDiagnostics(nextState, githubStats);
-  updateGithubLink(state.username);
-  updateShareUrl(state);
-  saveState(state);
+  renderSummary(finalState, githubStats || finalState.githubStats || null);
+  renderDiagnostics(finalState, githubStats || finalState.githubStats || null, {
+    ...meta,
+    renderError,
+  });
+  updateGithubLink(baseState.username);
+  updateShareUrl(baseState);
+  saveState(baseState);
+}
+
+function updateExportPanel() {
+  const tab = EXPORT_TABS[currentExportTab];
+  exportTabs.forEach((button) => {
+    button.classList.toggle("active", button.dataset.exportTab === currentExportTab);
+  });
+  exportLabelText.textContent = tab.label;
+  exportOutput.value = exportPayload[currentExportTab] || "";
+  copyCurrentButton.textContent = tab.copyLabel;
+}
+
+async function render(options) {
+  const currentToken = ++renderToken;
+  let state = getState();
+
+  if (options?.syncProfile) {
+    const username = normalizeUsername(state.username) || DEFAULT_PROFILE;
+    document.getElementById("username").value = username;
+    state = getState();
+  }
+
+  const username = normalizeUsername(state.username);
+  const cachedGithubStats = getCachedGithubStats(username);
+  commitRender(
+    state,
+    buildRenderedState(state, cachedGithubStats),
+    cachedGithubStats,
+    { loading: !!username && !cachedGithubStats }
+  );
+
+  if (!username) {
+    return;
+  }
+
+  const githubStats = await fetchGithubStats(username, {
+    forceRefresh: !!options?.syncProfile,
+    waitForFresh: !cachedGithubStats || !!options?.syncProfile,
+  });
+
+  if (currentToken !== renderToken) {
+    return;
+  }
+
+  if (options?.syncProfile && githubStats) {
+    if (!document.getElementById("name").value.trim()) {
+      document.getElementById("name").value = githubStats.name || username;
+    }
+    if (!document.getElementById("avatar").value.trim()) {
+      document.getElementById("avatar").value = initialsFrom(githubStats.name || username);
+    }
+    state = getState();
+  }
+
+  commitRender(
+    state,
+    buildRenderedState(state, githubStats || cachedGithubStats),
+    githubStats || cachedGithubStats,
+    { loading: false }
+  );
 }
 
 function scheduleRender(options) {

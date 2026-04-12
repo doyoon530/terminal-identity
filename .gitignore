@@ -3,6 +3,9 @@
 .vercel-dev.out.log
 .vercel-dev.*.log
 .vercel-dev*.log
+vercel-dev.err.log
+vercel-dev.out.log
+vercel-dev*.log
 
 node_modules/
 

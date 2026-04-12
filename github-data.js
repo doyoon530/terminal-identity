@@ -61,6 +61,128 @@ async function fetchImageDataUri(url) {
   }
 }
 
+function decodeHtmlEntities(value) {
+  return String(value || "")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function cleanHtmlText(value) {
+  return decodeHtmlEntities(String(value || ""))
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseCompactCount(value) {
+  const text = cleanHtmlText(value).replaceAll(",", "").toLowerCase();
+  const match = text.match(/^([\d.]+)([kmb])?$/i);
+  if (!match) {
+    return 0;
+  }
+
+  const number = Number(match[1] || 0);
+  const unit = String(match[2] || "").toLowerCase();
+  const multiplier = unit === "k" ? 1e3 : unit === "m" ? 1e6 : unit === "b" ? 1e9 : 1;
+  return Math.round(number * multiplier);
+}
+
+function withImageSize(url, size) {
+  if (!url) return "";
+  return `${url}${url.includes("?") ? "&" : "?"}s=${size}`;
+}
+
+function parseGithubProfileOverview(html, username) {
+  if (!html) return null;
+
+  const name = cleanHtmlText(
+    html.match(/<span class="p-name[^"]*" itemprop="name">\s*([\s\S]*?)\s*<\/span>/i)?.[1]
+  ) || username;
+  const avatarUrl = decodeHtmlEntities(
+    html.match(/<meta property="og:image" content="([^"]+)"/i)?.[1]
+      || html.match(/<img[^>]+class="[^"]*avatar-user[^"]*"[^>]+src="([^"]+)"/i)?.[1]
+      || ""
+  );
+  const repos = parseCompactCount(
+    html.match(/data-tab-item="repositories"[\s\S]{0,1200}?<span[^>]*class="Counter"[^>]*>\s*([^<]+)\s*<\/span>/i)?.[1]
+      || html.match(/has ([\d.,kmb]+) repositories available/i)?.[1]
+  );
+  const followers = parseCompactCount(
+    html.match(/\?tab=followers[\s\S]{0,1200}?<span class="text-bold color-fg-default">\s*([^<]+)\s*<\/span>/i)?.[1]
+  );
+
+  return {
+    username,
+    name,
+    avatarUrl,
+    repos,
+    followers,
+  };
+}
+
+function parseGithubRepoLanguages(html) {
+  if (!html) return null;
+
+  const counts = {};
+  const languageRe = /itemprop="programmingLanguage">\s*([^<]+)\s*<\/span>/gi;
+  let match;
+
+  while ((match = languageRe.exec(html)) !== null) {
+    const name = cleanHtmlText(match[1]);
+    if (!name) {
+      continue;
+    }
+
+    counts[name] = (counts[name] || 0) + 1;
+  }
+
+  const entries = Object.entries(counts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 12)
+    .map(([name, count]) => ({ name, count }));
+
+  return entries.length > 0 ? entries : null;
+}
+
+async function fetchGithubHtmlFallback(username) {
+  const normalized = normalizeUsername(username);
+  if (!normalized) {
+    return null;
+  }
+
+  const [profileHtml, repoHtml, contributions] = await Promise.all([
+    fetchText(`https://github.com/${normalized}`),
+    fetchText(`https://github.com/${normalized}?tab=repositories`),
+    fetchGithubContributions(normalized),
+  ]);
+
+  const profile = parseGithubProfileOverview(profileHtml, normalized);
+  const topLangs = parseGithubRepoLanguages(repoHtml);
+
+  if (!profile && !topLangs && !contributions) {
+    return null;
+  }
+
+  const avatarUrl = profile?.avatarUrl || "";
+  const avatarDataUri = avatarUrl ? await fetchImageDataUri(withImageSize(avatarUrl, 120)) : null;
+
+  return {
+    username: normalized,
+    name: profile?.name || normalized,
+    avatarUrl,
+    avatarDataUri,
+    repos: Number(profile?.repos || 0),
+    followers: Number(profile?.followers || 0),
+    stars: 0,
+    forks: 0,
+    topLangs,
+    contributions,
+  };
+}
+
 const MAX_REPO_PAGES = 20;
 const REPOS_PER_PAGE = 100;
 const LANGUAGE_FETCH_CONCURRENCY = 6;
@@ -252,14 +374,14 @@ async function fetchGithubStats(username) {
     return cached.value;
   }
   if (cached?.promise) {
-    return cached.promise;
+    return cached.value || cached.promise;
   }
 
   const request = (async () => {
     try {
     const user = await fetchJson(`https://api.github.com/users/${normalized}`);
     if (!user) {
-      return null;
+      return fetchGithubHtmlFallback(normalized);
     }
 
     const repoList = await fetchGithubRepos(normalized, user.public_repos);
@@ -281,7 +403,7 @@ async function fetchGithubStats(username) {
       .map(([name, count]) => ({ name, count }));
 
     const contributions = await fetchGithubContributions(normalized);
-    const avatarDataUri = await fetchImageDataUri(`${String(user.avatar_url || "")}&s=120`);
+    const avatarDataUri = await fetchImageDataUri(withImageSize(String(user.avatar_url || ""), 120));
 
     return {
       username: normalized,
@@ -305,6 +427,25 @@ async function fetchGithubStats(username) {
     value: cached?.value || null,
     expiresAt: cached?.expiresAt || 0,
   });
+
+  if (cached?.value) {
+    void request.then((result) => {
+      if (result) {
+        githubStatsCache.set(normalized, {
+          value: result,
+          expiresAt: Date.now() + GITHUB_CACHE_TTL_MS,
+        });
+        return;
+      }
+
+      githubStatsCache.set(normalized, {
+        value: cached.value,
+        expiresAt: Date.now() + GITHUB_CACHE_TTL_MS,
+      });
+    });
+
+    return cached.value;
+  }
 
   const result = await request;
 
