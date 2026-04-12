@@ -37,6 +37,7 @@ async function fetchText(url) {
 
 const MAX_REPO_PAGES = 20;
 const REPOS_PER_PAGE = 100;
+const LANGUAGE_FETCH_CONCURRENCY = 6;
 
 function parseContributionCalendar(html) {
   if (!html) return null;
@@ -167,6 +168,51 @@ async function fetchGithubRepos(username, publicRepoCount) {
   return repos;
 }
 
+async function fetchGithubLanguageBytes(repoList) {
+  const repos = Array.isArray(repoList) ? repoList.filter((repo) => repo?.languages_url) : [];
+  if (repos.length === 0) {
+    return null;
+  }
+
+  const languageBytes = {};
+  let successCount = 0;
+  let cursor = 0;
+
+  const workers = Array.from(
+    { length: Math.min(LANGUAGE_FETCH_CONCURRENCY, repos.length) },
+    async () => {
+      while (cursor < repos.length) {
+        const repo = repos[cursor];
+        cursor += 1;
+
+        const languages = await fetchJson(repo.languages_url);
+        if (!languages || typeof languages !== "object" || Array.isArray(languages)) {
+          continue;
+        }
+
+        successCount += 1;
+
+        Object.entries(languages).forEach(([name, bytes]) => {
+          const normalizedBytes = Number(bytes || 0);
+          if (!name || !Number.isFinite(normalizedBytes) || normalizedBytes <= 0) {
+            return;
+          }
+
+          languageBytes[name] = (languageBytes[name] || 0) + normalizedBytes;
+        });
+      }
+    }
+  );
+
+  await Promise.all(workers);
+
+  if (successCount === 0 || Object.keys(languageBytes).length === 0) {
+    return null;
+  }
+
+  return languageBytes;
+}
+
 async function fetchGithubStats(username) {
   const normalized = normalizeUsername(username);
   if (!normalized) {
@@ -184,13 +230,15 @@ async function fetchGithubStats(username) {
     const stars = ownedSourceRepos.reduce((total, repo) => total + Number(repo.stargazers_count || 0), 0);
     const forks = ownedSourceRepos.reduce((total, repo) => total + Number(repo.forks_count || 0), 0);
 
-    const langCounts = {};
+    const primaryLanguageCounts = {};
     ownedSourceRepos.forEach((repo) => {
       if (repo.language) {
-        langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
+        primaryLanguageCounts[repo.language] = (primaryLanguageCounts[repo.language] || 0) + 1;
       }
     });
-    const topLangs = Object.entries(langCounts)
+    const languageBytes = await fetchGithubLanguageBytes(ownedSourceRepos);
+    const topLangsSource = languageBytes || primaryLanguageCounts;
+    const topLangs = Object.entries(topLangsSource)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 12)
       .map(([name, count]) => ({ name, count }));
