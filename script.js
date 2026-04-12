@@ -29,7 +29,17 @@ const {
 const STORAGE_KEY = "terminal-identity-playground-state-v3";
 const UI_MODE_KEY = "terminal-identity-ui-mode-v1";
 const DEFAULT_PROFILE = "doyoon530";
-const RECIPE_GALLERY_VERSION = "2026-04-12-gallery-fix-2";
+const RECIPE_GALLERY_VERSION = "2026-04-13-gallery-thumbs-2";
+const RECIPE_THUMB_DIMENSIONS = {
+  "cat-jump-ghost-grid": { width: 980, height: 680 },
+  "popcat-activity-burst": { width: 980, height: 580 },
+  "capybara-onsen": { width: 980, height: 580 },
+  "moon-phase-dashboard": { width: 980, height: 620 },
+  "starfield-maintainer": { width: 980, height: 750 },
+  "orbit-builder": { width: 980, height: 540 },
+  "signal-radar-card": { width: 980, height: 630 },
+  "firefly-night-mode": { width: 980, height: 610 },
+};
 const EXPORT_TABS = {
   markdown: {
     label: "README markdown",
@@ -527,12 +537,14 @@ function renderPresetGallery() {
     .map((preset, index) => {
       const state = normalizeState(preset.state);
       const tags = getPresetTags(state);
-      const cardUrl = `./assets/recipes/thumbs/${slugifyPresetLabel(preset.label)}.png?v=${RECIPE_GALLERY_VERSION}`;
+      const slug = slugifyPresetLabel(preset.label);
+      const cardUrl = `./assets/recipes/thumbs/${slug}.png?v=${RECIPE_GALLERY_VERSION}`;
+      const thumbDimensions = RECIPE_THUMB_DIMENSIONS[slug] || { width: 980, height: 580 };
 
       return `
         <button type="button" class="preset-card" data-preset-index="${index}">
           <div class="preset-art">
-            <img src="${cardUrl}" alt="${preset.label}" loading="lazy" decoding="async" width="560" height="320" />
+            <img src="${cardUrl}" alt="${preset.label}" loading="lazy" decoding="async" width="${thumbDimensions.width}" height="${thumbDimensions.height}" />
           </div>
           <div class="preset-copy">
             <strong>${preset.label}</strong>

@@ -1,42 +1,52 @@
 <svg text-rendering="geometricPrecision" width="980" height="630" viewBox="0 0 980 630" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sindre Sorhus terminal identity card">
   <rect width="980" height="630" rx="22" fill="#0c1416"></rect>
   <rect x="28" y="24" width="924" height="72" rx="14" fill="#112226"></rect>
-
+  
   <rect x="52" y="52" width="24" height="16" rx="8" fill="#194a4b"></rect>
   <rect x="84" y="52" width="24" height="16" rx="8" fill="#376462"></rect>
   <rect x="116" y="52" width="24" height="16" rx="8" fill="#3d6957"></rect>
   <text font-weight="500" x="490" y="66" text-anchor="middle" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="17" fill="#dbf8f2">obsidian workspace</text>
-
+  
   <rect x="28" y="96" width="924" height="506" rx="14" fill="#101f22"></rect>
 
   <rect x="52" y="128" width="249" height="420" rx="10" fill="#122427"></rect>
+  <defs>
+    <clipPath id="profile-clip-obsidian-sindresorhus">
+      <circle cx="94" cy="184" r="24"></circle>
+    </clipPath>
+  </defs>
   <text font-weight="500" x="70" y="150" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="12" fill="#9bbeb6">workspace</text>
-  <text font-weight="500" x="70" y="190" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="17" fill="#f2fffc">Sindre Sorhus</text>
-  <text font-weight="500" x="70" y="212" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="13" fill="#9bbeb6">@sindresorhus</text>
-  <text font-weight="500" x="70" y="258" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="12" fill="#9bbeb6">role</text>
-  <text font-weight="500" x="70" y="280" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="14" fill="#f2fffc">open-source maintainer</text>
-  <text font-weight="500" x="70" y="324" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="12" fill="#9bbeb6">model</text>
-  <text font-weight="500" x="70" y="346" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="14" fill="#f2fffc">obsidian/aurora</text>
+  
+  
+  <circle cx="94" cy="184" r="26" fill="undefined"/>
+  <image x="70" y="160" width="48" height="48" href="data:image/jpeg;base64,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" clip-path="url(#profile-clip-obsidian-sindresorhus)" preserveAspectRatio="xMidYMid slice"/>
+  <rect x="70" y="228" width="213" height="1" fill="rgba(142,244,216,0.12)"></rect>
+  <text font-weight="500" x="132" y="188" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="17" fill="#f2fffc">Sindre Sorhus</text>
+  <text font-weight="500" x="132" y="210" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="13" fill="#9bbeb6">@sindresorhus</text>
+  <text font-weight="500" x="70" y="254" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="12" fill="#9bbeb6">role</text>
+  <text font-weight="500" x="70" y="276" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="14" fill="#f2fffc">open-source maintai...</text>
+  <text font-weight="500" x="70" y="320" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="12" fill="#9bbeb6">model</text>
+  <text font-weight="500" x="70" y="342" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="14" fill="#f2fffc">obsidian/aurora</text>
 
   <rect x="319" y="128" width="609" height="160" rx="10" fill="#13282c"></rect>
   <text font-weight="500" x="341" y="152" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="12" fill="#9bbeb6">prompt</text>
-  <text x="341" y="187" font-family="'Sora', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', Arial, sans-serif" font-size="22" font-weight="700" fill="#f2fffc">Tiny packages, strong signals, and shipping.</text>
+  <text x="341" y="187" font-family="'Sora', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', Arial, sans-serif" font-size="22" font-weight="700" fill="#f2fffc">Tiny packages, strong signals, and ...</text>
   <rect x="341" y="209" width="565" height="1" fill="rgba(142,244,216,0.12)"></rect>
   <text font-weight="500" x="341" y="240" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="14" fill="#9bbeb6">$ npm publish</text>
   <circle cx="341" cy="264" r="5" fill="#1ea896"></circle>
-  <text font-weight="500" x="355" y="270" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="13" fill="#f2fffc">1.0M stars * 1.1k repos * 79k followers</text>
+  <text font-weight="500" x="355" y="270" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="13" fill="#f2fffc">0 stars ??1.1k repos ??79k followers</text>
 
   <rect x="319" y="302" width="609" height="246" rx="10" fill="#122427"></rect>
   <text font-weight="500" x="341" y="324" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="12" fill="#9bbeb6">output</text>
-
-
-
+  
+  
+  
   <text font-weight="500" x="341" y="350" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="11" fill="#9bbeb6" letter-spacing="0.5">CONTRIBUTIONS</text>
   <text font-weight="500" x="906" y="350" text-anchor="end" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="11" fill="#9bbeb6">1.1k last 16 weeks</text>
-
-
+  
+  
   <g>
-
+    
     <rect x="341" y="364" width="20" height="20" rx="5" fill="rgba(11,20,26,0.34)"></rect>
     <rect x="341" y="386" width="20" height="20" rx="5" fill="rgba(14,28,36,0.46)"></rect>
     <circle cx="351" cy="398.4" r="2.4" fill="#8ee8ff"></circle>
@@ -467,7 +477,7 @@
 
   <rect x="28" y="548" width="924" height="1" fill="rgba(142,244,216,0.07)"></rect>
   <circle cx="50" cy="572" r="5" fill="#1ea896"></circle>
-  <text font-weight="500" x="64" y="578" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="13" fill="#9bbeb6">tracking issues and shipping small fixes</text>
+  <text font-weight="500" x="64" y="578" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="13" fill="#9bbeb6">0 stars ??1.1k repos ??79k followers</text>
 
   <defs>
     <clipPath id="motion-obsidian-aurora-scan-980-630-scan-clip">
