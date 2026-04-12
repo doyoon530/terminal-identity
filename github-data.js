@@ -35,6 +35,9 @@ async function fetchText(url) {
   return response.text();
 }
 
+const MAX_REPO_PAGES = 20;
+const REPOS_PER_PAGE = 100;
+
 function parseContributionCalendar(html) {
   if (!html) return null;
 
@@ -135,6 +138,35 @@ async function fetchGithubContributions(username) {
   }
 }
 
+async function fetchGithubRepos(username, publicRepoCount) {
+  const normalized = normalizeUsername(username);
+  if (!normalized) return [];
+
+  const pagesToFetch = Math.max(
+    1,
+    Math.min(MAX_REPO_PAGES, Math.ceil(Math.max(0, Number(publicRepoCount) || 0) / REPOS_PER_PAGE))
+  );
+  const repos = [];
+
+  for (let page = 1; page <= pagesToFetch; page += 1) {
+    const pageItems = await fetchJson(
+      `https://api.github.com/users/${normalized}/repos?per_page=${REPOS_PER_PAGE}&page=${page}&sort=updated&type=owner`
+    );
+
+    if (!Array.isArray(pageItems) || pageItems.length === 0) {
+      break;
+    }
+
+    repos.push(...pageItems);
+
+    if (pageItems.length < REPOS_PER_PAGE) {
+      break;
+    }
+  }
+
+  return repos;
+}
+
 async function fetchGithubStats(username) {
   const normalized = normalizeUsername(username);
   if (!normalized) {
@@ -147,16 +179,13 @@ async function fetchGithubStats(username) {
       return null;
     }
 
-    const repos = await fetchJson(
-      `https://api.github.com/users/${normalized}/repos?per_page=100&sort=updated`
-    );
-
-    const repoList = Array.isArray(repos) ? repos : [];
-    const stars = repoList.reduce((total, repo) => total + Number(repo.stargazers_count || 0), 0);
-    const forks = repoList.reduce((total, repo) => total + Number(repo.forks_count || 0), 0);
+    const repoList = await fetchGithubRepos(normalized, user.public_repos);
+    const ownedSourceRepos = repoList.filter((repo) => repo && !repo.fork);
+    const stars = ownedSourceRepos.reduce((total, repo) => total + Number(repo.stargazers_count || 0), 0);
+    const forks = ownedSourceRepos.reduce((total, repo) => total + Number(repo.forks_count || 0), 0);
 
     const langCounts = {};
-    repoList.forEach((repo) => {
+    ownedSourceRepos.forEach((repo) => {
       if (repo.language) {
         langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
       }
