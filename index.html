@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terminal Identity</title>
+    <meta
+      name="description"
+      content="Make your GitHub README feel like a polished product page with one SVG image URL."
+    />
+    <meta property="og:title" content="Terminal Identity" />
+    <meta
+      property="og:description"
+      content="Generate stylish SVG hero cards for your GitHub README from a single image URL."
+    />
+    <meta property="og:image" content="./og-preview.svg" />
+    <meta property="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Nanum+Gothic+Coding:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">README hero card generator</p>
+        <h1>Terminal Identity</h1>
+        <p class="hero-text">
+          Make your GitHub README feel like a polished product page with one image URL.
+        </p>
+        <div class="hero-actions">
+          <a id="githubProfileLink" class="hero-action" href="https://github.com/doyoon530" target="_blank" rel="noreferrer">Open GitHub Profile</a>
+          <button type="button" id="syncGithubButton" class="hero-action">Sync GitHub Data</button>
+          <button type="button" id="randomizeButton" class="hero-action">Randomize Look</button>
+          <button type="button" id="resetButton" class="hero-action">Reset</button>
+        </div>
+        <div id="heroSummary" class="hero-summary"></div>
+      </header>
+
+      <section class="panel presets-panel">
+        <div class="panel-head">
+          <h2>Recipe Gallery</h2>
+          <p>Start from the same recipe cards shown in the README and tune from there.</p>
+        </div>
+        <div id="presetGallery" class="preset-gallery"></div>
+      </section>
+
+      <main class="workspace">
+        <section class="panel controls">
+          <div class="panel-head">
+            <div class="panel-head-main">
+              <div>
+                <h2>Card Controls</h2>
+                <p>Start simple, then open the deeper controls when you want more precision.</p>
+              </div>
+              <div class="mode-toggle" role="tablist" aria-label="Editor mode">
+                <button type="button" id="basicModeButton" class="mode-button active" data-ui-mode="basic" aria-pressed="true">Basic</button>
+                <button type="button" id="advancedModeButton" class="mode-button" data-ui-mode="advanced" aria-pressed="false">Advanced</button>
+              </div>
+            </div>
+          </div>
+
+          <form id="builder-form">
+            <div id="formBody" class="form-body" data-ui-mode="basic">
+
+              <!-- Identity -->
+              <div class="form-section" data-mode="basic">
+                <p class="section-label">Identity</p>
+                <label>
+                  name
+                  <input id="name" name="name" placeholder="ggam" />
+                </label>
+                <label>
+                  GitHub username
+                  <input id="username" name="username" placeholder="doyoon530" />
+                </label>
+                <label>
+                  role
+                  <input id="role" name="role" placeholder="frontend engineer" />
+                </label>
+              </div>
+
+              <!-- Content -->
+              <div class="form-section" data-mode="basic">
+                <p class="section-label">Content</p>
+                <label>
+                  tagline
+                  <span class="hint">우측 패널 featured line</span>
+                  <input id="tagline" name="tagline" placeholder="Building tiny tools with taste." />
+                </label>
+                <div class="mode-advanced">
+                  <label>
+                    bio
+                    <span class="hint">좌측 패널 · 높이에 따라 자동 줄바꿈 · 없으면 tagline으로 대체</span>
+                    <textarea id="bio" name="bio" rows="3" placeholder="안녕하세요. 저는 임베디드 센서 데이터 분석과 AI 시스템 설계를 공부하고 있어요."></textarea>
+                  </label>
+                  <label>
+                    status
+                    <span class="hint">footer / username 없을 때 표시</span>
+                    <input id="status" name="status" placeholder="available for cool internet projects" />
+                  </label>
+                  <label>
+                    command
+                    <span class="hint">footer에만 표시</span>
+                    <input id="command" name="command" placeholder="npx terminal-identity" />
+                  </label>
+                </div>
+              </div>
+
+              <!-- Appearance -->
+              <div class="form-section" data-mode="basic">
+                <p class="section-label">Appearance</p>
+                <div class="option-grid">
+                  <label>
+                    provider
+                    <select id="provider" name="provider">
+                      <option value="amber">Amber</option>
+                      <option value="classic">Classic</option>
+                      <option value="obsidian">Obsidian</option>
+                      <option value="prism">Prism</option>
+                    </select>
+                  </label>
+                  <label>
+                    theme
+                    <select id="theme" name="theme">
+                      <option value="solar">Solar Gold</option>
+                      <option value="ember">Ember Shell</option>
+                      <option value="aurora">Aurora Mint</option>
+                      <option value="cobalt">Cobalt Night</option>
+                      <option value="velvet">Velvet Signal</option>
+                      <option value="graphite">Graphite Mono</option>
+                      <option value="matcha">Matcha Console</option>
+                      <option value="sakura">Sakura Bloom</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="option-grid">
+                  <label>
+                    pattern
+                    <select id="pattern" name="pattern">
+                      <option value="grid">Grid</option>
+                      <option value="rings">Rings</option>
+                      <option value="pulse">Pulse</option>
+                    </select>
+                  </label>
+                  <label>
+                    pattern
+                    <select id="pattern" name="pattern">
+                      <option value="grid">Grid</option>
+                      <option value="rings">Rings</option>
+                      <option value="pulse">Pulse</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="mode-advanced">
+                  <div class="option-grid">
+                    <label>
+                      avatar initials
+                      <input id="avatar" name="avatar" placeholder="GG" />
+                    </label>
+                    <label>
+                      accent color
+                      <input id="accent" name="accent" type="text" placeholder="#f08a61" maxlength="9" />
+                    </label>
+                  </div>
+                  <div class="option-grid">
+                    <label>
+                      width
+                      <input id="width" name="width" type="number" min="720" max="1400" step="10" />
+                    </label>
+                    <label>
+                      height
+                      <input id="height" name="height" type="text" inputmode="text" placeholder="auto or 520" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Languages -->
+              <div class="form-section" data-mode="advanced">
+                <p class="section-label">Languages</p>
+                <div class="option-grid">
+                  <label>
+                    show langs
+                    <select id="showLangs" name="showLangs">
+                      <option value="auto">Auto</option>
+                      <option value="on">Always show</option>
+                      <option value="off">Hide</option>
+                    </select>
+                  </label>
+                  <label>
+                    lang count
+                    <input id="langCount" name="langCount" type="number" min="1" max="6" step="1" placeholder="4" />
+                  </label>
+                </div>
+                <div class="option-grid">
+                  <label>
+                    lang style
+                    <select id="langStyle" name="langStyle">
+                      <option value="bar">Bars</option>
+                      <option value="icons">Icons</option>
+                    </select>
+                  </label>
+                  <label>
+                    icon size
+                    <select id="iconSize" name="iconSize">
+                      <option value="sm">Small</option>
+                      <option value="md" selected>Medium</option>
+                      <option value="lg">Large</option>
+                    </select>
+                  </label>
+                </div>
+                <label>
+                  exclude langs
+                  <div class="chip-editor">
+                    <div id="excludeLangChips" class="chip-list"></div>
+                    <input id="excludeLangInput" type="text" placeholder="Add a language and press Enter" />
+                  </div>
+                  <input id="excludeLangs" name="excludeLangs" type="hidden" />
+                </label>
+              </div>
+
+              <!-- Stats -->
+              <div class="form-section" data-mode="advanced">
+                <p class="section-label">Stats &amp; Graph</p>
+                <label>
+                  graph style
+                  <select id="barStyle" name="barStyle">
+                    <option value="bar">Bar</option>
+                    <option value="dots">Dots</option>
+                    <option value="blocks">Blocks</option>
+                  </select>
+                </label>
+                <div>
+                  <p class="field-label" style="margin:0 0 8px">show stats</p>
+                  <div class="check-row">
+                    <label class="check-item"><input type="checkbox" id="stat-repos" checked /> repos</label>
+                    <label class="check-item"><input type="checkbox" id="stat-stars" checked /> stars</label>
+                    <label class="check-item"><input type="checkbox" id="stat-forks" checked /> forks</label>
+                    <label class="check-item"><input type="checkbox" id="stat-followers" checked /> followers</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contributions -->
+              <div class="form-section" data-mode="advanced">
+                <p class="section-label">Contributions</p>
+                <div class="option-grid">
+                  <label>
+                    show contribs
+                    <select id="showContribs" name="showContribs">
+                      <option value="off">Off</option>
+                      <option value="on">Always show</option>
+                      <option value="auto">Auto with username</option>
+                    </select>
+                  </label>
+                  <label>
+                    contrib theme
+                    <select id="contribTheme" name="contribTheme">
+                      <option value="cat_jump">Cat Jump</option>
+                      <option value="popcat">Popcat</option>
+                      <option value="capybara_onsen">Capybara Onsen</option>
+                      <option value="moon">Moon Phase</option>
+                      <option value="star">Starfield</option>
+                      <option value="orbit">Orbit</option>
+                      <option value="signal">Signal</option>
+                      <option value="citylight">Citylight</option>
+                      <option value="moss">Moss</option>
+                      <option value="petal">Petal</option>
+                      <option value="firefly">Firefly</option>
+                      <option value="constellation">Constellation</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="option-grid">
+                  <label>
+                    contrib range
+                    <select id="contribRange" name="contribRange">
+                      <option value="4w">4 weeks</option>
+                      <option value="8w">8 weeks</option>
+                      <option value="12w">12 weeks</option>
+                      <option value="3m">3 months</option>
+                      <option value="16w" selected>16 weeks</option>
+                      <option value="24w">24 weeks</option>
+                      <option value="26w">26 weeks</option>
+                      <option value="6m">6 months</option>
+                      <option value="39w">39 weeks</option>
+                      <option value="9m">9 months</option>
+                      <option value="1y">1 year</option>
+                    </select>
+                  </label>
+                  <label>
+                    contrib mode
+                    <select id="contribMode" name="contribMode">
+                      <option value="compact" selected>Compact</option>
+                      <option value="focus">Focus</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Visibility -->
+              <div class="form-section" data-mode="advanced">
+                <p class="section-label">Visibility</p>
+                <div class="option-grid">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="hideAvatar" name="hideAvatar" />
+                    hide avatar
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="hideCommand" name="hideCommand" />
+                    hide command
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="hideProfile" name="hideProfile" />
+                    hide profile pic
+                  </label>
+                </div>
+              </div>
+
+              <!-- Output -->
+              <div class="form-section" data-mode="advanced">
+                <p class="section-label">Output</p>
+                <div class="option-grid">
+                  <label>
+                    motion
+                    <span class="hint">Animated SVG via the API URL</span>
+                    <select id="motion" name="motion">
+                      <option value="off">Static</option>
+                      <option value="pulse">Pulse</option>
+                      <option value="scan">Scan</option>
+                      <option value="boot">Boot</option>
+                    </select>
+                  </label>
+                  <label>
+                    click link
+                    <span class="hint">카드를 &lt;a&gt; 태그로 감싸기</span>
+                    <input id="link" name="link" type="url" placeholder="https://github.com/you/repo" />
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </form>
+        </section>
+
+        <section class="panel preview">
+          <div class="panel-head">
+            <h2>Live Result</h2>
+            <p>Preview the card, inspect what is active, then copy the format you need.</p>
+          </div>
+
+          <div id="previewSummary" class="preview-summary"></div>
+          <div id="previewDiagnostics" class="preview-diagnostics"></div>
+
+          <div class="preview-frame">
+            <div id="svgMount" class="svg-mount"></div>
+          </div>
+
+          <section class="export-panel">
+            <div class="export-head">
+              <div class="export-tabs" role="tablist" aria-label="Export format">
+                <button type="button" class="export-tab active" data-export-tab="markdown">Markdown</button>
+                <button type="button" class="export-tab" data-export-tab="api">API URL</button>
+                <button type="button" class="export-tab" data-export-tab="svg">SVG</button>
+              </div>
+              <div class="export-actions">
+                <button type="button" id="copyCurrentButton" class="primary">Copy Markdown</button>
+                <button type="button" id="downloadButton">Download SVG</button>
+              </div>
+            </div>
+
+            <label class="output-wrap">
+              <span id="exportLabelText">README markdown</span>
+              <textarea id="exportOutput" rows="12" readonly></textarea>
+            </label>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="./terminal-card.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>

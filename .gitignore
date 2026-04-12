@@ -17,8 +17,3 @@ pnpm-debug.log*
 
 .DS_Store
 Thumbs.db
-
-# Private playground UI
-index.html
-script.js
-styles.css

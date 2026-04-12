@@ -6,12 +6,16 @@ function normalizeUsername(value) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, {
-    headers: {
-      Accept: "application/vnd.github+json",
-      "User-Agent": "terminal-identity",
-    },
-  });
+  const headers = {
+    Accept: "application/vnd.github+json",
+    "User-Agent": "terminal-identity",
+  };
+
+  if (process.env.GITHUB_TOKEN) {
+    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
+
+  const response = await fetch(url, { headers });
 
   if (!response.ok) {
     return null;
@@ -35,9 +39,33 @@ async function fetchText(url) {
   return response.text();
 }
 
+async function fetchImageDataUri(url) {
+  if (!url) return null;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "terminal-identity",
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const contentType = response.headers.get("content-type") || "image/png";
+    return `data:${contentType};base64,${buffer.toString("base64")}`;
+  } catch (_error) {
+    return null;
+  }
+}
+
 const MAX_REPO_PAGES = 20;
 const REPOS_PER_PAGE = 100;
 const LANGUAGE_FETCH_CONCURRENCY = 6;
+const GITHUB_CACHE_TTL_MS = 15 * 60 * 1000;
+const githubStatsCache = new Map();
 
 function parseContributionCalendar(html) {
   if (!html) return null;
@@ -219,7 +247,16 @@ async function fetchGithubStats(username) {
     return null;
   }
 
-  try {
+  const cached = githubStatsCache.get(normalized);
+  if (cached?.value && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
+  if (cached?.promise) {
+    return cached.promise;
+  }
+
+  const request = (async () => {
+    try {
     const user = await fetchJson(`https://api.github.com/users/${normalized}`);
     if (!user) {
       return null;
@@ -244,11 +281,13 @@ async function fetchGithubStats(username) {
       .map(([name, count]) => ({ name, count }));
 
     const contributions = await fetchGithubContributions(normalized);
+    const avatarDataUri = await fetchImageDataUri(`${String(user.avatar_url || "")}&s=120`);
 
     return {
       username: normalized,
       name: String(user.name || normalized),
       avatarUrl: String(user.avatar_url || ""),
+      avatarDataUri,
       repos: Number(user.public_repos || repoList.length || 0),
       followers: Number(user.followers || 0),
       stars,
@@ -256,9 +295,29 @@ async function fetchGithubStats(username) {
       topLangs: topLangs.length > 0 ? topLangs : null,
       contributions,
     };
-  } catch (_error) {
-    return null;
+    } catch (_error) {
+      return null;
+    }
+  })();
+
+  githubStatsCache.set(normalized, {
+    promise: request,
+    value: cached?.value || null,
+    expiresAt: cached?.expiresAt || 0,
+  });
+
+  const result = await request;
+
+  if (result) {
+    githubStatsCache.set(normalized, {
+      value: result,
+      expiresAt: Date.now() + GITHUB_CACHE_TTL_MS,
+    });
+  } else {
+    githubStatsCache.delete(normalized);
   }
+
+  return result;
 }
 
 module.exports = {
