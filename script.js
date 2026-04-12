@@ -196,10 +196,11 @@ async function render() {
 
   // Playground: use skillicons URL directly (inline SVG can load external resources)
   if (state.langStyle === "icons" && nextState.githubStats?.topLangs) {
-    const effectiveLangs = nextState.githubStats.topLangs
+    const supportedLangs = nextState.githubStats.topLangs
       .filter((l) => !state.excludeLangs.includes(l.name.toLowerCase()))
+      .filter((l) => Boolean(LANG_ICON_MAP[l.name]))
       .slice(0, state.langCount);
-    const iconKeys = effectiveLangs.map((l) => LANG_ICON_MAP[l.name]).filter(Boolean);
+    const iconKeys = supportedLangs.map((l) => LANG_ICON_MAP[l.name]);
     if (iconKeys.length > 0) {
       nextState = { ...nextState, langIconsUri: `https://skillicons.dev/icons?i=${iconKeys.join(",")}`, langIconCount: iconKeys.length };
     }

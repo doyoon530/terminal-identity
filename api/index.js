@@ -76,10 +76,11 @@ module.exports = async function handler(req, res) {
 
     // Fetch lang icons if requested
     if (state.langStyle === "icons" && nextState.githubStats?.topLangs) {
-      const effectiveLangs = nextState.githubStats.topLangs
+      const supportedLangs = nextState.githubStats.topLangs
         .filter((l) => !state.excludeLangs.includes(l.name.toLowerCase()))
+        .filter((l) => Boolean(LANG_ICON_MAP[l.name]))
         .slice(0, state.langCount);
-      const iconKeys = effectiveLangs.map((l) => LANG_ICON_MAP[l.name]).filter(Boolean);
+      const iconKeys = supportedLangs.map((l) => LANG_ICON_MAP[l.name]);
       if (iconKeys.length > 0) {
         const uri = await fetchLangIconsDataUri(iconKeys);
         if (uri) nextState = { ...nextState, langIconsUri: uri, langIconCount: iconKeys.length };
