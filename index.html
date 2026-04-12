@@ -32,24 +32,42 @@
           Make your GitHub README feel like a polished product page with one image URL.
         </p>
         <div class="hero-actions">
-          <a class="hero-link" href="https://github.com/doyoon530" target="_blank" rel="noreferrer">
-            doyoon530 on GitHub
-          </a>
+          <a id="githubProfileLink" class="hero-action" href="https://github.com/doyoon530" target="_blank" rel="noreferrer">Open GitHub Profile</a>
+          <button type="button" id="syncGithubButton" class="hero-action">Sync GitHub Data</button>
+          <button type="button" id="randomizeButton" class="hero-action">Randomize Look</button>
+          <button type="button" id="resetButton" class="hero-action">Reset</button>
         </div>
+        <div id="heroSummary" class="hero-summary"></div>
       </header>
+
+      <section class="panel presets-panel">
+        <div class="panel-head">
+          <h2>Recipe Gallery</h2>
+          <p>Start from the same recipe cards shown in the README and tune from there.</p>
+        </div>
+        <div id="presetGallery" class="preset-gallery"></div>
+      </section>
 
       <main class="workspace">
         <section class="panel controls">
           <div class="panel-head">
-            <h2>Card Controls</h2>
-            <p>Keep the params simple and the result vivid.</p>
+            <div class="panel-head-main">
+              <div>
+                <h2>Card Controls</h2>
+                <p>Start simple, then open the deeper controls when you want more precision.</p>
+              </div>
+              <div class="mode-toggle" role="tablist" aria-label="Editor mode">
+                <button type="button" id="basicModeButton" class="mode-button active" data-ui-mode="basic" aria-pressed="true">Basic</button>
+                <button type="button" id="advancedModeButton" class="mode-button" data-ui-mode="advanced" aria-pressed="false">Advanced</button>
+              </div>
+            </div>
           </div>
 
           <form id="builder-form">
-            <div class="form-body">
+            <div id="formBody" class="form-body" data-ui-mode="basic">
 
               <!-- Identity -->
-              <div class="form-section">
+              <div class="form-section" data-mode="basic">
                 <p class="section-label">Identity</p>
                 <label>
                   name
@@ -66,32 +84,34 @@
               </div>
 
               <!-- Content -->
-              <div class="form-section">
+              <div class="form-section" data-mode="basic">
                 <p class="section-label">Content</p>
                 <label>
                   tagline
                   <span class="hint">우측 패널 featured line</span>
                   <input id="tagline" name="tagline" placeholder="Building tiny tools with taste." />
                 </label>
-                <label>
-                  bio
-                  <span class="hint">좌측 패널 · 높이에 따라 자동 줄바꿈 · 없으면 tagline으로 대체</span>
-                  <textarea id="bio" name="bio" rows="3" placeholder="안녕하세요. 저는 임베디드 센서 데이터 분석과 AI 시스템 설계를 공부하고 있어요."></textarea>
-                </label>
-                <label>
-                  status
-                  <span class="hint">footer / username 없을 때 표시</span>
-                  <input id="status" name="status" placeholder="available for cool internet projects" />
-                </label>
-                <label>
-                  command
-                  <span class="hint">footer에만 표시</span>
-                  <input id="command" name="command" placeholder="npx terminal-identity" />
-                </label>
+                <div class="mode-advanced">
+                  <label>
+                    bio
+                    <span class="hint">좌측 패널 · 높이에 따라 자동 줄바꿈 · 없으면 tagline으로 대체</span>
+                    <textarea id="bio" name="bio" rows="3" placeholder="안녕하세요. 저는 임베디드 센서 데이터 분석과 AI 시스템 설계를 공부하고 있어요."></textarea>
+                  </label>
+                  <label>
+                    status
+                    <span class="hint">footer / username 없을 때 표시</span>
+                    <input id="status" name="status" placeholder="available for cool internet projects" />
+                  </label>
+                  <label>
+                    command
+                    <span class="hint">footer에만 표시</span>
+                    <input id="command" name="command" placeholder="npx terminal-identity" />
+                  </label>
+                </div>
               </div>
 
               <!-- Appearance -->
-              <div class="form-section">
+              <div class="form-section" data-mode="basic">
                 <p class="section-label">Appearance</p>
                 <div class="option-grid">
                   <label>
@@ -127,28 +147,40 @@
                     </select>
                   </label>
                   <label>
-                    avatar initials
-                    <input id="avatar" name="avatar" placeholder="GG" />
+                    pattern
+                    <select id="pattern" name="pattern">
+                      <option value="grid">Grid</option>
+                      <option value="rings">Rings</option>
+                      <option value="pulse">Pulse</option>
+                    </select>
                   </label>
                 </div>
-                <div class="option-grid">
-                  <label>
-                    width
-                    <input id="width" name="width" type="number" min="720" max="1400" step="10" />
-                  </label>
-                  <label>
-                    height
-                    <input id="height" name="height" type="text" inputmode="text" placeholder="auto or 520" />
-                  </label>
+                <div class="mode-advanced">
+                  <div class="option-grid">
+                    <label>
+                      avatar initials
+                      <input id="avatar" name="avatar" placeholder="GG" />
+                    </label>
+                    <label>
+                      accent color
+                      <input id="accent" name="accent" type="text" placeholder="#f08a61" maxlength="9" />
+                    </label>
+                  </div>
+                  <div class="option-grid">
+                    <label>
+                      width
+                      <input id="width" name="width" type="number" min="720" max="1400" step="10" />
+                    </label>
+                    <label>
+                      height
+                      <input id="height" name="height" type="text" inputmode="text" placeholder="auto or 520" />
+                    </label>
+                  </div>
                 </div>
-                <label>
-                  accent color
-                  <input id="accent" name="accent" type="text" placeholder="#f08a61" maxlength="9" />
-                </label>
               </div>
 
               <!-- Languages -->
-              <div class="form-section">
+              <div class="form-section" data-mode="advanced">
                 <p class="section-label">Languages</p>
                 <div class="option-grid">
                   <label>
@@ -183,12 +215,16 @@
                 </div>
                 <label>
                   exclude langs
-                  <input id="excludeLangs" name="excludeLangs" type="text" placeholder="HTML, CSS, Dockerfile" />
+                  <div class="chip-editor">
+                    <div id="excludeLangChips" class="chip-list"></div>
+                    <input id="excludeLangInput" type="text" placeholder="Add a language and press Enter" />
+                  </div>
+                  <input id="excludeLangs" name="excludeLangs" type="hidden" />
                 </label>
               </div>
 
               <!-- Stats -->
-              <div class="form-section">
+              <div class="form-section" data-mode="advanced">
                 <p class="section-label">Stats &amp; Graph</p>
                 <label>
                   graph style
@@ -210,7 +246,7 @@
               </div>
 
               <!-- Contributions -->
-              <div class="form-section">
+              <div class="form-section" data-mode="advanced">
                 <p class="section-label">Contributions</p>
                 <div class="option-grid">
                   <label>
@@ -267,7 +303,7 @@
               </div>
 
               <!-- Visibility -->
-              <div class="form-section">
+              <div class="form-section" data-mode="advanced">
                 <p class="section-label">Visibility</p>
                 <div class="option-grid">
                   <label class="checkbox-label">
@@ -285,9 +321,9 @@
                 </div>
               </div>
 
-              <!-- Export -->
-              <div class="form-section">
-                <p class="section-label">Export</p>
+              <!-- Output -->
+              <div class="form-section" data-mode="advanced">
+                <p class="section-label">Output</p>
                 <div class="option-grid">
                   <label>
                     motion
@@ -308,51 +344,42 @@
               </div>
 
             </div>
-
-            <div class="action-row">
-              <button type="button" id="presetButton">Load demo</button>
-              <button type="button" id="copySvgButton" class="primary">Copy SVG</button>
-              <button type="button" id="copyMarkdownButton">Copy markdown</button>
-              <button type="button" id="copyShareButton">Copy API URL</button>
-              <button type="button" id="downloadButton">Download SVG</button>
-            </div>
           </form>
         </section>
 
         <section class="panel preview">
           <div class="panel-head">
             <h2>Live Result</h2>
-            <p>Preview the card, then paste the URL into your README.</p>
+            <p>Preview the card, inspect what is active, then copy the format you need.</p>
           </div>
+
+          <div id="previewSummary" class="preview-summary"></div>
+          <div id="previewDiagnostics" class="preview-diagnostics"></div>
 
           <div class="preview-frame">
             <div id="svgMount" class="svg-mount"></div>
           </div>
 
-          <label class="output-wrap">
-            README markdown
-            <textarea id="markdownOutput" rows="5" readonly></textarea>
-          </label>
+          <section class="export-panel">
+            <div class="export-head">
+              <div class="export-tabs" role="tablist" aria-label="Export format">
+                <button type="button" class="export-tab active" data-export-tab="markdown">Markdown</button>
+                <button type="button" class="export-tab" data-export-tab="api">API URL</button>
+                <button type="button" class="export-tab" data-export-tab="svg">SVG</button>
+              </div>
+              <div class="export-actions">
+                <button type="button" id="copyCurrentButton" class="primary">Copy Markdown</button>
+                <button type="button" id="downloadButton">Download SVG</button>
+              </div>
+            </div>
 
-          <label class="output-wrap">
-            API URL
-            <textarea id="apiOutput" rows="4" readonly></textarea>
-          </label>
-
-          <label class="output-wrap">
-            SVG source
-            <textarea id="svgOutput" rows="14" readonly></textarea>
-          </label>
+            <label class="output-wrap">
+              <span id="exportLabelText">README markdown</span>
+              <textarea id="exportOutput" rows="12" readonly></textarea>
+            </label>
+          </section>
         </section>
       </main>
-
-      <section class="panel presets-panel">
-        <div class="panel-head">
-          <h2>Preset Gallery</h2>
-          <p>Click a preset to load a polished card people would actually want to use.</p>
-        </div>
-        <div id="presetGallery" class="preset-gallery"></div>
-      </section>
     </div>
 
     <script src="./terminal-card.js"></script>
