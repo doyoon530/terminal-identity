@@ -7,6 +7,11 @@ const {
   buildSvg,
   buildApiUrl,
 } = window.TerminalIdentity;
+const {
+  FORM_FIELD_IDS = [],
+  SELECT_OPTIONS = {},
+  STAT_KEYS = ["repos", "stars", "forks", "followers"],
+} = window.TerminalIdentityPlaygroundConfig || {};
 
 const STORAGE_KEY = "terminal-identity-playground-state-v3";
 const UI_MODE_KEY = "terminal-identity-ui-mode-v1";
@@ -49,33 +54,7 @@ const excludeLangInput = document.getElementById("excludeLangInput");
 const excludeLangChips = document.getElementById("excludeLangChips");
 const exportTabs = [...document.querySelectorAll(".export-tab")];
 
-const fieldIds = [
-  "name",
-  "username",
-  "role",
-  "tagline",
-  "bio",
-  "status",
-  "command",
-  "provider",
-  "theme",
-  "pattern",
-  "avatar",
-  "width",
-  "height",
-  "accent",
-  "showLangs",
-  "langCount",
-  "langStyle",
-  "iconSize",
-  "barStyle",
-  "showContribs",
-  "contribTheme",
-  "contribRange",
-  "contribMode",
-  "motion",
-  "link",
-];
+const fieldIds = FORM_FIELD_IDS;
 
 const githubStatsCache = new Map();
 const GITHUB_CACHE_TTL_MS = 15 * 60 * 1000;
@@ -102,6 +81,19 @@ function copyTextWithFallback(value, target) {
   document.execCommand("copy");
   target.setAttribute("readonly", "true");
   return Promise.resolve();
+}
+
+function populateSelectOptions() {
+  Object.entries(SELECT_OPTIONS).forEach(([id, options]) => {
+    const select = document.getElementById(id);
+    if (!select) {
+      return;
+    }
+
+    select.innerHTML = options
+      .map((option) => `<option value="${option.value}">${option.label}</option>`)
+      .join("");
+  });
 }
 
 function normalizeUsername(value) {
@@ -258,7 +250,7 @@ function getState() {
     hideAvatar: document.getElementById("hideAvatar").checked,
     hideCommand: document.getElementById("hideCommand").checked,
     hideProfile: document.getElementById("hideProfile").checked,
-    stats: ["repos", "stars", "forks", "followers"].filter((stat) => document.getElementById(`stat-${stat}`).checked).join(","),
+    stats: STAT_KEYS.filter((stat) => document.getElementById(`stat-${stat}`).checked).join(","),
     excludeLangs: excludeLangValues,
     bio: document.getElementById("bio").value.trim(),
   });
@@ -291,8 +283,8 @@ function fillForm(state) {
   document.getElementById("hideAvatar").checked = state.hideAvatar === "true" || state.hideAvatar === true;
   document.getElementById("hideCommand").checked = state.hideCommand === "true" || state.hideCommand === true;
   document.getElementById("hideProfile").checked = state.hideProfile === "true" || state.hideProfile === true;
-  const statsArr = Array.isArray(state.stats) ? state.stats : ["repos", "stars", "forks", "followers"];
-  ["repos", "stars", "forks", "followers"].forEach((stat) => {
+  const statsArr = Array.isArray(state.stats) ? state.stats : STAT_KEYS;
+  STAT_KEYS.forEach((stat) => {
     document.getElementById(`stat-${stat}`).checked = statsArr.includes(stat);
   });
   setExcludeLangValues(Array.isArray(state.excludeLangs) ? state.excludeLangs : parseExcludeLangValues(state.excludeLangs));
@@ -926,6 +918,7 @@ downloadButton.addEventListener("click", () => {
 });
 
 setUiMode(currentUiMode);
+populateSelectOptions();
 fillForm(getInitialState());
 updateGithubLink(document.getElementById("username").value);
 renderPresetGallery();

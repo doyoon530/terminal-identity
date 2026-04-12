@@ -1,11 +1,20 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports) {
-    module.exports = factory();
+    module.exports = factory({
+      buildAmberDashboard: require("./lib/terminal/layouts/amber"),
+      buildObsidianWorkspace: require("./lib/terminal/layouts/obsidian"),
+      buildPrismCanvas: require("./lib/terminal/layouts/prism"),
+    });
     return;
   }
 
-  root.TerminalIdentity = factory();
-})(typeof globalThis !== "undefined" ? globalThis : window, function () {
+  root.TerminalIdentity = factory(root.TerminalIdentityLayouts || {});
+})(typeof globalThis !== "undefined" ? globalThis : window, function (layoutModules) {
+  const {
+    buildAmberDashboard: externalBuildAmberDashboard,
+    buildObsidianWorkspace: externalBuildObsidianWorkspace,
+    buildPrismCanvas: externalBuildPrismCanvas,
+  } = layoutModules;
   const themeMap = {
     ember: {
       shell: "#161218",
@@ -2365,437 +2374,112 @@
   <circle cx="120" cy="60" r="8" fill="${colors[2]}"></circle>`;
   }
 
-  function buildAmberDashboard(state, palette, provider, topLangs, contributions, surfaces) {
-    const statusText = getStatusText(state);
-    const outerX = 28;
-    const outerY = 96;
-    const outerW = state.width - 56;
-    const outerH = state.height - 124;
-    const footerY = outerY + outerH - 54;
-    const contentY = outerY + 36;
-    const accent = surfaces.accent;
-    const dim = surfaces.textMuted;
-    const label = surfaces.label;
+  function buildProfileClipPath(options) {
+    const { enabled, clipId, cx, cy, radius } = options;
+    if (!enabled) {
+      return "";
+    }
 
-    // Proportional columns
-    const leftX = 54;
-    const leftW = Math.min(380, Math.round(outerW * 0.42));
-    const leftH = Math.max(footerY - contentY - 8, 0);
-    const rightX = leftX + leftW + 18;
-    const rightW = Math.max(state.width - rightX - 54, 0);
-    const rightY = contentY;
+    return `<clipPath id="${clipId}">
+      <circle cx="${cx}" cy="${cy}" r="${radius}"></circle>
+    </clipPath>`;
+  }
 
-    // Profile image (circular)
-    const showProfileFrame = !state.hideProfile;
-    const hasProfileImage = !!state.profileUri;
-    const PROFILE_R   = 32;
-    const PROFILE_CX  = leftX + 20 + PROFILE_R;
-    const PROFILE_CY  = contentY + 54;            // more top breathing room
-    const DIVIDER_Y   = PROFILE_CY + PROFILE_R + 14;
-    const ABOUT_LBL_Y = DIVIDER_Y + 14;
+  function buildCircularProfileSlot(options) {
+    const {
+      showFrame,
+      hasProfileImage,
+      cx,
+      cy,
+      radius,
+      frameFill,
+      profileUri,
+      clipId,
+      avatar,
+      fallbackFill,
+      fallbackFontSize = 18,
+      fallbackFontWeight = 600,
+      fallbackYOffset = 6,
+    } = options;
 
-    // Dynamic Y positions for left panel content
-    const ROLE_Y    = showProfileFrame ? ABOUT_LBL_Y + 24 : contentY + 44;
-    const BIO_TOP_Y = ROLE_Y + 26;
-
-    // Bio text wrapping (bio overrides tagline in left panel)
-    const bioSource = state.bio || state.tagline;
-    const BIO_LINE_H = 17;
-    const bioMaxLines = Math.max(1, Math.floor((leftH - (ROLE_Y - contentY) - 26 - 10) / BIO_LINE_H));
-    const BIO_TEXT_W = Math.max(40, leftW - 40);
-    const bioLines = wrapTextBlock(bioSource, BIO_TEXT_W, bioMaxLines, { fontSize: 12 });
-
-    const showLPBio = bioLines.length > 0 && leftH >= (ROLE_Y - contentY + BIO_LINE_H + 10);
-    const leftClipId = safeSvgId("amber-left-clip", `${state.provider}-${state.theme}-${state.username || state.name}`);
-    const profileClipId = safeSvgId("profile-clip", state.username || state.name);
-    const profileTextX = PROFILE_CX + PROFILE_R + 16;
-    const profileTextW = Math.max(40, leftX + leftW - 20 - profileTextX);
-    const roleTextW = Math.max(40, leftW - 54);
-
-    const rpDataTop = rightY + 16;
-    const rpDataBot = Math.max(footerY - 12, rpDataTop);
-
-    // Stats in right panel
-    const statKeys = state.stats || STAT_KEYS;
-    const statsH = statKeys.length * 18;
-    const showStats = state.githubStats && (rpDataBot - rpDataTop) >= statsH + 16;
-    const STATS_LABEL_Y = rpDataTop + 13;
-    const STATS_Y = rpDataTop + 24;
-    const statsEndY = showStats ? STATS_Y + statsH : rpDataTop;
-
-    // Langs and contributions stack in independent modules below stats.
-    const rpModuleTop = statsEndY + 18;
-    const moduleGap = 14;
-    const hasContribs = contributions && showStats;
-    const hasLangs = topLangs && showStats;
-    const rpModuleAvail = rpDataBot - rpModuleTop;
-    const maxBarLangs = topLangs
-      ? Math.min(topLangs.length, Math.max(0, Math.floor(Math.max(0, rpModuleAvail - 30) / 18)))
-      : 0;
-    const langCount = shouldRenderLangIcons(state)
-      ? getLangDisplayCount(state, topLangs, { maxIcons: 4 })
-      : maxBarLangs;
-    const langModuleH = getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 });
-    const canShowLangsFirst = hasLangs && langCount > 0 && rpModuleAvail >= langModuleH;
-    const preliminaryLangsToShow = canShowLangsFirst ? topLangs.slice(0, langCount) : null;
-    const langContentH = !canShowLangsFirst
-      ? 0
-      : shouldRenderLangIcons(state)
-        ? (ICON_SIZES[state.iconSize] ?? ICON_SIZES.md)
-        : preliminaryLangsToShow.length * 18;
-    const langModuleTotalH = canShowLangsFirst ? langContentH + 30 : 0;
-
-    const contribModuleTop = rpModuleTop + (canShowLangsFirst ? langModuleTotalH + moduleGap : 0);
-    const contribAvailH = rpDataBot - contribModuleTop - 4;
-    const amberContribOptions = getAmberContributionOptions(state, {
-      labelColor: label,
-    });
-    const contribSectionH = estimateContributionSectionHeight(
-      contributions,
-      rightW - 36,
-      state.contribTheme,
-      amberContribOptions
-    );
-    const canShowContribs = hasContribs && contribAvailH >= contribSectionH;
-    const langModuleTop = rpModuleTop;
-    const showLangs = canShowLangsFirst;
-    const langsToShow = showLangs ? topLangs.slice(0, langCount) : null;
-    const LANGS_LABEL_Y = langModuleTop + 11;
-    const LANGS_Y = langModuleTop + 22;
-    const CONTRIB_DIVIDER_Y = contribModuleTop - 2;
-    const CONTRIB_GRID_Y = contribModuleTop + amberContribOptions.contentTop;
+    if (!showFrame) {
+      return "";
+    }
 
     return `
-  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
-  <rect x="${outerX + 0.5}" y="${outerY + 0.5}" width="${outerW - 1}" height="${outerH - 1}" rx="13.5" stroke="${surfaces.panelStroke}"></rect>
-
-  <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10" fill="${surfaces.panelFill}"></rect>
-  <defs>
-    <clipPath id="${leftClipId}">
-      <rect x="${leftX}" y="${contentY}" width="${leftW}" height="${leftH}" rx="10"></rect>
-    </clipPath>
-    ${hasProfileImage ? `<clipPath id="${profileClipId}">
-      <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R}"></circle>
-    </clipPath>` : ""}
-  </defs>
-  <g clip-path="url(#${leftClipId})">
-  <rect x="${leftX + 6}" y="${contentY + 14}" width="2" height="80" rx="1" fill="${accent}" opacity="0.35"></rect>
-
-  ${showProfileFrame ? `
-  <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="${surfaces.strongLine}"/>
+  <circle cx="${cx}" cy="${cy}" r="${radius + 2}" fill="${frameFill}"/>
   ${hasProfileImage
-    ? `<image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#${profileClipId})" preserveAspectRatio="xMidYMid slice"/>`
-    : `<text x="${PROFILE_CX}" y="${PROFILE_CY + 9}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="22" font-weight="700" fill="${surfaces.textStrong}">${escapeXml(state.avatar)}</text>`}
-  <rect x="${leftX + 20}" y="${DIVIDER_Y}" width="${leftW - 40}" height="1" fill="${surfaces.line}"/>
-  <text x="${leftX + 20}" y="${ABOUT_LBL_Y}" font-family="IBM Plex Mono, monospace" font-size="10" fill="${dim}" letter-spacing="0.8">ABOUT</text>
-  ${state.username ? `<text x="${profileTextX}" y="${PROFILE_CY - 8}" font-family="Sora, Arial, sans-serif" font-size="18" font-weight="700" fill="${surfaces.textStrong}">${escapeXml(truncateTextPx(state.name, profileTextW, { fontSize: 18 }))}</text>
-  <text x="${profileTextX}" y="${PROFILE_CY + 14}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">@${escapeXml(truncateTextPx(state.username, profileTextW - 8, { fontSize: 12 }))}</text>` : ""}` : ""}
+    ? `<image x="${cx - radius}" y="${cy - radius}" width="${radius * 2}" height="${radius * 2}" href="${escapeXml(profileUri)}" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>`
+    : `<text x="${cx}" y="${cy + fallbackYOffset}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="${fallbackFontSize}" font-weight="${fallbackFontWeight}" fill="${fallbackFill}">${escapeXml(avatar)}</text>`}`;
+  }
 
-  <circle cx="${leftX + 24}" cy="${ROLE_Y - 6}" r="3.5" fill="${accent}" filter="url(#glow-accent)"/>
-  <text x="${leftX + 34}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="15" fill="${accent}">${escapeXml(truncateTextPx(state.role, roleTextW, { fontSize: 15 }))}</text>
-  ${showLPBio ? bioLines.map((line, i) => {
-    const lineY = BIO_TOP_Y + i * BIO_LINE_H;
-    if (lineY > contentY + leftH - 10) return "";
-    return `<text x="${leftX + 20}" y="${lineY}" font-family="IBM Plex Mono, Apple SD Gothic Neo, Malgun Gothic, monospace" font-size="12" fill="${surfaces.textBody}">${renderBoldLine(line, surfaces.textStrong)}</text>`;
-  }).join("\n  ") : ""}
-  </g>
-
-  ${showStats
-    ? `<text x="${rightX + 18}" y="${STATS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">GITHUB STATS</text>
-  ${buildStatBars(state.githubStats, rightX + 18, STATS_Y, rightW - 36, accent, dim, surfaces.softLine, state.stats, state.barStyle, "bar-grad")}
-  ${showLangs
-    ? `<rect x="${rightX}" y="${rpModuleTop - 8}" width="${rightW}" height="1" fill="${surfaces.line}"></rect>
-  <text x="${rightX + 18}" y="${LANGS_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TOP LANGS</text>
-  ${shouldRenderLangIcons(state) && langsToShow
-    ? buildLangIcons(state.langIconsUri, rightX + 18, LANGS_Y, rightW - 36, state.langIconCount ?? langsToShow.length, state.iconSize)
-    : buildLangBars(langsToShow, rightX + 18, LANGS_Y, rightW - 36, accent, dim, surfaces.softLine, state.barStyle, "bar-grad")}`
-    : ""}
-  ${canShowContribs
-    ? `<rect x="${rightX}" y="${CONTRIB_DIVIDER_Y}" width="${rightW}" height="1" fill="${surfaces.line}"></rect>
-  ${buildContributionGrid(contributions, rightX + 18, CONTRIB_GRID_Y, rightW - 36, state.contribTheme, palette, amberContribOptions)}`
-    : ""}`
-    : `<text x="${rightX + 18}" y="${rpDataTop + 13}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${label}" letter-spacing="0.5">TAGLINE</text>
-  <text x="${rightX + 18}" y="${rpDataTop + 44}" font-family="Sora, Arial, sans-serif" font-size="16" font-weight="600" fill="${surfaces.textStrong}">${escapeXml(truncateText(state.tagline, 52))}</text>
-  ${state.role ? `<text x="${rightX + 18}" y="${rpDataTop + 70}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.role, 36))}</text>` : ""}`}
-
-  <rect x="${outerX}" y="${footerY}" width="${outerW}" height="1" fill="url(#line-grad-h)"></rect>
-  <circle cx="${outerX + 22}" cy="${footerY + 26}" r="5" fill="${surfaces.success}" filter="url(#glow-status)"></circle>
-  <text x="${outerX + 36}" y="${footerY + 32}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(statusText, 52))}</text>
-  ${state.hideCommand ? "" : `<text x="${state.width - 54}" y="${footerY + 32}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">$ ${escapeXml(truncateText(state.command, 32))}</text>`}`;
+  function buildAmberDashboard(state, palette, provider, topLangs, contributions, surfaces) {
+    return externalBuildAmberDashboard(state, palette, provider, topLangs, contributions, surfaces, {
+      ICON_SIZES,
+      STAT_KEYS,
+      buildCircularProfileSlot,
+      buildContributionGrid,
+      buildLangBars,
+      buildLangIcons,
+      buildProfileClipPath,
+      buildStatBars,
+      escapeXml,
+      estimateContributionSectionHeight,
+      getAmberContributionOptions,
+      getLangDisplayCount,
+      getLangSectionHeight,
+      getStatusText,
+      renderBoldLine,
+      safeSvgId,
+      shouldRenderLangIcons,
+      truncateText,
+      truncateTextPx,
+      wrapTextBlock,
+    });
   }
 
   function buildObsidianWorkspace(state, palette, provider, topLangs, contributions, surfaces) {
-    const statusText = getStatusText(state);
-    const outerX = 28;
-    const outerY = 96;
-    const outerW = state.width - 56;
-    const outerH = state.height - 124;
-    const footerY = outerY + outerH - 54;
-
-    const leftX = 52;
-    const leftY = 128;
-    const leftW = Math.min(260, Math.round(outerW * 0.27));
-    const leftH = outerH - 86;
-    const showProfileFrame = !state.hideProfile;
-    const hasProfileImage = !!state.profileUri;
-    const PROFILE_R = 24;
-    const PROFILE_CX = leftX + 18 + PROFILE_R;
-    const PROFILE_CY = leftY + 56;
-    const profileClipId = safeSvgId("profile-clip", `obsidian-${state.username || state.name}`);
-    const profileTextX = showProfileFrame ? PROFILE_CX + PROFILE_R + 14 : leftX + 18;
-    const profileTextW = Math.max(40, leftX + leftW - 18 - profileTextX);
-    const nameY = showProfileFrame ? leftY + 60 : leftY + 62;
-    const handleY = showProfileFrame ? leftY + 82 : leftY + 84;
-    const dividerY = showProfileFrame ? leftY + 100 : 0;
-    const roleLabelY = showProfileFrame ? leftY + 126 : leftY + 130;
-    const roleY = showProfileFrame ? leftY + 148 : leftY + 152;
-    const modelLabelY = showProfileFrame ? leftY + 192 : leftY + 196;
-    const modelY = showProfileFrame ? leftY + 214 : leftY + 218;
-
-    const mainX = leftX + leftW + 18;
-    const mainY = 128;
-    const mainW = state.width - mainX - 52;
-
-    const availH = outerH - 86;
-    const responseRequiredH = getObsidianResponseRequiredHeight(state, topLangs, contributions, mainW);
-    const minMainH = 160;
-    const baseResponseH = Math.max(availH - Math.round(availH * 0.56) - 14, 60);
-    const responseH = state.heightAuto
-      ? Math.max(responseRequiredH, Math.min(baseResponseH, availH - minMainH - 14))
-      : baseResponseH;
-    const mainH = Math.max(minMainH, availH - responseH - 14);
-    const responseY = mainY + mainH + 14;
-
-    const mS = Math.min(mainH / 174, 1.35);
-    const M_LABEL_Y = mainY + 24;
-    const M_TAG_Y   = mainY + Math.round(64 * mS);
-    const M_DIV_Y   = mainY + Math.round(88 * mS);
-    const M_CMD_Y   = mainY + Math.round(122 * mS);
-    const M_DOT_CY  = mainY + Math.round(148 * mS);
-    const M_STA_TY  = mainY + Math.round(154 * mS);
-
-    const accent = surfaces.accent;
-    const ink = surfaces.textStrong;
-    const dim = surfaces.textMuted;
-    const model = `${provider.label}/${state.theme}`;
-    const sectionGap = 12;
-    const responseModuleTop = responseY + 34;
-    const langCount = topLangs?.length ? getLangDisplayCount(state, topLangs, { maxIcons: 6 }) : 0;
-    const langSectionH = topLangs?.length && langCount > 0
-      ? getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 })
-      : 0;
-    const obsidianContribOptions = getContributionOptions(state, { labelColor: dim, contentTop: 28, bottomPad: 8 });
-    const contribSectionH = contributions?.weeks?.length
-      ? estimateContributionSectionHeight(contributions, mainW - 44, state.contribTheme, obsidianContribOptions)
-      : 0;
-    const stackedRequiredH = 34 + langSectionH + (langSectionH && contribSectionH ? sectionGap : 0) + contribSectionH + 8;
-    const showLangs = !!topLangs?.length && langSectionH > 0 && responseH >= stackedRequiredH;
-    const showContribs = !!contributions?.weeks?.length && responseH >= (34 + (showLangs ? langSectionH + sectionGap : 0) + contribSectionH + 8);
-    const contribTop = responseModuleTop + (showLangs ? langSectionH + sectionGap : 0);
-    const langsToShow = showLangs ? topLangs.slice(0, langCount) : null;
-
-    return `
-  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
-
-  <rect x="${leftX}" y="${leftY}" width="${leftW}" height="${leftH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
-  ${hasProfileImage ? `<defs>
-    <clipPath id="${profileClipId}">
-      <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R}"></circle>
-    </clipPath>
-  </defs>` : ""}
-  <text x="${leftX + 18}" y="${leftY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">workspace</text>
-  ${showProfileFrame ? `
-  <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="${surfaces.strongLine}"/>
-  ${hasProfileImage
-    ? `<image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#${profileClipId})" preserveAspectRatio="xMidYMid slice"/>`
-    : `<text x="${PROFILE_CX}" y="${PROFILE_CY + 6}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="18" font-weight="600" fill="${ink}">${escapeXml(state.avatar)}</text>`}
-  <rect x="${leftX + 18}" y="${dividerY}" width="${leftW - 36}" height="1" fill="${surfaces.line}"></rect>` : ""}
-  <text x="${profileTextX}" y="${nameY}" font-family="IBM Plex Mono, monospace" font-size="17" fill="${ink}">${escapeXml(truncateTextPx(state.name, profileTextW, { fontSize: 17 }))}</text>
-  <text x="${profileTextX}" y="${handleY}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(
-    state.username ? `@${state.username}` : "personal workspace"
-  )}</text>
-  <text x="${leftX + 18}" y="${roleLabelY}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">role</text>
-  <text x="${leftX + 18}" y="${roleY}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(
-    truncateText(state.role, 20)
-  )}</text>
-  <text x="${leftX + 18}" y="${modelLabelY}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">model</text>
-  <text x="${leftX + 18}" y="${modelY}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(model)}</text>
-
-  <rect x="${mainX}" y="${mainY}" width="${mainW}" height="${mainH}" rx="10" fill="${surfaces.panelFill}"></rect>
-  <text x="${mainX + 22}" y="${M_LABEL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prompt</text>
-  <text x="${mainX + 22}" y="${M_TAG_Y}" font-family="Sora, Arial, sans-serif" font-size="22" font-weight="700" fill="${ink}">${escapeXml(
-    truncateText(state.tagline, 36)
-  )}</text>
-  <rect x="${mainX + 22}" y="${M_DIV_Y}" width="${mainW - 44}" height="1" fill="${surfaces.line}"></rect>
-  ${state.hideCommand ? "" : `<text x="${mainX + 22}" y="${M_CMD_Y}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${dim}">$ ${escapeXml(state.command)}</text>`}
-  <circle cx="${mainX + 22}" cy="${M_DOT_CY}" r="5" fill="${accent}"></circle>
-  <text x="${mainX + 36}" y="${M_STA_TY}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(
-    truncateText(statusText, 48)
-  )}</text>
-
-  <rect x="${mainX}" y="${responseY}" width="${mainW}" height="${responseH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
-  <text x="${mainX + 22}" y="${responseY + 22}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">output</text>
-  ${showLangs
-    ? `<text x="${mainX + 22}" y="${responseModuleTop + 11}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dim}" letter-spacing="0.5">TOP LANGS</text>
-  ${shouldRenderLangIcons(state) && langsToShow
-    ? buildLangIcons(state.langIconsUri, mainX + 22, responseModuleTop + 22, mainW - 44, state.langIconCount ?? langsToShow.length, state.iconSize)
-    : buildLangBars(langsToShow, mainX + 22, responseModuleTop + 22, mainW - 44, accent, dim, surfaces.softLine, state.barStyle)}`
-    : ""}
-  ${showContribs
-    ? `${showLangs ? `<rect x="${mainX + 22}" y="${contribTop - 2}" width="${mainW - 44}" height="1" fill="${surfaces.line}"></rect>` : ""}
-  ${buildContributionGrid(contributions, mainX + 22, contribTop + obsidianContribOptions.contentTop, mainW - 44, state.contribTheme, palette, obsidianContribOptions)}`
-    : showLangs
-    ? ""
-    : state.githubStats
-    ? (!showLangs && topLangs
-        ? (shouldRenderLangIcons(state)
-            ? buildLangIcons(state.langIconsUri, mainX + 22, responseY + 34, mainW - 44, state.langIconCount ?? topLangs.length, state.iconSize)
-            : buildLangBars(topLangs, mainX + 22, responseY + 34, mainW - 44, accent, dim, surfaces.softLine, state.barStyle))
-        : buildStatBars(state.githubStats, mainX + 22, responseY + 34, mainW - 44, accent, dim, surfaces.softLine, state.stats, state.barStyle))
-    : `<text x="${mainX + 22}" y="${responseY + 52}" font-family="Sora, Arial, sans-serif" font-size="15" font-weight="600" fill="${ink}">${escapeXml(truncateText(state.tagline, 38))}</text>
-  <circle cx="${mainX + 22}" cy="${responseY + 76}" r="5" fill="${accent}"></circle>
-  <text x="${mainX + 36}" y="${responseY + 82}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${escapeXml(truncateText(state.status, 44))}</text>`}
-
-  <rect x="${outerX}" y="${footerY}" width="${outerW}" height="1" fill="${surfaces.softLine}"></rect>
-  <circle cx="${outerX + 22}" cy="${footerY + 24}" r="5" fill="${accent}"></circle>
-  <text x="${outerX + 36}" y="${footerY + 30}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">${escapeXml(truncateText(state.status, 64))}</text>`;
+    return externalBuildObsidianWorkspace(state, palette, provider, topLangs, contributions, surfaces, {
+      buildCircularProfileSlot,
+      buildContributionGrid,
+      buildLangBars,
+      buildLangIcons,
+      buildProfileClipPath,
+      buildStatBars,
+      escapeXml,
+      estimateContributionSectionHeight,
+      getContributionOptions,
+      getLangDisplayCount,
+      getLangSectionHeight,
+      getObsidianResponseRequiredHeight,
+      getStatusText,
+      safeSvgId,
+      shouldRenderLangIcons,
+      truncateText,
+      truncateTextPx,
+    });
   }
 
   function buildPrismCanvas(state, palette, provider, topLangs, contributions, surfaces) {
-    const statusText = getStatusText(state);
-    const outerX = 28;
-    const outerY = 96;
-    const outerW = state.width - 56;
-    const outerH = state.height - 124;
-
-    // Proportional lower panel widths
-    const innerW = state.width - 116;
-    const llW = Math.round(innerW * 0.345);
-    const lmW = Math.round(innerW * 0.195);
-    const lrW = innerW - llW - lmW - 28;  // remaining (2 gaps x 14)
-
-    const cardX = 58;
-    const cardY = outerY + 36;  // y = 132
-    const cardW = state.width - 116;
-    const { lowerRequired } = getPrismLowerRequirements(state, topLangs, contributions, llW, lrW);
-    const minCardH = 154;
-    const baseLowerH = Math.min(Math.round(outerH * 0.30), state.heightAuto ? 190 : 130);
-    const lowerH = state.heightAuto ? Math.max(baseLowerH, lowerRequired) : baseLowerH;
-    const cardH = Math.max(minCardH, outerH - 50 - 14 - lowerH);
-    const lowerY = cardY + cardH + 14;
-
-    const llX = 58;
-    const lmX = llX + llW + 14;
-    const lrX = lmX + lmW + 14;
-
-    // Scale top card content
-    const cS = Math.min(cardH / 148, 1.35);
-    const C_META_Y   = cardY + Math.round(26 * cS);
-    const C_NAME_Y   = cardY + Math.round(72 * cS);
-    const C_HANDLE_Y = cardY + Math.round(106 * cS);
-    const C_TAG_Y    = cardY + Math.min(Math.round(136 * cS), cardH - 12);
-    const showProfileFrame = !state.hideProfile;
-    const hasProfileImage = !!state.profileUri;
-    const PROFILE_R = 28;
-    const PROFILE_CX = cardX + 28 + PROFILE_R;
-    const PROFILE_CY = cardY + Math.round(84 * cS);
-    const profileClipId = safeSvgId("profile-clip", `prism-${state.username || state.name}`);
-    const profileTextX = showProfileFrame ? PROFILE_CX + PROFILE_R + 18 : cardX + 24;
-    const profileTextW = Math.max(120, cardX + cardW - 24 - profileTextX);
-    const nameFontSize = showProfileFrame ? 28 : 34;
-    const handleFontSize = showProfileFrame ? 15 : 16;
-    const nameY = showProfileFrame ? cardY + Math.round(76 * cS) : C_NAME_Y;
-    const handleY = showProfileFrame ? cardY + Math.round(108 * cS) : C_HANDLE_Y;
-    const tagX = showProfileFrame ? profileTextX : cardX + 24;
-    const tagW = showProfileFrame ? profileTextW : cardW - 48;
-    const tagY = showProfileFrame ? Math.min(cardY + Math.round(140 * cS), cardY + cardH - 12) : C_TAG_Y;
-
-    const accent = surfaces.accent;
-    const ink = surfaces.textStrong;
-    const dim = surfaces.textMuted;
-    const model = `${provider.label}/${state.theme}`;
-    const sectionGap = 12;
-    const activityModuleTop = lowerY + 34;
-    const langCount = topLangs?.length ? getLangDisplayCount(state, topLangs, { maxIcons: 6 }) : 0;
-    const langSectionH = topLangs?.length && langCount > 0
-      ? getLangSectionHeight(state, langCount, { contentTop: 22, bottomPad: 8 })
-      : 0;
-    const prismContribOptions = getContributionOptions(state, { labelColor: dim, contentTop: 28, bottomPad: 8 });
-    const contribSectionH = contributions?.weeks?.length
-      ? estimateContributionSectionHeight(contributions, lrW - 36, state.contribTheme, prismContribOptions)
-      : 0;
-    const stackedRequiredH = 34 + langSectionH + (langSectionH && contribSectionH ? sectionGap : 0) + contribSectionH + 8;
-    const showLangs = !!topLangs?.length && langSectionH > 0 && lowerH >= stackedRequiredH && lrW >= 180;
-    const showContribs = !!contributions?.weeks?.length && lowerH >= (34 + (showLangs ? langSectionH + sectionGap : 0) + contribSectionH + 8) && lrW >= 180;
-    const contribTop = activityModuleTop + (showLangs ? langSectionH + sectionGap : 0);
-    const langsToShow = showLangs ? topLangs.slice(0, langCount) : null;
-    const activityTitle = showLangs || showContribs
-      ? "activity"
-      : topLangs
-        ? "top langs"
-        : state.githubStats
-          ? "github stats"
-          : "status";
-
-    return `
-  <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
-  ${hasProfileImage ? `<defs>
-    <clipPath id="${profileClipId}">
-      <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R}"></circle>
-    </clipPath>
-  </defs>` : ""}
-  <rect x="${cardX}" y="${cardY}" width="${cardW}" height="${cardH}" rx="10" fill="${surfaces.panelFill}"></rect>
-  <text x="${cardX + 24}" y="${C_META_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prism canvas • ${escapeXml(model)}</text>
-  ${showProfileFrame ? `
-  <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="${surfaces.strongLine}"/>
-  ${hasProfileImage
-    ? `<image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#${profileClipId})" preserveAspectRatio="xMidYMid slice"/>`
-    : `<text x="${PROFILE_CX}" y="${PROFILE_CY + 8}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="22" font-weight="700" fill="${ink}">${escapeXml(state.avatar)}</text>`}` : ""}
-  <text x="${profileTextX}" y="${nameY}" font-family="Sora, Arial, sans-serif" font-size="${nameFontSize}" font-weight="700" fill="${ink}">${escapeXml(
-    truncateTextPx(state.name, profileTextW, { fontSize: nameFontSize })
-  )}</text>
-  <text x="${profileTextX}" y="${handleY}" font-family="IBM Plex Mono, monospace" font-size="${handleFontSize}" fill="${dim}">${escapeXml(
-    truncateTextPx(state.username ? `@${state.username}` : state.role, profileTextW, { fontSize: handleFontSize })
-  )}</text>
-  <text x="${tagX}" y="${tagY}" font-family="Sora, Arial, sans-serif" font-size="15" fill="${dim}">${escapeXml(
-    truncateTextPx(state.tagline, tagW, { fontSize: 15 })
-  )}</text>
-
-  <rect x="${llX}" y="${lowerY}" width="${llW}" height="${lowerH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
-  <text x="${llX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${topLangs ? "github stats" : "quick facts"}</text>
-  ${topLangs
-    ? buildStatBars(state.githubStats, llX + 18, lowerY + 34, llW - 36, accent, dim, surfaces.softLine, state.stats, state.barStyle)
-    : `<text x="${llX + 18}" y="${lowerY + 56}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">avatar   ${escapeXml(state.avatar)}</text>
-  <text x="${llX + 18}" y="${lowerY + 80}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${ink}">${escapeXml(
-    state.username ? `github  @${state.username}` : `pattern  ${state.pattern}`
-  )}</text>`}
-
-  <rect x="${lmX}" y="${lowerY}" width="${lmW}" height="${lowerH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
-  <text x="${lmX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prompt</text>
-  ${state.hideCommand ? "" : `<text x="${lmX + 18}" y="${lowerY + 56}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(state.command, 18))}</text>`}
-  <text x="${lmX + 18}" y="${lowerY + 80}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${dim}">theme   ${escapeXml(state.theme)}</text>
-
-  <rect x="${lrX}" y="${lowerY}" width="${lrW}" height="${lowerH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
-  <text x="${lrX + 18}" y="${lowerY + 24}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">${activityTitle}</text>
-  ${showLangs
-    ? `<text x="${lrX + 18}" y="${activityModuleTop + 11}" font-family="IBM Plex Mono, monospace" font-size="11" fill="${dim}" letter-spacing="0.5">TOP LANGS</text>
-  ${shouldRenderLangIcons(state) && langsToShow
-    ? buildLangIcons(state.langIconsUri, lrX + 18, activityModuleTop + 22, lrW - 36, state.langIconCount ?? langsToShow.length, state.iconSize)
-    : buildLangBars(langsToShow, lrX + 18, activityModuleTop + 22, lrW - 36, accent, dim, surfaces.softLine, state.barStyle)}`
-    : ""}
-  ${showContribs
-    ? `${showLangs ? `<rect x="${lrX + 18}" y="${contribTop - 2}" width="${lrW - 36}" height="1" fill="${surfaces.line}"></rect>` : ""}
-  ${buildContributionGrid(contributions, lrX + 18, contribTop + prismContribOptions.contentTop, lrW - 36, state.contribTheme, palette, prismContribOptions)}`
-    : showLangs
-    ? ""
-    : topLangs
-    ? (shouldRenderLangIcons(state)
-        ? buildLangIcons(state.langIconsUri, lrX + 18, lowerY + 34, lrW - 36, state.langIconCount ?? topLangs.length, state.iconSize)
-        : buildLangBars(topLangs, lrX + 18, lowerY + 34, lrW - 36, accent, dim, surfaces.softLine, state.barStyle))
-    : state.githubStats
-      ? buildStatBars(state.githubStats, lrX + 18, lowerY + 34, lrW - 36, accent, dim, surfaces.softLine, state.stats, state.barStyle)
-      : `<circle cx="${lrX + 26}" cy="${lowerY + 58}" r="5" fill="${accent}"></circle>
-  <text x="${lrX + 40}" y="${lowerY + 64}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${ink}">${escapeXml(truncateText(statusText, 20))}</text>`}`;
+    return externalBuildPrismCanvas(state, palette, provider, topLangs, contributions, surfaces, {
+      ICON_SIZES,
+      buildCircularProfileSlot,
+      buildContributionGrid,
+      buildLangBars,
+      buildLangIcons,
+      buildProfileClipPath,
+      buildStatBars,
+      escapeXml,
+      estimateContributionSectionHeight,
+      getContributionOptions,
+      getLangDisplayCount,
+      getLangSectionHeight,
+      getPrismLowerRequirements,
+      getStatusText,
+      safeSvgId,
+      shouldRenderLangIcons,
+      truncateTextPx,
+    });
   }
 
   function buildSvg(input) {
