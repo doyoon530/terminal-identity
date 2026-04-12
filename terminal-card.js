@@ -1,6 +1,7 @@
 (function (root, factory) {
   if (typeof module === "object" && module.exports) {
     module.exports = factory({
+      buildClassicLayout: require("./lib/terminal/layouts/classic"),
       buildAmberDashboard: require("./lib/terminal/layouts/amber"),
       buildObsidianWorkspace: require("./lib/terminal/layouts/obsidian"),
       buildPrismCanvas: require("./lib/terminal/layouts/prism"),
@@ -11,6 +12,7 @@
   root.TerminalIdentity = factory(root.TerminalIdentityLayouts || {});
 })(typeof globalThis !== "undefined" ? globalThis : window, function (layoutModules) {
   const {
+    buildClassicLayout: externalBuildClassicLayout,
     buildAmberDashboard: externalBuildAmberDashboard,
     buildObsidianWorkspace: externalBuildObsidianWorkspace,
     buildPrismCanvas: externalBuildPrismCanvas,
@@ -2482,6 +2484,37 @@
     });
   }
 
+  function buildClassicLayout(state, palette, provider, surfaces, shellRadius, panelX, bodyTop, topBarFill, topBarText, effectiveTopLangs, effectiveContributions) {
+    return externalBuildClassicLayout({
+      state,
+      palette,
+      provider,
+      surfaces,
+      shellRadius,
+      panelX,
+      bodyTop,
+      topBarFill,
+      topBarText,
+      effectiveTopLangs,
+      effectiveContributions,
+    }, {
+      STAT_KEYS,
+      buildContributionGrid,
+      buildLangBars,
+      buildLangIcons,
+      buildStatBars,
+      buildWindowButtons,
+      escapeXml,
+      estimateContributionSectionHeight,
+      getContributionOptions,
+      getLangDisplayCount,
+      getLangSectionHeight,
+      getStatusText,
+      isContributionFocus,
+      shouldRenderLangIcons,
+    });
+  }
+
   function buildSvg(input) {
     let state = normalizeState(input);
     const bodyTop = 72;
@@ -2567,90 +2600,23 @@
 </svg>`.trim(), state, palette);
     }
 
-    const PAD = 28;
-    const BODY_Y = 128;          // content area starts here
-    const FOOT_SEP = state.height - 76;  // footer separator line
-    const FOOT_TY = state.height - 48;   // footer text baseline
-
-    const contentX = state.hideAvatar ? PAD + 28 : 256;
-    const contentW = state.width - contentX - PAD - 28;
-
-    // Top content (fixed relative to BODY_Y)
-    const LBL_Y  = BODY_Y + 16;   // "$ provider/theme"
-    const NAME_Y = BODY_Y + 68;   // name
-    const ROLE_Y = BODY_Y + 108;  // role or @username
-    const TAG_Y  = BODY_Y + 144;  // tagline
-
-    // Data zone: between tagline and footer separator
-    const DATA_TOP = TAG_Y + 32;  // y ~= 304
-    const DATA_BOT = FOOT_SEP - 12;
-    const dataH = Math.max(DATA_BOT - DATA_TOP, 0);
-
-    // Stats: show if data zone has room for all selected stat rows
-    const statCount = (state.stats || STAT_KEYS).length;
-    const statsH = statCount * 18;
-    const showStats = state.githubStats && dataH >= statsH;
-    const STATS_Y = DATA_TOP;
-
-    // Langs: fill remaining space after stats
-    const LANGS_TOP = showStats ? DATA_TOP + statsH + 10 : DATA_TOP;
-    const langsAvailH = DATA_BOT - LANGS_TOP;
-    const focusContribs = isContributionFocus(state, effectiveContributions);
-    const maxLangs = effectiveTopLangs
-      ? Math.min(effectiveTopLangs.length, Math.max(0, Math.floor(langsAvailH / 18)))
-      : 0;
-    const iconLangCount = getLangDisplayCount(state, effectiveTopLangs, { maxIcons: 6 });
-    const showLangs = !focusContribs && (shouldRenderLangIcons(state)
-      ? !!effectiveTopLangs && langsAvailH >= getLangSectionHeight(state, iconLangCount, { contentTop: 0, bottomPad: 8 })
-      : maxLangs > 0);
-    const langsToShow = showLangs
-      ? (shouldRenderLangIcons(state) ? effectiveTopLangs.slice(0, iconLangCount) : effectiveTopLangs.slice(0, maxLangs))
-      : null;
-    const contribSectionH = estimateContributionSectionHeight(
-      effectiveContributions,
-      contentW,
-      state.contribTheme,
-      getContributionOptions(state, { contentTop: 8, bottomPad: 4 })
+    return applyMotion(
+      buildClassicLayout(
+        state,
+        palette,
+        provider,
+        surfaces,
+        shellRadius,
+        panelX,
+        bodyTop,
+        topBarFill,
+        topBarText,
+        effectiveTopLangs,
+        effectiveContributions
+      ),
+      state,
+      palette
     );
-    const showContribs = effectiveContributions && showStats && langsAvailH >= contribSectionH;
-
-    return applyMotion(`
-<svg width="${state.width}" height="${state.height}" viewBox="0 0 ${state.width} ${state.height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(state.name)} terminal identity card">
-  <rect width="${state.width}" height="${state.height}" rx="${shellRadius}" fill="${surfaces.bodyFill}"></rect>
-
-  <rect x="${panelX}" y="24" width="${state.width - 56}" height="${bodyTop}" rx="14" fill="${topBarFill}"></rect>
-  ${buildWindowButtons(provider, surfaces)}
-  <text x="${state.width / 2}" y="66" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" fill="${topBarText}">${provider.windowTitle}</text>
-
-  ${state.hideAvatar ? "" : `<rect x="56" y="128" width="152" height="152" rx="10" fill="${surfaces.panelFillAlt}"></rect>
-  <text x="132" y="220" text-anchor="middle" font-family="Sora, Arial, sans-serif" font-size="52" font-weight="700" fill="${surfaces.accent}">${escapeXml(state.avatar)}</text>`}
-
-  <text x="${contentX}" y="${LBL_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${palette.dim}">$ ${provider.label}/${state.theme}</text>
-  <text x="${contentX}" y="${NAME_Y}" font-family="Sora, Arial, sans-serif" font-size="44" font-weight="700" fill="${palette.title}">${escapeXml(state.name)}</text>
-  <text x="${contentX}" y="${ROLE_Y}" font-family="IBM Plex Mono, monospace" font-size="18" fill="${palette.accent}">${escapeXml(
-    state.username ? `@${state.username}` : state.role
-  )}</text>
-  <text x="${contentX}" y="${TAG_Y}" font-family="Sora, Arial, sans-serif" font-size="16" fill="${palette.text}">${escapeXml(state.tagline)}</text>
-
-  ${showStats
-    ? buildStatBars(state.githubStats, contentX, STATS_Y, contentW, palette.accent, palette.dim, undefined, state.stats, state.barStyle)
-    : `<circle cx="${contentX + 8}" cy="${DATA_TOP + 8}" r="5" fill="${palette.success}"></circle>
-  <text x="${contentX + 24}" y="${DATA_TOP + 14}" font-family="IBM Plex Mono, monospace" font-size="14" fill="${palette.dim}">${escapeXml(getStatusText(state))}</text>`}
-
-  ${showStats && (showContribs || showLangs)
-    ? `<rect x="${contentX}" y="${LANGS_TOP - 2}" width="${contentW}" height="1" fill="rgba(255,255,255,0.05)"></rect>
-  ${showContribs
-    ? buildContributionGrid(effectiveContributions, contentX, LANGS_TOP + 8, contentW, state.contribTheme, palette, getContributionOptions(state, { labelColor: palette.dim }))
-    : shouldRenderLangIcons(state) && langsToShow
-    ? buildLangIcons(state.langIconsUri, contentX, LANGS_TOP, contentW, state.langIconCount ?? langsToShow.length, state.iconSize)
-    : buildLangBars(langsToShow, contentX, LANGS_TOP, contentW, palette.accent, palette.dim, undefined, state.barStyle)}`
-    : ""}
-
-  <rect x="28" y="${FOOT_SEP}" width="${state.width - 56}" height="1" fill="rgba(255,255,255,0.08)"></rect>
-  <circle cx="56" cy="${state.height - 54}" r="5" fill="${palette.success}"></circle>
-  <text x="72" y="${FOOT_TY}" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">${escapeXml(state.githubStats ? getStatusText(state) : state.status)}</text>
-  ${state.hideCommand ? "" : `<text x="${state.width - PAD - 28}" y="${FOOT_TY}" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="13" fill="${palette.dim}">$ ${escapeXml(state.command)}</text>`}
-</svg>`.trim(), state, palette);
   }
 
   function buildApiUrl(input, baseUrl) {

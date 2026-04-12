@@ -12,6 +12,18 @@ const {
   SELECT_OPTIONS = {},
   STAT_KEYS = ["repos", "stars", "forks", "followers"],
 } = window.TerminalIdentityPlaygroundConfig || {};
+const {
+  createGithubStatsClient = () => ({
+    fetchGithubStats: async () => null,
+    getCachedGithubStats: () => null,
+  }),
+} = window.TerminalIdentityPlaygroundGithubClient || {};
+const {
+  createPreviewUtils = () => ({
+    buildRenderedState: (state) => state,
+    commitRender: () => {},
+  }),
+} = window.TerminalIdentityPlaygroundPreview || {};
 
 const STORAGE_KEY = "terminal-identity-playground-state-v3";
 const UI_MODE_KEY = "terminal-identity-ui-mode-v1";
@@ -56,9 +68,6 @@ const exportTabs = [...document.querySelectorAll(".export-tab")];
 
 const fieldIds = FORM_FIELD_IDS;
 
-const githubStatsCache = new Map();
-const GITHUB_CACHE_TTL_MS = 15 * 60 * 1000;
-const GITHUB_FETCH_TIMEOUT_MS = 5000;
 let renderToken = 0;
 let renderTimer = null;
 let currentExportTab = "markdown";
@@ -69,6 +78,28 @@ let exportPayload = {
   api: "",
   svg: "",
 };
+const githubStatsClient = createGithubStatsClient({
+  normalizeUsername,
+});
+const previewUtils = createPreviewUtils({
+  LANG_ICON_MAP,
+  buildSvg,
+  buildApiUrl,
+  buildMarkdown,
+  getApiBaseUrl,
+  normalizeUsername,
+  previewSummary,
+  heroSummary,
+  previewDiagnostics,
+  svgMount,
+  updateExportPanel,
+  updateGithubLink,
+  updateShareUrl,
+  saveState,
+  setExportPayload: (nextPayload) => {
+    exportPayload = nextPayload;
+  },
+});
 
 function copyTextWithFallback(value, target) {
   if (navigator.clipboard?.writeText) {
@@ -353,80 +384,12 @@ function updateShareUrl(state) {
   window.history.replaceState({}, "", nextUrl);
 }
 
-function getGithubCacheEntry(username) {
-  const normalized = normalizeUsername(username);
-  if (!normalized) {
-    return null;
-  }
-
-  if (!githubStatsCache.has(normalized)) {
-    githubStatsCache.set(normalized, {
-      data: null,
-      updatedAt: 0,
-      promise: null,
-    });
-  }
-
-  return githubStatsCache.get(normalized);
-}
-
 function getCachedGithubStats(username) {
-  return getGithubCacheEntry(username)?.data || null;
-}
-
-function requestGithubStats(normalized, entry) {
-  const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), GITHUB_FETCH_TIMEOUT_MS);
-
-  entry.promise = fetch(`/api/github?username=${encodeURIComponent(normalized)}`, {
-    signal: controller.signal,
-  })
-    .then((response) => (response.ok ? response.json() : null))
-    .catch(() => null)
-    .then((result) => {
-      if (result) {
-        entry.data = result;
-        entry.updatedAt = Date.now();
-        return result;
-      }
-
-      return entry.data || null;
-    })
-    .finally(() => {
-      window.clearTimeout(timeoutId);
-      entry.promise = null;
-      if (!entry.data) {
-        githubStatsCache.delete(normalized);
-      }
-    });
-
-  return entry.promise;
+  return githubStatsClient.getCachedGithubStats(username);
 }
 
 function fetchGithubStats(username, options = {}) {
-  const normalized = normalizeUsername(username);
-  if (!normalized || !window.location.origin.startsWith("http")) {
-    return Promise.resolve(null);
-  }
-
-  const entry = getGithubCacheEntry(normalized);
-  const forceRefresh = options.forceRefresh === true;
-  const waitForFresh = options.waitForFresh === true;
-  const isFresh = !!entry.data && Date.now() - entry.updatedAt < GITHUB_CACHE_TTL_MS;
-
-  if (!forceRefresh && isFresh) {
-    return Promise.resolve(entry.data);
-  }
-
-  if (!entry.promise) {
-    requestGithubStats(normalized, entry);
-  }
-
-  if (!forceRefresh && entry.data && !waitForFresh) {
-    return Promise.resolve(entry.data);
-  }
-
-  return entry.promise;
+  return githubStatsClient.fetchGithubStats(username, options);
 }
 
 function initialsFrom(value) {
@@ -464,226 +427,6 @@ function updateGithubLink(username) {
   syncGithubButton.textContent = currentHandle ? "Sync Card Data" : `Use @${DEFAULT_PROFILE}`;
 }
 
-function getFilteredLangs(state, githubStats) {
-  if (!githubStats?.topLangs?.length) {
-    return [];
-  }
-
-  return githubStats.topLangs.filter((lang) => !state.excludeLangs.includes(lang.name.toLowerCase()));
-}
-
-function getSupportedIconLangs(state, githubStats) {
-  return getFilteredLangs(state, githubStats).filter((lang) => Boolean(LANG_ICON_MAP[lang.name]));
-}
-
-function getSummaryChips(state, githubStats) {
-  const chips = [`${state.provider}/${state.theme}`, state.pattern];
-
-  if (state.username) {
-    chips.push(`@${state.username}`);
-  }
-
-  if (state.showLangs !== "off") {
-    const filtered = getFilteredLangs(state, githubStats);
-    const count = state.langStyle === "icons"
-      ? Math.min(getSupportedIconLangs(state, githubStats).length, state.langCount)
-      : Math.min(filtered.length, state.langCount);
-    chips.push(`${state.langStyle} ${count}/${state.langCount} langs`);
-  }
-
-  if (state.showContribs !== "off") {
-    chips.push(`${state.contribTheme} ${state.contribRange}`);
-  }
-
-  if (state.motion !== "off") {
-    chips.push(`motion ${state.motion}`);
-  }
-
-  if (state.excludeLangs.length > 0) {
-    chips.push(`exclude ${state.excludeLangs.length}`);
-  }
-
-  return chips;
-}
-
-function renderSummary(state, githubStats) {
-  const chips = getSummaryChips(state, githubStats)
-    .map((chip) => `<span class="summary-chip">${chip}</span>`)
-    .join("");
-
-  heroSummary.innerHTML = chips;
-  previewSummary.innerHTML = chips;
-}
-
-function renderDiagnostics(state, githubStats, meta = {}) {
-  const diagnostics = [];
-  const isLoading = meta.loading === true;
-
-  if (meta.renderError) {
-    diagnostics.push({
-      tone: "warn",
-      text: "The live preview hit a render hiccup, so it fell back to a simpler card while keeping your current settings.",
-    });
-  }
-
-  if (!state.username) {
-    diagnostics.push({
-      tone: "info",
-      text: "Add a GitHub username to unlock live stats, top languages, profile images, and contribution activity.",
-    });
-  } else if (isLoading && !githubStats) {
-    diagnostics.push({
-      tone: "info",
-      text: "Loading GitHub data for this card now.",
-    });
-  } else if (!githubStats) {
-    diagnostics.push({
-      tone: "warn",
-      text: "GitHub data did not load right now. The card is using your manual fallback text instead.",
-    });
-  }
-
-  if (state.showLangs !== "off") {
-    if (!state.username) {
-      diagnostics.push({
-        tone: "info",
-        text: "Top languages appear after you add a GitHub username.",
-      });
-    } else if (isLoading && !githubStats?.topLangs?.length) {
-      diagnostics.push({
-        tone: "info",
-        text: "Loading language data from GitHub.",
-      });
-    } else if (!githubStats?.topLangs?.length) {
-      diagnostics.push({
-        tone: "warn",
-        text: "GitHub did not return language data for this profile.",
-      });
-    } else {
-      const filteredLangs = getFilteredLangs(state, githubStats);
-
-      if (filteredLangs.length === 0) {
-        diagnostics.push({
-          tone: "warn",
-          text: "Every detected language is excluded right now.",
-        });
-      } else if (state.langStyle === "icons") {
-        const supportedLangs = getSupportedIconLangs(state, githubStats);
-        const unsupportedLangs = filteredLangs.filter((lang) => !LANG_ICON_MAP[lang.name]);
-
-        if (supportedLangs.length === 0) {
-          diagnostics.push({
-            tone: "warn",
-            text: "No icon-supported languages remain after filtering. Switch to bars or change your exclusions.",
-          });
-        } else {
-          if (unsupportedLangs.length > 0) {
-            diagnostics.push({
-              tone: "info",
-              text: `Skipped unsupported icon languages: ${unsupportedLangs.map((lang) => lang.name).join(", ")}.`,
-            });
-          }
-
-          if (supportedLangs.length < state.langCount) {
-            diagnostics.push({
-              tone: "info",
-              text: `Showing ${supportedLangs.length} of ${state.langCount} requested icon languages after filtering.`,
-            });
-          }
-        }
-      } else if (filteredLangs.length < state.langCount) {
-        diagnostics.push({
-          tone: "info",
-          text: `Showing ${filteredLangs.length} of ${state.langCount} requested languages after filtering.`,
-        });
-      }
-    }
-  }
-
-  if (state.showContribs !== "off") {
-    if (!state.username) {
-      diagnostics.push({
-        tone: "info",
-        text: "Contribution activity appears after you add a GitHub username.",
-      });
-    } else if (isLoading && !githubStats?.contributions?.weeks?.length) {
-      diagnostics.push({
-        tone: "info",
-        text: "Loading contribution activity from GitHub.",
-      });
-    } else if (!githubStats?.contributions?.weeks?.length) {
-      diagnostics.push({
-        tone: "warn",
-        text: "Contribution data is unavailable right now, so the card is hiding the activity block.",
-      });
-    }
-  }
-
-  previewDiagnostics.innerHTML = diagnostics
-    .map((item) => `<p class="diagnostic-item ${item.tone}">${item.text}</p>`)
-    .join("");
-}
-
-function buildRenderedState(state, githubStats) {
-  let nextState = githubStats ? { ...state, githubStats } : state;
-
-  if (githubStats && !state.hideProfile && (githubStats.avatarDataUri || githubStats.avatarUrl)) {
-    nextState = {
-      ...nextState,
-      profileUri: githubStats.avatarDataUri || `${githubStats.avatarUrl}&s=120`,
-    };
-  }
-
-  if (nextState.langStyle === "icons" && nextState.githubStats?.topLangs) {
-    const supportedLangs = getSupportedIconLangs(nextState, nextState.githubStats)
-      .slice(0, nextState.langCount);
-    const iconKeys = supportedLangs.map((lang) => LANG_ICON_MAP[lang.name]);
-    if (iconKeys.length > 0) {
-      nextState = {
-        ...nextState,
-        langIconsUri: `https://skillicons.dev/icons?i=${iconKeys.join(",")}`,
-        langIconCount: iconKeys.length,
-      };
-    }
-  }
-
-  return nextState;
-}
-
-function commitRender(baseState, renderedState, githubStats, meta = {}) {
-  const apiUrl = buildApiUrl(baseState, getApiBaseUrl());
-  const link = document.getElementById("link").value.trim();
-  let finalState = renderedState;
-  let svg = "";
-  let renderError = null;
-
-  try {
-    svg = buildSvg(renderedState);
-  } catch (error) {
-    console.error("[playground] render failed", error);
-    renderError = error;
-    finalState = baseState;
-    svg = buildSvg(baseState);
-  }
-
-  exportPayload = {
-    markdown: buildMarkdown(apiUrl, link),
-    api: apiUrl,
-    svg,
-  };
-
-  svgMount.innerHTML = svg;
-  updateExportPanel();
-  renderSummary(finalState, githubStats || finalState.githubStats || null);
-  renderDiagnostics(finalState, githubStats || finalState.githubStats || null, {
-    ...meta,
-    renderError,
-  });
-  updateGithubLink(baseState.username);
-  updateShareUrl(baseState);
-  saveState(baseState);
-}
-
 function updateExportPanel() {
   const tab = EXPORT_TABS[currentExportTab];
   exportTabs.forEach((button) => {
@@ -706,9 +449,9 @@ async function render(options) {
 
   const username = normalizeUsername(state.username);
   const cachedGithubStats = getCachedGithubStats(username);
-  commitRender(
+  previewUtils.commitRender(
     state,
-    buildRenderedState(state, cachedGithubStats),
+    previewUtils.buildRenderedState(state, cachedGithubStats),
     cachedGithubStats,
     { loading: !!username && !cachedGithubStats }
   );
@@ -736,9 +479,9 @@ async function render(options) {
     state = getState();
   }
 
-  commitRender(
+  previewUtils.commitRender(
     state,
-    buildRenderedState(state, githubStats || cachedGithubStats),
+    previewUtils.buildRenderedState(state, githubStats || cachedGithubStats),
     githubStats || cachedGithubStats,
     { loading: false }
   );
