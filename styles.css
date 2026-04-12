@@ -71,6 +71,36 @@ button, input, select, textarea { font: inherit; }
   font-size: 0.9rem;
 }
 
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.hero-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: var(--weight-strong);
+  text-decoration: none;
+  transition: border-color 120ms, color 120ms, background 120ms;
+}
+
+.hero-link:hover {
+  border-color: var(--accent);
+  background: var(--surface-3);
+  color: var(--accent);
+}
+
 /* ── Workspace ───────────────────────────────────────── */
 
 .workspace {
