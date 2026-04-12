@@ -4,12 +4,16 @@
   --surface-2: #1d1a12;
   --surface-3: #242018;
   --text: #f0ebe2;
-  --dim: #9a8b7a;
-  --muted: #6a5d50;
+  --dim: #b3a28e;
+  --muted: #8d7f6e;
   --line: #2b2318;
   --accent: #c48c3b;
   --accent-bg: rgba(196, 140, 59, 0.08);
   --radius: 10px;
+  --font-sans: "Sora", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "Nanum Gothic Coding", "D2Coding", Consolas, "Apple SD Gothic Neo", "Malgun Gothic", "Courier New", monospace;
+  --weight-regular: 500;
+  --weight-strong: 600;
 }
 
 * { box-sizing: border-box; }
@@ -17,9 +21,11 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: "Sora", sans-serif;
+  font-family: var(--font-sans);
+  font-weight: var(--weight-regular);
   color: var(--text);
   background: var(--bg);
+  text-rendering: geometricPrecision;
 }
 
 button, input, select, textarea { font: inherit; }
@@ -40,19 +46,21 @@ button, input, select, textarea { font: inherit; }
 
 .eyebrow {
   margin: 0 0 14px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.68rem;
-  letter-spacing: 0.22em;
+  font-weight: var(--weight-strong);
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--accent);
 }
 
 .hero h1 {
   margin: 0;
-  font-size: clamp(2rem, 3.4vw, 3.2rem);
+  font-size: 3.2rem;
+  font-weight: 700;
   line-height: 1.05;
   color: var(--text);
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .hero-text {
@@ -87,10 +95,10 @@ button, input, select, textarea { font: inherit; }
 
 .panel-head h2 {
   margin: 0;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
+  font-weight: var(--weight-strong);
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--dim);
 }
@@ -127,9 +135,10 @@ form {
 
 .section-label {
   margin: 0 0 2px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.64rem;
-  letter-spacing: 0.18em;
+  font-weight: var(--weight-strong);
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -137,25 +146,27 @@ form {
 label {
   display: grid;
   gap: 5px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.76rem;
+  font-weight: var(--weight-regular);
   color: var(--dim);
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 
 .hint {
-  font-family: "Sora", sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.72rem;
   color: var(--muted);
-  font-weight: 400;
+  font-weight: var(--weight-regular);
   letter-spacing: 0;
 }
 
 .field-label {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.76rem;
+  font-weight: var(--weight-regular);
   color: var(--dim);
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 
 input,
@@ -170,6 +181,8 @@ textarea {
   outline: none;
   transition: border-color 120ms, background 120ms;
   font-size: 0.88rem;
+  font-weight: var(--weight-regular);
+  line-height: 1.5;
 }
 
 input::placeholder,
@@ -209,8 +222,9 @@ select {
   border: 1px solid var(--line);
   border-radius: 6px;
   cursor: pointer;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.76rem;
+  font-weight: var(--weight-regular);
   color: var(--dim);
   background: var(--surface-2);
   transition: border-color 120ms, background 120ms, color 120ms;
@@ -244,8 +258,9 @@ select {
   padding: 6px 10px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.76rem;
+  font-weight: var(--weight-regular);
   color: var(--dim);
   background: var(--surface-2);
   cursor: pointer;
@@ -282,8 +297,9 @@ button {
   background: var(--surface-2);
   color: var(--dim);
   cursor: pointer;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
+  font-weight: var(--weight-strong);
   transition: border-color 120ms, color 120ms, background 120ms;
   white-space: nowrap;
 }
@@ -298,7 +314,7 @@ button.primary {
   background: var(--accent);
   color: #0e0d0b;
   border-color: var(--accent);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 button.primary:hover {
@@ -335,17 +351,19 @@ button.primary:hover {
 .output-wrap {
   display: grid;
   gap: 5px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.66rem;
-  letter-spacing: 0.14em;
+  font-weight: var(--weight-strong);
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--muted);
 }
 
 .output-wrap textarea {
   resize: vertical;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
+  font-weight: var(--weight-regular);
   line-height: 1.6;
   background: var(--surface-2);
   color: var(--dim);
@@ -402,12 +420,14 @@ button.primary:hover {
 
 .preset-copy strong {
   font-size: 0.84rem;
+  font-weight: var(--weight-strong);
   color: var(--text);
 }
 
 .preset-copy span {
   color: var(--muted);
   font-size: 0.78rem;
+  font-weight: var(--weight-regular);
   line-height: 1.5;
 }
 

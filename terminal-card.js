@@ -149,6 +149,8 @@
   };
 
   const STAT_KEYS = ["repos", "stars", "forks", "followers"];
+  const SVG_FONT_SANS = "'Sora', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Segoe UI', Arial, sans-serif";
+  const SVG_FONT_MONO = "'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace";
 
   // Maps GitHub language names → skillicons.dev keys
   // MIT License © tandpfun — https://github.com/tandpfun/skill-icons
@@ -2205,10 +2207,23 @@
     return "";
   }
 
+  function strengthenSvgText(svg) {
+    return svg
+      .replace("<svg ", '<svg text-rendering="geometricPrecision" ')
+      .replaceAll(
+        'font-family="IBM Plex Mono, Apple SD Gothic Neo, Malgun Gothic, monospace"',
+        `font-family="${SVG_FONT_MONO}"`
+      )
+      .replaceAll('font-family="IBM Plex Mono, monospace"', `font-family="${SVG_FONT_MONO}"`)
+      .replaceAll('font-family="Sora, Arial, sans-serif"', `font-family="${SVG_FONT_SANS}"`)
+      .replace(/<text\b(?![^>]*\bfont-weight=)/g, '<text font-weight="500"');
+  }
+
   function applyMotion(svg, state, palette) {
+    const baseSvg = strengthenSvgText(svg);
     const overlay = buildMotionOverlay(state, palette);
-    if (!overlay) return svg;
-    return svg.replace("</svg>", `${overlay}\n</svg>`);
+    if (!overlay) return baseSvg;
+    return baseSvg.replace("</svg>", `${overlay}\n</svg>`);
   }
 
   function buildWindowButtons(provider, surfaces) {

@@ -15,7 +15,7 @@ const capybaraSpriteUri = (() => {
 function buildFallbackSvg(width, height) {
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="${width}" height="${height}" rx="26" fill="#161218"/>
-  <text x="${width / 2}" y="${height / 2}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" fill="#888">terminal identity — reload to retry</text>
+  <text x="${width / 2}" y="${height / 2}" text-anchor="middle" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="14" font-weight="500" fill="#aaa">terminal identity — reload to retry</text>
 </svg>`.trim();
 }
 
