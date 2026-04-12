@@ -2694,6 +2694,21 @@
     const C_NAME_Y   = cardY + Math.round(72 * cS);
     const C_HANDLE_Y = cardY + Math.round(106 * cS);
     const C_TAG_Y    = cardY + Math.min(Math.round(136 * cS), cardH - 12);
+    const showProfileFrame = !state.hideProfile;
+    const hasProfileImage = !!state.profileUri;
+    const PROFILE_R = 28;
+    const PROFILE_CX = cardX + 28 + PROFILE_R;
+    const PROFILE_CY = cardY + Math.round(84 * cS);
+    const profileClipId = safeSvgId("profile-clip", `prism-${state.username || state.name}`);
+    const profileTextX = showProfileFrame ? PROFILE_CX + PROFILE_R + 18 : cardX + 24;
+    const profileTextW = Math.max(120, cardX + cardW - 24 - profileTextX);
+    const nameFontSize = showProfileFrame ? 28 : 34;
+    const handleFontSize = showProfileFrame ? 15 : 16;
+    const nameY = showProfileFrame ? cardY + Math.round(76 * cS) : C_NAME_Y;
+    const handleY = showProfileFrame ? cardY + Math.round(108 * cS) : C_HANDLE_Y;
+    const tagX = showProfileFrame ? profileTextX : cardX + 24;
+    const tagW = showProfileFrame ? profileTextW : cardW - 48;
+    const tagY = showProfileFrame ? Math.min(cardY + Math.round(140 * cS), cardY + cardH - 12) : C_TAG_Y;
 
     const accent = surfaces.accent;
     const ink = surfaces.textStrong;
@@ -2724,12 +2739,26 @@
 
     return `
   <rect x="${outerX}" y="${outerY}" width="${outerW}" height="${outerH}" rx="14" fill="${surfaces.bodyFill}"></rect>
+  ${hasProfileImage ? `<defs>
+    <clipPath id="${profileClipId}">
+      <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R}"></circle>
+    </clipPath>
+  </defs>` : ""}
   <rect x="${cardX}" y="${cardY}" width="${cardW}" height="${cardH}" rx="10" fill="${surfaces.panelFill}"></rect>
   <text x="${cardX + 24}" y="${C_META_Y}" font-family="IBM Plex Mono, monospace" font-size="12" fill="${dim}">prism canvas • ${escapeXml(model)}</text>
-  <text x="${cardX + 24}" y="${C_NAME_Y}" font-family="Sora, Arial, sans-serif" font-size="34" font-weight="700" fill="${ink}">${escapeXml(state.name)}</text>
-  <text x="${cardX + 24}" y="${C_HANDLE_Y}" font-family="IBM Plex Mono, monospace" font-size="16" fill="${dim}">${escapeXml(state.username ? `@${state.username}` : state.role)}</text>
-  <text x="${cardX + 24}" y="${C_TAG_Y}" font-family="Sora, Arial, sans-serif" font-size="15" fill="${dim}">${escapeXml(
-    truncateText(state.tagline, 56)
+  ${showProfileFrame ? `
+  <circle cx="${PROFILE_CX}" cy="${PROFILE_CY}" r="${PROFILE_R + 2}" fill="${surfaces.strongLine}"/>
+  ${hasProfileImage
+    ? `<image x="${PROFILE_CX - PROFILE_R}" y="${PROFILE_CY - PROFILE_R}" width="${PROFILE_R * 2}" height="${PROFILE_R * 2}" href="${escapeXml(state.profileUri)}" clip-path="url(#${profileClipId})" preserveAspectRatio="xMidYMid slice"/>`
+    : `<text x="${PROFILE_CX}" y="${PROFILE_CY + 8}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="22" font-weight="700" fill="${ink}">${escapeXml(state.avatar)}</text>`}` : ""}
+  <text x="${profileTextX}" y="${nameY}" font-family="Sora, Arial, sans-serif" font-size="${nameFontSize}" font-weight="700" fill="${ink}">${escapeXml(
+    truncateTextPx(state.name, profileTextW, { fontSize: nameFontSize })
+  )}</text>
+  <text x="${profileTextX}" y="${handleY}" font-family="IBM Plex Mono, monospace" font-size="${handleFontSize}" fill="${dim}">${escapeXml(
+    truncateTextPx(state.username ? `@${state.username}` : state.role, profileTextW, { fontSize: handleFontSize })
+  )}</text>
+  <text x="${tagX}" y="${tagY}" font-family="Sora, Arial, sans-serif" font-size="15" fill="${dim}">${escapeXml(
+    truncateTextPx(state.tagline, tagW, { fontSize: 15 })
   )}</text>
 
   <rect x="${llX}" y="${lowerY}" width="${llW}" height="${lowerH}" rx="10" fill="${surfaces.panelFillAlt}"></rect>
