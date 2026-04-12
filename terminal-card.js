@@ -17,6 +17,13 @@
     buildObsidianWorkspace: externalBuildObsidianWorkspace,
     buildPrismCanvas: externalBuildPrismCanvas,
   } = layoutModules;
+  const TEXT_MEASURE_CACHE_LIMIT = 4096;
+  const TEXT_WRAP_CACHE_LIMIT = 512;
+  const TEXT_TRUNCATE_CACHE_LIMIT = 1024;
+  const charWidthCache = new Map();
+  const textWidthCache = new Map();
+  const wrapTextCache = new Map();
+  const truncateTextCache = new Map();
   const themeMap = {
     ember: {
       shell: "#161218",
@@ -870,7 +877,20 @@
 
   // Approximate pixel width per character in the SVG mono stack.
   // Keep this conservative so Windows font fallback does not overflow panels.
+  function setBoundedCacheEntry(cache, key, value, limit) {
+    if (cache.size >= limit) {
+      cache.clear();
+    }
+    cache.set(key, value);
+    return value;
+  }
+
   function charPxWidth(char, fontSize) {
+    const cacheKey = `${Number(fontSize) || 12}:${char}`;
+    if (charWidthCache.has(cacheKey)) {
+      return charWidthCache.get(cacheKey);
+    }
+
     const scale = (Number(fontSize) || 12) / 12;
     const code = char.codePointAt(0) || 0;
     const isWide = (code >= 0x1100 && code <= 0x11FF) ||
@@ -879,12 +899,23 @@
                    (code >= 0xF900 && code <= 0xFAFF) ||
                    (code >= 0xFF00 && code <= 0xFFEF);
     const isEmoji = code >= 0x1F300;
-    if (isEmoji) return 13.5 * scale;
-    return (isWide ? 12.6 : 7.35) * scale;
+    const width = isEmoji ? 13.5 * scale : (isWide ? 12.6 : 7.35) * scale;
+    return setBoundedCacheEntry(charWidthCache, cacheKey, width, TEXT_MEASURE_CACHE_LIMIT);
   }
 
   function measureTextPx(text, fontSize) {
-    return [...String(text || "")].reduce((width, char) => width + charPxWidth(char, fontSize), 0);
+    const normalizedText = String(text || "");
+    const normalizedFontSize = Number(fontSize) || 12;
+    const cacheKey = `${normalizedFontSize}:${normalizedText}`;
+    if (textWidthCache.has(cacheKey)) {
+      return textWidthCache.get(cacheKey);
+    }
+
+    const width = [...normalizedText].reduce(
+      (totalWidth, char) => totalWidth + charPxWidth(char, normalizedFontSize),
+      0
+    );
+    return setBoundedCacheEntry(textWidthCache, cacheKey, width, TEXT_MEASURE_CACHE_LIMIT);
   }
 
   function tokenizeRichWords(text) {
@@ -935,7 +966,7 @@
   }
 
   function groupRichTokens(tokens) {
-    const joiners = new Set(["+", "•", "&", "|", "×"]);
+    const joiners = new Set(["+", "&", "|", "x"]);
     const units = [];
 
     for (let index = 0; index < tokens.length; index += 1) {
@@ -958,6 +989,12 @@
 
   function wrapTextBlock(text, maxPx, maxLines, options) {
     if (!text || maxLines <= 0) return [];
+    const fontSize = Number(options?.fontSize) || 12;
+    const slackPx = Math.max(0, Number(options?.slackPx) || 0);
+    const cacheKey = `${fontSize}|${slackPx}|${maxPx}|${maxLines}|${String(text || "")}`;
+    if (wrapTextCache.has(cacheKey)) {
+      return [...wrapTextCache.get(cacheKey)];
+    }
 
     const lines = [];
     const segments = String(text || "").split(/\r?\n/);
@@ -968,6 +1005,7 @@
       lines.push(...wrapText(segment, maxPx, maxLines - lines.length, options));
     }
 
+    setBoundedCacheEntry(wrapTextCache, cacheKey, [...lines], TEXT_WRAP_CACHE_LIMIT);
     return lines;
   }
 
@@ -1032,7 +1070,7 @@
 
           if (splitIndex > 1) {
             const lastToken = unit[splitIndex - 1];
-            if (["+", "•", "&", "|", "×"].includes(lastToken?.text)) {
+            if (["+", "&", "|", "x"].includes(lastToken?.text)) {
               splitIndex -= 1;
             }
           }
@@ -1074,39 +1112,46 @@
       return text;
     }
 
-    return `${text.slice(0, Math.max(0, limit - 1))}…`;
+    return `${text.slice(0, Math.max(0, limit - 1))}...`;
   }
 
   function truncateTextPx(value, maxPx, options) {
     const text = String(value || "");
     const fontSize = Number(options?.fontSize) || 12;
-    const suffix = options?.suffix ?? "…";
+    const suffix = options?.suffix ?? "...";
+    const cacheKey = `${fontSize}|${maxPx}|${suffix}|${text}`;
+    if (truncateTextCache.has(cacheKey)) {
+      return truncateTextCache.get(cacheKey);
+    }
 
     if (measureTextPx(text, fontSize) <= maxPx) {
-      return text;
+      return setBoundedCacheEntry(truncateTextCache, cacheKey, text, TEXT_TRUNCATE_CACHE_LIMIT);
     }
 
     const suffixPx = measureTextPx(suffix, fontSize);
     let out = "";
+    let outPx = 0;
 
     for (const char of [...text]) {
-      if (measureTextPx(out + char, fontSize) + suffixPx > maxPx) {
+      const charPx = charPxWidth(char, fontSize);
+      if (outPx + charPx + suffixPx > maxPx) {
         break;
       }
       out += char;
+      outPx += charPx;
     }
 
-    return out ? `${out}${suffix}` : suffix;
+    const truncated = out ? `${out}${suffix}` : suffix;
+    return setBoundedCacheEntry(truncateTextCache, cacheKey, truncated, TEXT_TRUNCATE_CACHE_LIMIT);
   }
-
   function getStatusText(state) {
     if (!state.githubStats) {
       return state.status;
     }
 
-    return `${formatCompactStat(state.githubStats.stars)} stars • ${formatCompactStat(
+    return `${formatCompactStat(state.githubStats.stars)} stars ??${formatCompactStat(
       state.githubStats.repos
-    )} repos • ${formatCompactStat(state.githubStats.followers)} followers`;
+    )} repos ??${formatCompactStat(state.githubStats.followers)} followers`;
   }
 
   function buildGraphic(ratio, bx, rowY, barTrack, accentColor, trackBg, style, gradientId) {
@@ -1790,6 +1835,7 @@
   function resolveAutoHeight(state, topLangs, contributions) {
     const minHeight = 420;
     const maxHeight = 1400;
+    const step = 10;
     const fits =
       state.provider === "amber"
         ? fitsAmberAutoHeight
@@ -1799,13 +1845,23 @@
         ? fitsPrismAutoHeight
         : fitsClassicAutoHeight;
 
-    for (let height = minHeight; height <= maxHeight; height += 10) {
+    let low = 0;
+    let high = Math.floor((maxHeight - minHeight) / step);
+    let resolved = maxHeight;
+
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const height = minHeight + mid * step;
+
       if (fits({ ...state, height }, topLangs, contributions)) {
-        return height;
+        resolved = height;
+        high = mid - 1;
+      } else {
+        low = mid + 1;
       }
     }
 
-    return maxHeight;
+    return resolved;
   }
 
   function buildContributionGrid(contributions, x, y, trackWidth, theme, palette, options) {

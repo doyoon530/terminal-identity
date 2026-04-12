@@ -1,7 +1,10 @@
 const { buildSvg, normalizeState, LANG_ICON_MAP } = require("../terminal-card");
 const { fetchGithubStats } = require("../github-data");
+const { createTimedAsyncCache } = require("../lib/github/cache");
 const fs = require("fs");
 const path = require("path");
+const LANG_ICON_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const langIconsCache = createTimedAsyncCache(LANG_ICON_CACHE_TTL_MS);
 
 const capybaraSpriteUri = (() => {
   try {
@@ -20,16 +23,51 @@ function buildFallbackSvg(width, height) {
 }
 
 async function fetchLangIconsDataUri(iconKeys) {
-  try {
-    const url = `https://skillicons.dev/icons?i=${iconKeys.join(",")}`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const svg = await res.text();
-    const b64 = Buffer.from(svg).toString("base64");
-    return `data:image/svg+xml;base64,${b64}`;
-  } catch (_) {
-    return null;
+  const cacheKey = iconKeys.join(",");
+  const freshValue = langIconsCache.getFreshValue(cacheKey);
+  if (freshValue) {
+    return freshValue;
   }
+
+  const pending = langIconsCache.getPromise(cacheKey);
+  if (pending) {
+    return langIconsCache.getValue(cacheKey) || pending;
+  }
+
+  const request = (async () => {
+    try {
+      const url = `https://skillicons.dev/icons?i=${cacheKey}`;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const svg = await res.text();
+      const b64 = Buffer.from(svg).toString("base64");
+      return `data:image/svg+xml;base64,${b64}`;
+    } catch (_) {
+      return null;
+    }
+  })();
+
+  langIconsCache.setPending(cacheKey, request);
+  const staleValue = langIconsCache.getValue(cacheKey);
+  if (staleValue) {
+    void request.then((result) => {
+      if (result) {
+        langIconsCache.setValue(cacheKey, result);
+        return;
+      }
+      langIconsCache.setValue(cacheKey, staleValue);
+    });
+    return staleValue;
+  }
+
+  const result = await request;
+  if (result) {
+    langIconsCache.setValue(cacheKey, result);
+    return result;
+  }
+
+  langIconsCache.clear(cacheKey);
+  return null;
 }
 
 module.exports = async function handler(req, res) {
@@ -50,7 +88,18 @@ module.exports = async function handler(req, res) {
     let nextState = state;
 
     if (state.username) {
-      const githubStats = await fetchGithubStats(state.username);
+      const fields = [];
+      if (!state.hideProfile) {
+        fields.push("avatar");
+      }
+      if (state.showLangs !== "off") {
+        fields.push("langs");
+      }
+      if (state.showContribs !== "off") {
+        fields.push("contribs");
+      }
+
+      const githubStats = await fetchGithubStats(state.username, { fields });
       if (githubStats) {
         nextState = { ...state, githubStats };
         if (!state.hideProfile && (githubStats.avatarDataUri || githubStats.avatarUrl)) {

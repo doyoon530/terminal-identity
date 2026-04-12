@@ -1,6 +1,7 @@
 const tests = [
   require("./terminal-card.test"),
   require("./github-html-fallback.test"),
+  require("./github-service.test"),
   require("./state-roundtrip.test"),
 ];
 

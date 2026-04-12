@@ -22,6 +22,7 @@ const {
   createPreviewUtils = () => ({
     buildRenderedState: (state) => state,
     commitRender: () => {},
+    getRequestedGithubFields: () => [],
   }),
 } = window.TerminalIdentityPlaygroundPreview || {};
 
@@ -448,7 +449,8 @@ async function render(options) {
   }
 
   const username = normalizeUsername(state.username);
-  const cachedGithubStats = getCachedGithubStats(username);
+  const requestedGithubFields = previewUtils.getRequestedGithubFields(state);
+  const cachedGithubStats = getCachedGithubStats(username, requestedGithubFields);
   previewUtils.commitRender(
     state,
     previewUtils.buildRenderedState(state, cachedGithubStats),
@@ -461,6 +463,7 @@ async function render(options) {
   }
 
   const githubStats = await fetchGithubStats(username, {
+    fields: requestedGithubFields,
     forceRefresh: !!options?.syncProfile,
     waitForFresh: !cachedGithubStats || !!options?.syncProfile,
   });
@@ -524,12 +527,12 @@ function renderPresetGallery() {
     .map((preset, index) => {
       const state = normalizeState(preset.state);
       const tags = getPresetTags(state);
-      const cardUrl = `./assets/recipes/${slugifyPresetLabel(preset.label)}.svg?v=${RECIPE_GALLERY_VERSION}`;
+      const cardUrl = `./assets/recipes/thumbs/${slugifyPresetLabel(preset.label)}.png?v=${RECIPE_GALLERY_VERSION}`;
 
       return `
         <button type="button" class="preset-card" data-preset-index="${index}">
           <div class="preset-art">
-            <img src="${cardUrl}" alt="${preset.label}" loading="lazy" decoding="async" />
+            <img src="${cardUrl}" alt="${preset.label}" loading="lazy" decoding="async" width="560" height="320" />
           </div>
           <div class="preset-copy">
             <strong>${preset.label}</strong>

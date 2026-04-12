@@ -4,13 +4,20 @@ module.exports = async function handler(req, res) {
   const username = String(req.query?.username || "")
     .replace(/^@+/, "")
     .trim();
+  const hasFieldsParam = Object.prototype.hasOwnProperty.call(req.query || {}, "fields");
+  const fields = hasFieldsParam
+    ? String(req.query?.fields || "")
+        .split(",")
+        .map((field) => String(field || "").trim().toLowerCase())
+        .filter(Boolean)
+    : undefined;
 
   if (!username) {
     res.status(400).json({ error: "Missing username" });
     return;
   }
 
-  const githubStats = await fetchGithubStats(username);
+  const githubStats = await fetchGithubStats(username, { fields });
 
   if (!githubStats) {
     res.status(404).json({ error: "Unable to load GitHub stats" });
