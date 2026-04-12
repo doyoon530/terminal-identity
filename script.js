@@ -661,15 +661,13 @@ function renderPresetGallery() {
     .map((preset, index) => {
       const state = normalizeState(preset.state);
       const tags = getPresetTags(state);
-      const cardSvg = buildSvg({
-        ...state,
-        width: 640,
-        height: 360,
-      });
+      const cardUrl = buildApiUrl(state, getApiBaseUrl());
 
       return `
         <button type="button" class="preset-card" data-preset-index="${index}">
-          <div class="preset-art">${cardSvg}</div>
+          <div class="preset-art">
+            <img src="${cardUrl}" alt="${preset.label}" loading="lazy" decoding="async" />
+          </div>
           <div class="preset-copy">
             <strong>${preset.label}</strong>
             <span>${preset.description}</span>

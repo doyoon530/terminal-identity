@@ -643,6 +643,12 @@ a.hero-action:hover {
   display: block;
 }
 
+.preset-art img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 .preset-copy {
   display: grid;
   gap: 3px;
