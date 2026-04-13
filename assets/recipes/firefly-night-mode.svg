@@ -34,7 +34,7 @@
   <rect x="341" y="213" width="565" height="1" fill="rgba(250,162,193,0.12)"></rect>
   
   <circle cx="341" cy="271" r="5" fill="#d6336c"></circle>
-  <text font-weight="500" x="355" y="277" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="13" fill="#fff4fa">0 stars ??392 repos ??39k followers</text>
+  <text font-weight="500" x="355" y="277" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="13" fill="#fff4fa">0 stars - 392 repos - 39k followers</text>
 
   <rect x="319" y="310" width="609" height="218" rx="10" fill="#27142d"></rect>
   <text font-weight="500" x="341" y="332" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="12" fill="#bfa4b5">output</text>
@@ -306,17 +306,19 @@
     <rect x="593" y="480" width="16" height="16" rx="7" fill="rgba(255,255,255,0.03)"></rect>
     <rect x="611" y="372" width="16" height="16" rx="7" fill="rgba(255,255,255,0.03)"></rect>
     <rect x="611" y="390" width="16" height="16" rx="7" fill="rgba(255,255,255,0.03)"></rect>
+    <circle cx="619" cy="398" r="7.744000000000001" fill="rgba(255,226,122,0.22)" opacity="0.33999999999999997"></circle>
+    <circle cx="619" cy="398" r="3.52" fill="rgba(255,221,120,0.44)"></circle>
     <rect x="611" y="408" width="16" height="16" rx="7" fill="rgba(255,255,255,0.03)"></rect>
     <rect x="611" y="426" width="16" height="16" rx="7" fill="rgba(255,255,255,0.03)"></rect>
     <rect x="611" y="444" width="16" height="16" rx="7" fill="rgba(255,255,255,0.03)"></rect>
     <rect x="611" y="462" width="16" height="16" rx="7" fill="rgba(255,255,255,0.03)"></rect>
     <rect x="611" y="480" width="16" height="16" rx="7" fill="rgba(255,255,255,0.03)"></rect>
   </g>
-  <text font-weight="500" x="341" y="512" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="10" fill="#bfa4b5">76 active days</text>
+  <text font-weight="500" x="341" y="512" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="10" fill="#bfa4b5">77 active days</text>
 
   <rect x="28" y="528" width="924" height="1" fill="rgba(250,162,193,0.07)"></rect>
   <circle cx="50" cy="552" r="5" fill="#d6336c"></circle>
-  <text font-weight="500" x="64" y="558" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="13" fill="#bfa4b5">0 stars ??392 repos ??39k followers</text>
+  <text font-weight="500" x="64" y="558" font-family="'IBM Plex Mono', 'Nanum Gothic Coding', D2Coding, Consolas, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Courier New', monospace" font-size="13" fill="#bfa4b5">0 stars - 392 repos - 39k followers</text>
 
   <g aria-hidden="true" pointer-events="none">
     <rect x="762" y="118" width="164" height="1.5" rx="0.75" fill="rgba(255,255,255,0.08)"></rect>

@@ -1149,9 +1149,9 @@
       return state.status;
     }
 
-    return `${formatCompactStat(state.githubStats.stars)} stars ??${formatCompactStat(
+    return `${formatCompactStat(state.githubStats.stars)} stars - ${formatCompactStat(
       state.githubStats.repos
-    )} repos ??${formatCompactStat(state.githubStats.followers)} followers`;
+    )} repos - ${formatCompactStat(state.githubStats.followers)} followers`;
   }
 
   function buildGraphic(ratio, bx, rowY, barTrack, accentColor, trackBg, style, gradientId) {
